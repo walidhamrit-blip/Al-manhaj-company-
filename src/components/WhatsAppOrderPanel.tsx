@@ -90,6 +90,15 @@ export function WhatsAppOrderPanel({
     }
   };
 
+  const handleOpenWhatsAppDirect = () => {
+    try {
+      const waUrl = `https://wa.me/${displayNumber}?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      console.error("Failed to open WhatsApp", e);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
@@ -123,8 +132,8 @@ export function WhatsAppOrderPanel({
             </h2>
             <p className="text-white/80 text-xs">
               {lang === "ar"
-                ? "انسخ الرسالة والرقم ثم افتح واتساب والصقهما"
-                : "Copy the message & number, open WhatsApp, paste and send"}
+                ? "اضغط لفتح واتساب مباشرة مع الرسالة جاهزة"
+                : "Tap to open WhatsApp directly with your order ready"}
             </p>
           </div>
           <button
@@ -139,6 +148,28 @@ export function WhatsAppOrderPanel({
 
         {/* Body */}
         <div className="p-5 space-y-4">
+          {/* PRIMARY CTA - Direct WhatsApp Open */}
+          <button
+            type="button"
+            onClick={handleOpenWhatsAppDirect}
+            style={{ backgroundColor: "#25D366" }}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 px-5 text-sm font-black text-white shadow-lg hover:bg-[#1EBE5D] transition active:scale-[0.98]"
+          >
+            <MessageCircle className="h-5 w-5 fill-current" />
+            <span>
+              {lang === "ar"
+                ? "↗ فتح واتساب مباشرة مع الطلب"
+                : "↗ Open WhatsApp with Order Ready"}
+            </span>
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="h-px flex-1 bg-black/10" />
+            <span className="text-[11px] font-bold opacity-60">
+              {lang === "ar" ? "أو انسخ يدوياً" : "or copy manually"}
+            </span>
+            <div className="h-px flex-1 bg-black/10" />
+          </div>
+
           {/* Step-by-step instructions */}
           <div
             style={{
@@ -163,8 +194,8 @@ export function WhatsAppOrderPanel({
                 </span>
                 <span>
                   {lang === "ar"
-                    ? "انسخ الرسالة الكاملة بالأسفل"
-                    : "Copy the full message below"}
+                    ? "اضغط الزر الأخضر أعلاه لفتح واتساب تلقائياً"
+                    : "Tap the green button above to open WhatsApp automatically"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -179,40 +210,25 @@ export function WhatsAppOrderPanel({
                 </span>
                 <span>
                   {lang === "ar"
-                    ? "افتح تطبيق واتساب على هاتفك"
-                    : "Open WhatsApp on your phone"}
+                    ? "تحقق من الرسالة الجاهزة واضغط إرسال"
+                    : "Check the pre-filled message and tap Send"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span
                   style={{
-                    backgroundColor: "#25D366",
-                    color: "#FFFFFF",
+                    backgroundColor: "transparent",
+                    color: theme.colors.textSecondary,
+                    borderColor: theme.colors.border,
                   }}
-                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black"
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold border"
                 >
-                  3
+                  ✓
                 </span>
-                <span>
+                <span style={{ color: theme.colors.textSecondary }} className="text-[11px]">
                   {lang === "ar"
-                    ? `أضف جهة اتصال جديدة باسم "شركة المنهج للقرطاسية" على الرقم ${fullNumber}`
-                    : `Add new contact "Al Manhaj Company for Stationery" at ${fullNumber}`}
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span
-                  style={{
-                    backgroundColor: "#25D366",
-                    color: "#FFFFFF",
-                  }}
-                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black"
-                >
-                  4
-                </span>
-                <span>
-                  {lang === "ar"
-                    ? "الصق الرسالة وأرسلها مباشرة"
-                    : "Paste the message and send it"}
+                    ? "إذا لم يفتح تلقائياً، انسخ الرقم والرسالة أدناه يدوياً"
+                    : "If it doesn't open, copy number & message below manually"}
                 </span>
               </li>
             </ol>

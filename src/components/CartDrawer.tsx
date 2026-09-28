@@ -152,7 +152,22 @@ export function CartDrawer({
 
   const handleSendWhatsApp = () => {
     if (cart.length === 0) return;
-    setShowWaPanel(true);
+    // Essayer l'ouverture directe d'abord (meilleure UX)
+    try {
+      const clean = rawPhone.replace(/[^0-9]/g, "");
+      const formatted = clean.startsWith("218") ? clean : "218" + clean;
+      const waUrl = `https://wa.me/${formatted}?text=${encodeURIComponent(buildWhatsAppMessage())}`;
+      const opened = window.open(waUrl, "_blank", "noopener,noreferrer");
+      // Si le popup est bloqué, afficher le panneau de copie manuelle en fallback
+      if (!opened) {
+        setShowWaPanel(true);
+      } else {
+        // Optionnel: garder le panneau ouvert aussi pour voir la confirmation
+        // setShowWaPanel(true);
+      }
+    } catch {
+      setShowWaPanel(true);
+    }
   };
 
   const handleCopyMessage = async () => {
@@ -452,9 +467,10 @@ export function CartDrawer({
                 type="button"
                 onClick={handleSendWhatsApp}
                 className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white py-3.5 px-4 text-sm font-extrabold shadow-lg transition active:scale-[0.99]"
+                title={lang === "ar" ? "فتح واتساب مباشرة مع الطلب جاهز للإرسال" : "Open WhatsApp directly with order pre-filled"}
               >
                 <MessageCircle className="h-5 w-5 fill-current" />
-                <span>{t.checkoutWhatsAppBtn}</span>
+                <span>{t.checkoutWhatsAppBtn} ↗</span>
               </button>
 
               <button
