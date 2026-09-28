@@ -885,7 +885,7 @@ export default function StorefrontPage() {
         </div>
 
         {/* 7 Visual Category Bento Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => p.categorySlug === cat.slug

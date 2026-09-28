@@ -91,6 +91,7 @@ export function AdminDashboardModal({
 
   // Category Editor state
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
   // Store Settings Form state
   const [settingsForm, setSettingsForm] = useState<StoreSettings | null>(
@@ -292,23 +293,45 @@ export function AdminDashboardModal({
     }
   };
 
+  const openCreateCategory = () => {
+    setEditingCategory({
+      id: 0,
+      slug: "",
+      nameEn: "",
+      nameAr: "",
+      descriptionEn: "",
+      descriptionAr: "",
+      imageUrl: "/images/hero-stationery.jpg",
+      badgeEn: "Collection",
+      badgeAr: "مجموعة",
+      sortOrder: categories.length + 1,
+    } as any);
+    setIsCreatingCategory(true);
+  };
+
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCategory) return;
     setIsSaving(true);
     try {
+      const isNew = isCreatingCategory || !editingCategory.id;
       const res = await fetch("/api/categories", {
-        method: "PUT",
+        method: isNew ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingCategory),
       });
       if (res.ok) {
         await onDataUpdated();
         setEditingCategory(null);
+        setIsCreatingCategory(false);
         showToast(
           lang === "ar"
-            ? "تم تحديث القسم في قاعدة البيانات!"
-            : "Category updated in database!"
+            ? isCreatingCategory
+              ? "تم إنشاء القسم الجديد بنجاح!"
+              : "تم تحديث القسم في قاعدة البيانات!"
+            : isCreatingCategory
+              ? "New category created successfully!"
+              : "Category updated in database!"
         );
       }
     } finally {
@@ -1379,6 +1402,20 @@ export function AdminDashboardModal({
                       </span>
                     </div>
 
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={openCreateCategory}
+                        style={{
+                          backgroundColor: theme.colors.accentPrimary,
+                          color: "#FFFFFF",
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-extrabold shadow-md"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span>{lang === "ar" ? "➕ قسم جديد" : "➕ New Category"}</span>
+                      </button>
+                    </div>
                     {filteredAdminCategories.length === 0 && (
                       <p className="py-8 text-center text-sm font-bold opacity-70">
                         {isAr ? "لا توجد أقسام مطابقة" : "No matching categories"}
