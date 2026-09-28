@@ -2,9 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: { unoptimized: true },
-  // Pour Cloudflare Pages static - génère le dossier 'out'
-  output: 'export',
-  trailingSlash: false,
+  // Mode dynamique pour Neon - pas de output:export
+  // Les API routes fonctionneront avec la base de données
 };
 
 export default nextConfig;
