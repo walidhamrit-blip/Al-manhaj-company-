@@ -47,7 +47,7 @@ export default function StorefrontPage() {
   const t = UI_TEXT[lang];
 
   // Visual Theme state (6 curated e-commerce themes)
-  const [themeId, setThemeId] = useState<ThemeId>("royal");
+  const [themeId, setThemeId] = useState<ThemeId>("paperSource");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const currentTheme = useMemo(
     () => THEMES.find((th) => th.id === themeId) || THEMES[0],
@@ -404,15 +404,19 @@ export default function StorefrontPage() {
       }}
       className="min-h-screen flex flex-col transition-colors duration-300 pb-20 lg:pb-0"
     >
-      {/* =====================================================================
-          STICKY TOP NAVIGATION BAR WITH TOP-CORNER MASTER CATALOGUE BUTTON
-      ===================================================================== */}
+      {/* ===== PAPER SOURCE TOP BAR ===== */}
+      <div className="w-full bg-black text-white text-center py-2 text-[11px] sm:text-xs font-semibold tracking-widest uppercase">
+        <span className="hidden sm:inline">توصيل مجاني داخل طرابلس فوق 1900 د.ل — Free Standard Shipping $60+ → </span>
+        <span className="sm:hidden">توصيل مجاني 1900 د.ل+ →</span>
+        <span className="opacity-60 font-normal normal-case tracking-normal hidden md:inline"> &nbsp;•&nbsp; البيفي، طرابلس • 0912145050</span>
+      </div>
+      {/* ===== PAPER SOURCE HEADER - Minimal White ===== */}
       <header
         style={{
-          backgroundColor: currentTheme.colors.bgElevated,
-          borderColor: currentTheme.colors.border,
+          backgroundColor: "#FFFFFF",
+          borderColor: "#E8E6E1",
         }}
-        className="sticky top-0 z-40 border-b shadow-sm backdrop-blur-md"
+        className="sticky top-0 z-40 border-b bg-white"
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-3">
           {/* Top-Corner Master Catalogue Button + Brand Identity */}
@@ -421,38 +425,34 @@ export default function StorefrontPage() {
               type="button"
               onClick={() => setIsCatalogOpen(true)}
               style={{
-                backgroundColor: currentTheme.colors.accentPrimary,
+                backgroundColor: "#111111",
                 color: "#FFFFFF",
               }}
-              className="flex items-center gap-2 rounded-xl px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95 active:scale-95"
+              className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold tracking-widest uppercase transition hover:bg-black active:scale-95"
               title={t.masterCatalog}
             >
-              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <BookOpen className="h-3.5 w-3.5 shrink-0" />
               <span>{t.masterCatalog}</span>
             </button>
 
             <a
               href="#top"
-              className="flex flex-col leading-tight hover:opacity-85 transition"
+              className="flex flex-col leading-tight hover:opacity-80 transition"
             >
-              <span className="text-sm sm:text-lg font-black tracking-tight truncate max-w-[190px] sm:max-w-xs lg:max-w-none">
+              <span style={{fontFamily: "'Cormorant Garamond','Playfair Display',serif"}} className="text-base sm:text-xl font-semibold tracking-tight truncate max-w-[190px] sm:max-w-xs lg:max-w-none">
                 {settings
                   ? lang === "ar"
                     ? settings.storeNameAr
                     : settings.storeNameEn
                   : lang === "ar"
                     ? "شركة المنهج للقرطاسية"
-                    : "Al Manhaj Company for Stationery"}
+                    : "AL-MANHAJ"}
               </span>
               <span
-                style={{ color: currentTheme.colors.textSecondary }}
-                className="hidden md:block text-[11px] font-medium truncate max-w-xs"
+                style={{ color: "#6B6B6B" }}
+                className="hidden md:block text-[10px] font-medium tracking-[0.14em] uppercase truncate max-w-xs"
               >
-                {settings
-                  ? lang === "ar"
-                    ? settings.taglineAr
-                    : settings.taglineEn
-                  : "Stationery • School • IT • Consumables"}
+                PAPER • STATIONERY • ATELIER • TRIPOLI
               </span>
             </a>
           </div>
@@ -476,11 +476,11 @@ export default function StorefrontPage() {
               }}
               placeholder={t.searchPlaceholder}
               style={{
-                backgroundColor: currentTheme.colors.bgSecondary,
-                borderColor: currentTheme.colors.border,
-                color: currentTheme.colors.textPrimary,
+                backgroundColor: "#FAFAF8",
+                borderColor: "#E8E6E1",
+                color: "#111111",
               }}
-              className="w-full rounded-xl border py-2 ps-10 pe-4 text-xs font-medium outline-none focus:ring-2"
+              className="w-full rounded-full border py-2 ps-10 pe-4 text-xs font-medium outline-none focus:border-black focus:bg-white transition"
             />
           </div>
 
@@ -496,7 +496,7 @@ export default function StorefrontPage() {
                   borderColor: currentTheme.colors.border,
                   color: currentTheme.colors.textPrimary,
                 }}
-                className="flex items-center gap-1.5 rounded-xl border px-2.5 sm:px-3 py-2 text-xs font-bold transition hover:opacity-85"
+                className="flex items-center gap-1.5 rounded-none border px-2.5 sm:px-3 py-2 text-xs font-bold transition hover:opacity-85"
                 title={t.themeSelectorTitle}
               >
                 <Palette
@@ -520,7 +520,7 @@ export default function StorefrontPage() {
                       borderColor: currentTheme.colors.border,
                       color: currentTheme.colors.textPrimary,
                     }}
-                    className="absolute end-0 mt-2 z-40 w-72 rounded-2xl border p-3 shadow-2xl space-y-1.5"
+                    className="absolute end-0 mt-2 z-40 w-72 rounded-none border p-3 shadow-2xl space-y-1.5"
                   >
                     <div className="px-2 py-1 text-xs font-extrabold uppercase tracking-wider opacity-70">
                       {t.themeSelectorTitle} (6 Themes)
@@ -540,7 +540,7 @@ export default function StorefrontPage() {
                               ? currentTheme.colors.accentPrimary
                               : "transparent",
                           }}
-                          className="flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-start transition hover:opacity-90"
+                          className="flex w-full items-center justify-between gap-3 rounded-none border px-3 py-2 text-start transition hover:opacity-90"
                         >
                           <div className="flex items-center gap-2.5">
                             {/* Swatch Preview */}
@@ -601,7 +601,7 @@ export default function StorefrontPage() {
                 borderColor: currentTheme.colors.border,
                 color: currentTheme.colors.textPrimary,
               }}
-              className="flex items-center gap-1.5 rounded-xl border px-2.5 sm:px-3 py-2 text-xs font-extrabold transition hover:opacity-85"
+              className="flex items-center gap-1.5 rounded-none border px-2.5 sm:px-3 py-2 text-xs font-extrabold transition hover:opacity-85"
               title="Switch Language (English / العربية)"
             >
               <Globe
@@ -620,7 +620,7 @@ export default function StorefrontPage() {
                 borderColor: currentTheme.colors.border,
                 color: currentTheme.colors.textPrimary,
               }}
-              className="hidden sm:flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition hover:opacity-85"
+              className="hidden sm:flex items-center gap-1.5 rounded-none border px-3 py-2 text-xs font-bold transition hover:opacity-85"
             >
               <ShieldCheck
                 style={{ color: currentTheme.colors.accentPrimary }}
@@ -637,7 +637,7 @@ export default function StorefrontPage() {
                 backgroundColor: currentTheme.colors.accentPrimary,
                 color: "#FFFFFF",
               }}
-              className="relative flex items-center gap-2 rounded-xl px-3 sm:px-4 py-2 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95 active:scale-95"
+              className="relative flex items-center gap-2 rounded-none px-3 sm:px-4 py-2 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95 active:scale-95"
             >
               <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="tabular-nums">{totalCartUnits}</span>
@@ -662,8 +662,8 @@ export default function StorefrontPage() {
           }
           className="absolute inset-0 h-full w-full object-cover kenburns-bg"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-white/5" />
 
         <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col justify-end px-4 sm:px-8 pb-8 sm:pb-14 text-white">
           <div className="max-w-3xl space-y-3 sm:space-y-5">
@@ -674,7 +674,7 @@ export default function StorefrontPage() {
                 : "Al Bivi, Tripoli, Libya"}
             </span>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight drop-shadow-lg">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight drop-shadow-none">
               {lang === "ar"
                 ? "شركة المنهج للقرطاسية"
                 : "Al Manhaj Company for Stationery"}
@@ -700,7 +700,7 @@ export default function StorefrontPage() {
                   );
                   setWaPanelOpen(true);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg transition hover:bg-[#1EBE5D]"
+                className="inline-flex items-center gap-2 rounded-none bg-[#25D366] px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-white shadow-none transition hover:bg-[#1EBE5D]"
               >
                 <MessageCircle className="h-4 w-4 fill-current" />
                 <span dir="ltr">+218 91-214-5050</span>
@@ -708,7 +708,7 @@ export default function StorefrontPage() {
 
               <a
                 href="tel:+218912145050"
-                className="inline-flex items-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white transition"
+                className="inline-flex items-center gap-2 rounded-none bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white transition"
               >
                 <Phone className="h-4 w-4" />
                 <span>{lang === "ar" ? "اتصل الآن" : "Call now"}</span>
@@ -717,7 +717,7 @@ export default function StorefrontPage() {
               <button
                 type="button"
                 onClick={() => setIsCatalogOpen(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-slate-950 shadow-lg transition"
+                className="inline-flex items-center gap-2 rounded-none bg-amber-500 hover:bg-amber-400 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-slate-950 shadow-none transition"
               >
                 <BookOpen className="h-4 w-4" />
                 <span>{t.masterCatalog}</span>
@@ -727,37 +727,31 @@ export default function StorefrontPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          1. TOP HERO IMAGE CAROUSEL
-      ===================================================================== */}
-      <section className="mx-auto w-full max-w-7xl px-3 sm:px-6 pt-4 sm:pt-6">
-        <div className="relative h-[380px] sm:h-[460px] lg:h-[520px] w-full overflow-hidden rounded-3xl shadow-xl">
+      {/* ===== PAPER SOURCE HERO - Editorial Minimal ===== */}
+      <section className="mx-auto w-full max-w-7xl px-3 sm:px-6 pt-6 sm:pt-8">
+        <div className="relative h-[420px] sm:h-[480px] lg:h-[520px] w-full overflow-hidden rounded-none border border-[#E8E6E1] bg-white">
           {/* Slide Image */}
           <img
             src={currentHero.imageUrl}
             alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
             className="h-full w-full object-cover transition-all duration-700"
           />
+          {/* Soft Paper Source overlay - white bottom for text */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent opacity-95" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-transparent hidden sm:block" />
 
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
-
-          {/* Slide Content */}
-          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-14 text-white">
-            <div className="max-w-2xl space-y-3 sm:space-y-4">
-              <span
-                style={{ backgroundColor: currentTheme.colors.accentPrimary }}
-                className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider text-white shadow-md"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
+          {/* Slide Content - Paper Source editorial centered */}
+          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-12">
+            <div className="max-w-2xl space-y-3 sm:space-y-3">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-black border border-black px-3 py-1 bg-white/80 backdrop-blur">
                 {lang === "ar" ? currentHero.badgeAr : currentHero.badgeEn}
               </span>
 
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
+              <h1 style={{fontFamily: "'Cormorant Garamond','Playfair Display',serif"}} className="text-3xl sm:text-4xl lg:text-[44px] font-medium leading-tight tracking-tight text-black">
                 {lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
               </h1>
 
-              <p className="text-xs sm:text-base text-white/90 leading-relaxed max-w-xl">
+              <p className="text-xs sm:text-[13px] text-[#6B6B6B] leading-relaxed max-w-xl font-medium">
                 {lang === "ar"
                   ? currentHero.subtitleAr
                   : currentHero.subtitleEn}
@@ -771,26 +765,21 @@ export default function StorefrontPage() {
                       currentHero.targetCategory || "all"
                     )
                   }
-                  style={{
-                    backgroundColor: currentTheme.colors.accentPrimary,
-                    color: "#FFFFFF",
-                  }}
-                  className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs sm:text-sm font-extrabold shadow-lg transition hover:opacity-95"
+                  className="inline-flex items-center gap-2 bg-black text-white px-6 py-2.5 text-xs font-semibold tracking-widest uppercase hover:bg-zinc-800 transition"
                 >
                   <span>
                     {lang === "ar" ? currentHero.ctaAr : currentHero.ctaEn}
                   </span>
                   <ArrowRight
-                    className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`}
+                    className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`}
                   />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setIsCatalogOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-5 py-3 text-xs sm:text-sm font-bold text-white transition"
+                  className="inline-flex items-center gap-2 bg-white border border-black text-black px-6 py-2.5 text-xs font-semibold tracking-widest uppercase hover:bg-black hover:text-white transition"
                 >
-                  <BookOpen className="h-4 w-4" />
                   <span>{t.masterCatalog}</span>
                 </button>
               </div>
@@ -848,17 +837,14 @@ export default function StorefrontPage() {
       ===================================================================== */}
       <section
         id="departments-section"
-        className="mx-auto w-full max-w-7xl px-3 sm:px-6 py-10 sm:py-14"
+        className="mx-auto w-full max-w-7xl px-3 sm:px-6 py-10 sm:py-14 bg-white"
       >
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-            <span
-              style={{ color: currentTheme.colors.accentPrimary }}
-              className="text-xs font-extrabold uppercase tracking-widest block mb-1"
-            >
-              {lang === "ar" ? "أقسام المتجر السبعة" : "7 SPECIALIZED DEPARTMENTS"}
+        <div className="mb-6 sm:mb-8 flex flex-col items-center text-center gap-3">
+          <div className="text-center">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-black border-b border-black pb-1 block mb-3">
+              {lang === "ar" ? "أقسام المتجر السبعة" : "SHOP BY CATEGORY"}
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h2 style={{fontFamily: "'Cormorant Garamond',serif"}} className="text-2xl sm:text-3xl font-medium tracking-tight text-black">
               {t.categoriesTitle}
             </h2>
             <p
@@ -876,7 +862,7 @@ export default function StorefrontPage() {
               backgroundColor: currentTheme.colors.bgSecondary,
               color: currentTheme.colors.textPrimary,
             }}
-            className="self-start sm:self-auto inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition hover:opacity-80"
+            className="self-start sm:self-auto inline-flex items-center gap-2 rounded-none px-4 py-2.5 text-xs font-bold transition hover:opacity-80"
           >
             <span>
               {t.allCategories} ({products.length})
@@ -885,7 +871,7 @@ export default function StorefrontPage() {
         </div>
 
         {/* 7 Visual Category Bento Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => p.categorySlug === cat.slug
@@ -902,7 +888,7 @@ export default function StorefrontPage() {
                     ? currentTheme.colors.accentPrimary
                     : currentTheme.colors.border,
                 }}
-                className={`group relative flex flex-col justify-end h-48 sm:h-56 rounded-2xl border-2 overflow-hidden text-start shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl ${
+                className={`group relative flex flex-col justify-end h-48 sm:h-56 rounded-none border-2 overflow-hidden text-start shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-sm ${
                   isSelected ? "ring-2 ring-offset-2" : ""
                 }`}
               >
@@ -939,7 +925,7 @@ export default function StorefrontPage() {
           3. LARGE LANDSCAPE PANORAMIC BACKGROUND BANNER
       ===================================================================== */}
       <section className="mx-auto w-full max-w-7xl px-3 sm:px-6 pb-10 sm:pb-14">
-        <div className="relative min-h-[300px] sm:min-h-[360px] w-full overflow-hidden rounded-3xl shadow-xl flex items-center">
+        <div className="relative min-h-[300px] sm:min-h-[360px] w-full overflow-hidden rounded-none border border-[#E8E6E1] flex items-center">
           <img
             src={landscapeBanner.imageUrl}
             alt={
@@ -979,7 +965,7 @@ export default function StorefrontPage() {
                   backgroundColor: currentTheme.colors.accentPrimary,
                   color: "#FFFFFF",
                 }}
-                className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs sm:text-sm font-extrabold shadow-lg transition hover:opacity-95"
+                className="inline-flex items-center gap-2 rounded-none px-5 py-3 text-xs sm:text-sm font-extrabold shadow-none transition hover:opacity-95"
               >
                 <BookOpen className="h-4 w-4" />
                 <span>
@@ -991,7 +977,7 @@ export default function StorefrontPage() {
 
               <a
                 href="#wholesale-section"
-                className="inline-flex items-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-5 py-3 text-xs sm:text-sm font-bold text-white transition"
+                className="inline-flex items-center gap-2 rounded-none bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-5 py-3 text-xs sm:text-sm font-bold text-white transition"
               >
                 <Layers className="h-4 w-4" />
                 <span>
@@ -1014,7 +1000,7 @@ export default function StorefrontPage() {
             backgroundColor: currentTheme.colors.bgSecondary,
             borderColor: currentTheme.colors.border,
           }}
-          className="rounded-3xl border p-5 sm:p-8"
+          className="rounded-none border p-5 sm:p-8"
         >
           <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
@@ -1050,7 +1036,7 @@ export default function StorefrontPage() {
                 backgroundColor: currentTheme.colors.accentPrimary,
                 color: "#FFFFFF",
               }}
-              className="self-start sm:self-auto inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-extrabold shadow-sm"
+              className="self-start sm:self-auto inline-flex items-center gap-2 rounded-none px-4 py-2.5 text-xs font-extrabold shadow-sm"
             >
               <Percent className="h-3.5 w-3.5" />
               <span>{t.onlyPromotions}</span>
@@ -1108,7 +1094,7 @@ export default function StorefrontPage() {
             backgroundColor: currentTheme.colors.bgElevated,
             borderColor: currentTheme.colors.border,
           }}
-          className="mb-8 rounded-2xl border p-4 sm:p-5 shadow-sm space-y-4"
+          className="mb-8 rounded-none border p-4 sm:p-5 shadow-sm space-y-4"
         >
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             {/* Search Input */}
@@ -1127,7 +1113,7 @@ export default function StorefrontPage() {
                   borderColor: currentTheme.colors.border,
                   color: currentTheme.colors.textPrimary,
                 }}
-                className="w-full rounded-xl border py-2.5 ps-10 pe-4 text-sm outline-none focus:ring-2"
+                className="w-full rounded-none border py-2.5 ps-10 pe-4 text-sm outline-none focus:ring-2"
               />
             </div>
 
@@ -1173,7 +1159,7 @@ export default function StorefrontPage() {
                   borderColor: currentTheme.colors.border,
                   color: currentTheme.colors.textPrimary,
                 }}
-                className="w-full rounded-xl border px-3 py-2.5 text-xs font-bold outline-none"
+                className="w-full rounded-none border px-3 py-2.5 text-xs font-bold outline-none"
               >
                 <option value="featured">{t.sortFeatured}</option>
                 <option value="price-asc">{t.sortPriceAsc}</option>
@@ -1198,7 +1184,7 @@ export default function StorefrontPage() {
                         color: currentTheme.colors.textPrimary,
                       }
                 }
-                className="flex-1 rounded-xl px-3 py-2.5 text-xs font-bold transition"
+                className="flex-1 rounded-none px-3 py-2.5 text-xs font-bold transition"
               >
                 {t.onlyPromotions}
               </button>
@@ -1220,7 +1206,7 @@ export default function StorefrontPage() {
                     color: currentTheme.colors.textPrimary,
                   }}
                   title={t.resetFilters}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition hover:opacity-80"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none transition hover:opacity-80"
                 >
                   <RotateCcw className="h-4 w-4" />
                 </button>
@@ -1286,7 +1272,7 @@ export default function StorefrontPage() {
               <div
                 key={n}
                 style={{ backgroundColor: currentTheme.colors.bgSecondary }}
-                className="h-96 rounded-2xl animate-pulse"
+                className="h-96 rounded-none animate-pulse"
               />
             ))}
           </div>
@@ -1296,7 +1282,7 @@ export default function StorefrontPage() {
               backgroundColor: currentTheme.colors.bgElevated,
               borderColor: currentTheme.colors.border,
             }}
-            className="rounded-3xl border p-12 text-center space-y-3"
+            className="rounded-none border p-12 text-center space-y-3"
           >
             <p className="text-lg font-bold">
               {lang === "ar"
@@ -1315,7 +1301,7 @@ export default function StorefrontPage() {
                 backgroundColor: currentTheme.colors.accentPrimary,
                 color: "#FFFFFF",
               }}
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-extrabold"
+              className="inline-flex items-center gap-2 rounded-none px-5 py-2.5 text-xs font-extrabold"
             >
               <RotateCcw className="h-4 w-4" />
               <span>{t.resetFilters}</span>
@@ -1359,7 +1345,7 @@ export default function StorefrontPage() {
             backgroundColor: currentTheme.colors.bgElevated,
             borderColor: currentTheme.colors.border,
           }}
-          className="rounded-3xl border p-6 sm:p-10 shadow-xl"
+          className="rounded-none border p-6 sm:p-10 shadow-sm"
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Column: Wholesale Tiers & Conditions */}
@@ -1395,7 +1381,7 @@ export default function StorefrontPage() {
                     backgroundColor: currentTheme.colors.bgSecondary,
                     borderColor: currentTheme.colors.border,
                   }}
-                  className="rounded-2xl border p-4"
+                  className="rounded-none border p-4"
                 >
                   <div
                     style={{ color: currentTheme.colors.accentPrimary }}
@@ -1412,7 +1398,7 @@ export default function StorefrontPage() {
                     backgroundColor: currentTheme.colors.bgSecondary,
                     borderColor: currentTheme.colors.border,
                   }}
-                  className="rounded-2xl border p-4"
+                  className="rounded-none border p-4"
                 >
                   <div
                     style={{ color: currentTheme.colors.accentPrimary }}
@@ -1430,7 +1416,7 @@ export default function StorefrontPage() {
                     borderColor: currentTheme.colors.accentPrimary,
                     color: currentTheme.colors.badgeText,
                   }}
-                  className="rounded-2xl border-2 p-4"
+                  className="rounded-none border-2 p-4"
                 >
                   <div className="text-2xl font-black tabular-nums mb-1">
                     -{settings?.wholesaleDiscountTier3Pct ?? 30}%{" "}
@@ -1446,7 +1432,7 @@ export default function StorefrontPage() {
                   backgroundColor: currentTheme.colors.bgSecondary,
                   borderColor: currentTheme.colors.border,
                 }}
-                className="rounded-2xl border p-4 text-xs sm:text-sm leading-relaxed"
+                className="rounded-none border p-4 text-xs sm:text-sm leading-relaxed"
               >
                 <p className="font-medium">
                   {settings
@@ -1464,7 +1450,7 @@ export default function StorefrontPage() {
                 backgroundColor: currentTheme.colors.bgSecondary,
                 borderColor: currentTheme.colors.border,
               }}
-              className="lg:col-span-5 rounded-2xl border p-5 sm:p-6 space-y-4"
+              className="lg:col-span-5 rounded-none border p-5 sm:p-6 space-y-4"
             >
               <div className="flex items-center gap-2">
                 <Layers
@@ -1490,7 +1476,7 @@ export default function StorefrontPage() {
                     borderColor: currentTheme.colors.border,
                     color: currentTheme.colors.textPrimary,
                   }}
-                  className="w-full rounded-xl border px-3 py-2.5 text-xs sm:text-sm font-bold outline-none"
+                  className="w-full rounded-none border px-3 py-2.5 text-xs sm:text-sm font-bold outline-none"
                 >
                   {products.map((prod) => (
                     <option key={prod.id} value={prod.id}>
@@ -1530,7 +1516,7 @@ export default function StorefrontPage() {
                     backgroundColor: currentTheme.colors.bgElevated,
                     borderColor: currentTheme.colors.border,
                   }}
-                  className="rounded-xl border p-4 space-y-2"
+                  className="rounded-none border p-4 space-y-2"
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="opacity-75">{t.unitPriceApplied}:</span>
@@ -1568,7 +1554,7 @@ export default function StorefrontPage() {
                       backgroundColor: currentTheme.colors.accentPrimary,
                       color: "#FFFFFF",
                     }}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95"
+                    className="w-full flex items-center justify-center gap-2 rounded-none py-3 px-4 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95"
                   >
                     <ShoppingBag className="h-4 w-4" />
                     <span>
@@ -1593,7 +1579,7 @@ export default function StorefrontPage() {
                     );
                     setWaPanelOpen(true);
                   }}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white py-2.5 px-4 text-xs font-extrabold shadow transition"
+                  className="w-full flex items-center justify-center gap-2 rounded-none bg-[#25D366] hover:bg-[#1EBE5D] text-white py-2.5 px-4 text-xs font-extrabold shadow transition"
                 >
                   <MessageCircle className="h-4 w-4 fill-current" />
                   <span>{t.inquireWholesaleWhatsApp}</span>
@@ -1643,7 +1629,7 @@ export default function StorefrontPage() {
                   backgroundColor: currentTheme.colors.bgElevated,
                   borderColor: currentTheme.colors.border,
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold"
+                className="inline-flex items-center gap-1.5 rounded-none border px-3.5 py-2 text-xs font-bold"
               >
                 <ShieldCheck className="h-4 w-4" />
                 <span>{t.adminBtn}</span>
@@ -1876,11 +1862,11 @@ export default function StorefrontPage() {
 
       {/* Cookie Consent - CBL Privacy requirement */}
       <div id="cookie-banner" className="fixed bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60] hidden">
-        <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-2xl border shadow-2xl p-4 flex flex-col gap-3">
+        <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-none border shadow-2xl p-4 flex flex-col gap-3">
           <p className="text-xs leading-5 font-semibold">نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></p>
           <div className="flex gap-2">
-            <button type="button" onClick={() => { const el=document.getElementById('cookie-banner'); if(el) el.style.display='none'; try{localStorage.setItem('almanhaj_cookie','1')}catch{} }} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-xl py-2 text-xs font-extrabold">موافق</button>
-            <a href="/privacy" className="flex-1 text-center rounded-xl border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>سياسة الخصوصية</a>
+            <button type="button" onClick={() => { const el=document.getElementById('cookie-banner'); if(el) el.style.display='none'; try{localStorage.setItem('almanhaj_cookie','1')}catch{} }} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-none py-2 text-xs font-extrabold">موافق</button>
+            <a href="/privacy" className="flex-1 text-center rounded-none border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>سياسة الخصوصية</a>
           </div>
         </div>
       </div>

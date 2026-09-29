@@ -1,6 +1,7 @@
 export type Language = "en" | "ar";
 
 export type ThemeId =
+  | "paperSource"
   | "atelier"
   | "cupertino"
   | "obsidian"
@@ -31,6 +32,27 @@ export interface ThemeConfig {
 }
 
 export const THEMES: ThemeConfig[] = [
+  {
+    id: "paperSource",
+    nameEn: "Paper Source Atelier",
+    nameAr: "أتيليه بيبر سورس",
+    subtitleEn: "Editorial White & Ink Black",
+    subtitleAr: "أبيض تحريري وحبر أسود",
+    isDark: false,
+    colors: {
+      bgPrimary: "#FFFFFF",
+      bgSecondary: "#F8F7F5",
+      bgElevated: "#FFFFFF",
+      textPrimary: "#111111",
+      textSecondary: "#6B6B6B",
+      accentPrimary: "#111111",
+      accentPrimaryHover: "#000000",
+      accentSecondary: "#C9A86A",
+      border: "#E8E6E1",
+      badgeBg: "#111111",
+      badgeText: "#FFFFFF",
+    },
+  },
   {
     id: "atelier",
     nameEn: "Atelier Alabaster",
