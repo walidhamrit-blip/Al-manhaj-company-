@@ -1612,9 +1612,9 @@ export default function StorefrontPage() {
           backgroundColor: currentTheme.colors.bgSecondary,
           borderColor: currentTheme.colors.border,
         }}
-        className="mt-auto border-t py-12"
+        className="mt-auto border-t py-10"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
             <h3 className="text-lg font-black">
               {settings
@@ -1719,6 +1719,31 @@ export default function StorefrontPage() {
                   : ""}
               </span>
             </div>
+          </div>
+        </div>
+        {/* ===== CBL / Mawthooq Compliance Bar ===== */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 mt-10 pt-6 border-t" style={{borderColor: currentTheme.colors.border}}>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> متجر قيد التسجيل في منصة موثوق بوزارة الاقتصاد
+              </span>
+              <span className="opacity-70">السجل التجاري: <span className="font-mono font-extrabold">[XXXXXX]</span> — ترخيص موثوق: <span className="font-mono font-extrabold">[MTQ-XXXX]</span></span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 font-bold">
+              <a href="/privacy" className="hover:underline underline-offset-4">سياسة الخصوصية</a>
+              <span className="opacity-30">•</span>
+              <a href="/terms" className="hover:underline underline-offset-4">الشروط والأحكام</a>
+              <span className="opacity-30">•</span>
+              <a href="/returns" className="hover:underline underline-offset-4">الاسترجاع والشحن</a>
+              <span className="opacity-30">•</span>
+              <a href="https://cbl.gov.ly/electronic-payment/" target="_blank" rel="noopener" className="hover:underline underline-offset-4">مزودو الدفع المرخصون CBL</a>
+            </div>
+          </div>
+          <div style={{color: currentTheme.colors.textSecondary}} className="mt-3 flex flex-wrap gap-2 text-[11px] leading-5">
+            <span>الدفع عند التسليم و عبر التحويل المصرفي حالياً — الدفع الإلكتروني (LYPay / معاملات / تداول / مسارات) يُفعل بعد إصدار ترخيص موثوق حسب تعليمات مصرف ليبيا المركزي (منشور 7/2020).</span>
+            <span className="hidden sm:inline opacity-30">—</span>
+            <span>© {new Date().getFullYear()} شركة المنهج للقرطاسية — جميع الحقوق محفوظة • البيفي، طرابلس — LYD الدينار الليبي</span>
           </div>
         </div>
       </footer>
@@ -1848,6 +1873,18 @@ export default function StorefrontPage() {
         lang={lang}
         theme={currentTheme}
       />
+
+      {/* Cookie Consent - CBL Privacy requirement */}
+      <div id="cookie-banner" className="fixed bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60] hidden">
+        <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-2xl border shadow-2xl p-4 flex flex-col gap-3">
+          <p className="text-xs leading-5 font-semibold">نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => { const el=document.getElementById('cookie-banner'); if(el) el.style.display='none'; try{localStorage.setItem('almanhaj_cookie','1')}catch{} }} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-xl py-2 text-xs font-extrabold">موافق</button>
+            <a href="/privacy" className="flex-1 text-center rounded-xl border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>سياسة الخصوصية</a>
+          </div>
+        </div>
+      </div>
+      <script dangerouslySetInnerHTML={{__html: `(function(){try{if(!localStorage.getItem('almanhaj_cookie')){var b=document.getElementById('cookie-banner'); if(b) b.style.display='block';}}catch(e){}})()`}} />
     </div>
   );
 }
