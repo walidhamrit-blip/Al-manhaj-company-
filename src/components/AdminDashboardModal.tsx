@@ -24,6 +24,8 @@ import {
   Sparkles,
   Search,
   SearchX,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 function normalizeSearch(value: string): string {
@@ -188,6 +190,7 @@ export function AdminDashboardModal({
       stock: 100,
       isFeatured: true,
       isPromotion: true,
+      isHidden: false,
       specsEn: "Premium Studio Quality",
       specsAr: "جودة احترافية عالية",
     });
@@ -275,6 +278,7 @@ export function AdminDashboardModal({
   };
 
   const handleDeleteProduct = async (productId: number) => {
+    if (!confirm(lang === "ar" ? "هل أنت متأكد من حذف هذا المنتج نهائياً؟" : "Confirm permanently delete this product?")) return;
     setIsSaving(true);
     try {
       const res = await fetch(`/api/products/${productId}`, {
@@ -286,6 +290,27 @@ export function AdminDashboardModal({
           lang === "ar"
             ? "تم حذف المنتج من قاعدة البيانات"
             : "Product deleted from database"
+        );
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleToggleHidden = async (prod: Product) => {
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/products/${prod.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...prod, isHidden: !prod.isHidden }),
+      });
+      if (res.ok) {
+        await onDataUpdated();
+        showToast(
+          prod.isHidden
+            ? lang === "ar" ? "تم إظهار المنتج في المتجر" : "Product is now visible in store"
+            : lang === "ar" ? "تم إخفاء المنتج من المتجر (مخفي)" : "Product hidden from storefront"
         );
       }
     } finally {
@@ -960,6 +985,22 @@ export function AdminDashboardModal({
                           />
                           <span>Special Promotion Badge</span>
                         </label>
+
+                        <label className="inline-flex items-center gap-2 text-sm font-semibold cursor-pointer rounded-full border px-3 py-1.5" style={{borderColor: editingProduct.isHidden ? '#f43f5e' : theme.colors.border, backgroundColor: editingProduct.isHidden ? '#fff1f2' : 'transparent'}}>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(editingProduct.isHidden)}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct,
+                                isHidden: e.target.checked,
+                              })
+                            }
+                            className="h-4 w-4 rounded"
+                          />
+                          <span className={editingProduct.isHidden ? 'text-rose-600' : ''}>{isAr ? 'مخفي من المتجر' : 'Hidden from store'}</span>
+                          {editingProduct.isHidden ? <EyeOff className="h-3.5 w-3.5 text-rose-600" /> : <Eye className="h-3.5 w-3.5 opacity-60" />}
+                        </label>
                       </div>
 
                       <div className="flex justify-end gap-3 pt-4 border-t">
@@ -1106,10 +1147,10 @@ export function AdminDashboardModal({
                           <div
                             key={prod.id}
                             style={{
-                              backgroundColor: theme.colors.bgElevated,
-                              borderColor: theme.colors.border,
+                              backgroundColor: prod.isHidden ? '#fff1f2' : theme.colors.bgElevated,
+                              borderColor: prod.isHidden ? '#fecdd3' : theme.colors.border,
                             }}
-                            className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm"
+                            className={`flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm ${prod.isHidden ? 'opacity-85' : ''}`}
                           >
                             <div className="flex items-center gap-3.5 min-w-0 flex-1">
                               <img
@@ -1137,6 +1178,11 @@ export function AdminDashboardModal({
                                   </span>
                                   {prod.isFeatured && (
                                     <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                                  )}
+                                  {prod.isHidden && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-700 px-2 py-0.5 text-[10px] font-extrabold border border-rose-200">
+                                      <EyeOff className="h-3 w-3" /> {isAr ? 'مخفي' : 'Hidden'}
+                                    </span>
                                   )}
                                 </div>
                                 <h4 className="text-sm font-bold truncate">
@@ -1237,6 +1283,16 @@ export function AdminDashboardModal({
 
                                 <button
                                   type="button"
+                                  onClick={() => handleToggleHidden(prod)}
+                                  title={prod.isHidden ? (isAr ? 'إظهار في المتجر' : 'Show in store') : (isAr ? 'إخفاء من المتجر' : 'Hide from store')}
+                                  className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold border ${prod.isHidden ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+                                >
+                                  {prod.isHidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                                  <span>{prod.isHidden ? (isAr ? 'إظهار' : 'Show') : (isAr ? 'إخفاء' : 'Hide')}</span>
+                                </button>
+
+                                <button
+                                  type="button"
                                   onClick={() => openEditProduct(prod)}
                                   style={{
                                     backgroundColor: theme.colors.bgSecondary,
@@ -1250,10 +1306,11 @@ export function AdminDashboardModal({
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteProduct(prod.id)}
-                                  className="inline-flex items-center justify-center rounded-lg p-1.5 text-rose-600 hover:bg-rose-500/10"
+                                  className="inline-flex items-center justify-center rounded-lg px-2 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-500/10 border border-rose-200 bg-white"
                                   title={t.deleteBtn}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <span className="hidden sm:inline">{isAr ? 'حذف' : 'Delete'}</span>
                                 </button>
                               </div>
                             </div>

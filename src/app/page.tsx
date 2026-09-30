@@ -244,7 +244,7 @@ export default function StorefrontPage() {
         : [];
     // Filter out any slide that would duplicate the storefront background.
     const filtered = fromDb.filter(
-      (slide) => slide?.imageUrl !== "/images/almanhaj-storefront.jpg"
+      (slide) => slide?.imageUrl !== "/images/new/main-storefront-hq.jpg" && slide?.imageUrl !== "/images/almanhaj-storefront.jpg"
     );
     if (filtered.length > 0) return filtered;
     return [
@@ -277,9 +277,9 @@ export default function StorefrontPage() {
 
   const currencySymbol = lang === "ar" ? "د.ل" : "LYD";
 
-  // Featured / Promotion products for the highlight section after Landscape Banner
+  // Featured / Promotion products for the highlight section after Landscape Banner (hidden products excluded)
   const featuredProducts = useMemo(() => {
-    return products.filter((p) => p.isFeatured || p.isPromotion).slice(0, 6);
+    return products.filter((p) => !p.isHidden && (p.isFeatured || p.isPromotion)).slice(0, 6);
   }, [products]);
 
   // Highest product price for filter slider max
@@ -290,10 +290,11 @@ export default function StorefrontPage() {
     );
   }, [products]);
 
-  // Filtered & Sorted Products for the main catalog
+  // Filtered & Sorted Products for the main catalog (hidden products excluded from storefront)
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const list = products.filter((p) => {
+      if (p.isHidden) return false;
       if (selectedCategory !== "all" && p.categorySlug !== selectedCategory) {
         return false;
       }
@@ -654,7 +655,7 @@ export default function StorefrontPage() {
         className="relative w-full overflow-hidden h-[64vh] min-h-[420px] sm:h-[78vh] sm:min-h-[560px] max-h-[860px]"
       >
         <img
-          src="/images/almanhaj-storefront.jpg"
+          src="/images/new/main-storefront-hq.jpg"
           alt={
             lang === "ar"
               ? "واجهة شركة المنهج للقرطاسية — البيفي، طرابلس"
@@ -865,7 +866,7 @@ export default function StorefrontPage() {
             className="self-start sm:self-auto inline-flex items-center gap-2 rounded-none px-4 py-2.5 text-xs font-bold transition hover:opacity-80"
           >
             <span>
-              {t.allCategories} ({products.length})
+              {t.allCategories} ({products.filter(p=>!p.isHidden).length})
             </span>
           </button>
         </div>
@@ -874,7 +875,7 @@ export default function StorefrontPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {categories.map((cat) => {
             const countInCat = products.filter(
-              (p) => p.categorySlug === cat.slug
+              (p) => !p.isHidden && p.categorySlug === cat.slug
             ).length;
             const isSelected = selectedCategory === cat.slug;
 
@@ -1232,13 +1233,13 @@ export default function StorefrontPage() {
               }
               className="shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition"
             >
-              {t.allCategories} ({products.length})
+              {t.allCategories} ({products.filter(p=>!p.isHidden).length})
             </button>
 
             {categories.map((cat) => {
               const countInCat = products.filter(
-                (p) => p.categorySlug === cat.slug
-              ).length;
+              (p) => !p.isHidden && p.categorySlug === cat.slug
+            ).length;
               const active = selectedCategory === cat.slug;
               return (
                 <button

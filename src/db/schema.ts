@@ -64,6 +64,7 @@ export const products = pgTable("products", {
   images: jsonb("images").$type<string[]>().notNull(),
   isFeatured: boolean("is_featured").notNull().default(false),
   isPromotion: boolean("is_promotion").notNull().default(false),
+  isHidden: boolean("is_hidden").notNull().default(false),
   specsEn: text("specs_en").notNull().default(""),
   specsAr: text("specs_ar").notNull().default(""),
   createdAt: timestamp("created_at").defaultNow(),

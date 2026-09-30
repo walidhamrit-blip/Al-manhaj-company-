@@ -47,6 +47,7 @@ export async function PUT(
         images: imagesArray.length > 0 ? imagesArray : ["/images/hero-stationery.jpg"],
         isFeatured: Boolean(body.isFeatured),
         isPromotion: Boolean(body.isPromotion),
+        isHidden: Boolean(body.isHidden),
         specsEn: String(body.specsEn ?? ""),
         specsAr: String(body.specsAr ?? ""),
       })

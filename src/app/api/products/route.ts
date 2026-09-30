@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
         images: imagesArray,
         isFeatured: Boolean(body.isFeatured),
         isPromotion: Boolean(body.isPromotion),
+        isHidden: Boolean(body.isHidden),
         specsEn: String(body.specsEn || ""),
         specsAr: String(body.specsAr || ""),
       })
