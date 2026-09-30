@@ -419,7 +419,7 @@ export default function StorefrontPage() {
         }}
         className="sticky top-0 z-40 border-b bg-white"
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-3">
+        <div className="mx-auto flex max-w-[1580px] items-center justify-between gap-2 sm:gap-4 px-2 sm:px-3 lg:px-4 py-3">
           {/* Top-Corner Master Catalogue Button + Brand Identity */}
           <div className="flex items-center gap-2.5 sm:gap-3.5">
             <button
@@ -666,7 +666,7 @@ export default function StorefrontPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         <div className="absolute inset-0 bg-white/5" />
 
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col justify-end px-4 sm:px-8 pb-8 sm:pb-14 text-white">
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-[1580px] flex-col justify-end px-2 sm:px-4 lg:px-6 pb-6 sm:pb-10 text-white">
           <div className="max-w-3xl space-y-3 sm:space-y-5">
             <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-black/35 px-3.5 py-1.5 text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.18em] text-amber-200 backdrop-blur-md">
               <MapPin className="h-3.5 w-3.5" />
@@ -729,7 +729,7 @@ export default function StorefrontPage() {
       </section>
 
       {/* ===== PAPER SOURCE HERO - Editorial Minimal ===== */}
-      <section className="mx-auto w-full max-w-7xl px-3 sm:px-6 pt-6 sm:pt-8">
+      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pt-6 sm:pt-8">
         <div className="relative h-[420px] sm:h-[480px] lg:h-[520px] w-full overflow-hidden rounded-none border border-[#E8E6E1] bg-white">
           {/* Slide Image */}
           <img
@@ -838,7 +838,7 @@ export default function StorefrontPage() {
       ===================================================================== */}
       <section
         id="departments-section"
-        className="mx-auto w-full max-w-7xl px-3 sm:px-6 py-10 sm:py-14 bg-white"
+        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 py-10 sm:py-14 bg-white"
       >
         <div className="mb-6 sm:mb-8 flex flex-col items-center text-center gap-3">
           <div className="text-center">
@@ -872,7 +872,7 @@ export default function StorefrontPage() {
         </div>
 
         {/* 7 Visual Category Bento Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => !p.isHidden && p.categorySlug === cat.slug
@@ -925,7 +925,7 @@ export default function StorefrontPage() {
       {/* =====================================================================
           3. LARGE LANDSCAPE PANORAMIC BACKGROUND BANNER
       ===================================================================== */}
-      <section className="mx-auto w-full max-w-7xl px-3 sm:px-6 pb-10 sm:pb-14">
+      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14">
         <div className="relative min-h-[300px] sm:min-h-[360px] w-full overflow-hidden rounded-none border border-[#E8E6E1] flex items-center">
           <img
             src={landscapeBanner.imageUrl}
@@ -995,7 +995,7 @@ export default function StorefrontPage() {
       {/* =====================================================================
           4. FEATURED BESTSELLERS & PROMOTIONS SECTION (FOLLOWING LANDSCAPE BANNER)
       ===================================================================== */}
-      <section className="mx-auto w-full max-w-7xl px-3 sm:px-6 pb-12 sm:pb-16">
+      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-12 sm:pb-16">
         <div
           style={{
             backgroundColor: currentTheme.colors.bgSecondary,
@@ -1044,7 +1044,7 @@ export default function StorefrontPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
             {featuredProducts.map((product) => {
               const cat = categories.find(
                 (c) => c.slug === product.categorySlug
@@ -1074,7 +1074,7 @@ export default function StorefrontPage() {
       ===================================================================== */}
       <section
         id="catalog-section"
-        className="mx-auto w-full max-w-7xl px-3 sm:px-6 pb-14 sm:pb-20"
+        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-14 sm:pb-20"
       >
         <div className="mb-6">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -1268,7 +1268,7 @@ export default function StorefrontPage() {
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <div
                 key={n}
@@ -1309,7 +1309,7 @@ export default function StorefrontPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
             {filteredProducts.map((product) => {
               const cat = categories.find(
                 (c) => c.slug === product.categorySlug
@@ -1339,7 +1339,7 @@ export default function StorefrontPage() {
       ===================================================================== */}
       <section
         id="wholesale-section"
-        className="mx-auto w-full max-w-7xl px-3 sm:px-6 pb-16 sm:pb-24"
+        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-16 sm:pb-24"
       >
         <div
           style={{
@@ -1601,7 +1601,7 @@ export default function StorefrontPage() {
         }}
         className="mt-auto border-t py-10"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
             <h3 className="text-lg font-black">
               {settings
@@ -1709,7 +1709,7 @@ export default function StorefrontPage() {
           </div>
         </div>
         {/* ===== CBL / Mawthooq Compliance Bar ===== */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 mt-10 pt-6 border-t" style={{borderColor: currentTheme.colors.border}}>
+        <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t" style={{borderColor: currentTheme.colors.border}}>
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
             <div className="flex flex-wrap items-center gap-2">
               <span style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold">
