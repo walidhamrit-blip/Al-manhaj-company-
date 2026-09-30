@@ -5,4 +5,4 @@
 2. Sur Cloudflare Pages > Connect to Git > Build: `npm run build` | Output: `.next`
 3. Ajouter la variable `DATABASE_URL` dans Cloudflare > Settings > Environment variables
 
-Voir GUIDE_DEPLOIEMENT_GITHUB_CLOUDFLARE.md pour le détail. 
+Voir GUIDE_DEPLOIEMENT_GITHUB_CLOUDFLARE.md pour le détail.
