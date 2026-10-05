@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { uploadedImages } from "@/db/schema";
 import { ensureDatabaseSeeded } from "@/db/seed";
+import { isValidAdminToken } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
-const ADMIN_TOKEN = "atelier-admin-session-2026";
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 
 /**
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: parsed.status });
     }
 
-    if (parsed.token !== ADMIN_TOKEN) {
+    if (!isValidAdminToken(parsed.token)) {
       return NextResponse.json(
         { error: "Admin session expired — please log in again." },
         { status: 401 }

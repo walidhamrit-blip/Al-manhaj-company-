@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ADMIN_SESSION_TOKEN } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (provided === expectedPassword) {
       return NextResponse.json({
         authenticated: true,
-        token: "atelier-admin-session-2026",
+        token: ADMIN_SESSION_TOKEN,
       });
     }
 

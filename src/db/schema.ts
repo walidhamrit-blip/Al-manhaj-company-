@@ -95,6 +95,48 @@ export const storeSettings = pgTable("store_settings", {
   defaultTheme: text("default_theme").notNull().default("atelier"),
 });
 
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export interface OrderLineItem {
+  productId: number;
+  sku: string;
+  titleEn: string;
+  titleAr: string;
+  imageUrl: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface OrderStatusEvent {
+  status: OrderStatus;
+  at: string;
+}
+
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  orderNumber: text("order_number").notNull().unique(),
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone").notNull(),
+  customerPhoneNormalized: text("customer_phone_normalized").notNull(),
+  customerNotes: text("customer_notes").notNull().default(""),
+  items: jsonb("items").$type<OrderLineItem[]>().notNull(),
+  total: doublePrecision("total").notNull(),
+  currency: text("currency").notNull().default("LYD"),
+  status: text("status").$type<OrderStatus>().notNull().default("pending"),
+  statusHistory: jsonb("status_history")
+    .$type<OrderStatusEvent[]>()
+    .notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const uploadedImages = pgTable("uploaded_images", {
   id: serial("id").primaryKey(),
   originalName: text("original_name").notNull().default("image"),
@@ -114,3 +156,5 @@ export type NewProduct = typeof products.$inferInsert;
 
 export type StoreSettings = typeof storeSettings.$inferSelect;
 export type NewStoreSettings = typeof storeSettings.$inferInsert;
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;

@@ -9,6 +9,7 @@ import {
   type ThemeConfig,
 } from "@/lib/i18n-themes";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { OrdersAdminPanel } from "@/components/OrdersAdminPanel";
 import {
   X,
   Lock,
@@ -18,6 +19,7 @@ import {
   Edit3,
   Package,
   FolderKanban,
+  ClipboardList,
   Settings,
   CheckCircle2,
   KeyRound,
@@ -73,7 +75,7 @@ export function AdminDashboardModal({
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "products" | "categories" | "settings"
+    "products" | "categories" | "orders" | "settings"
   >("products");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [toastIsError, setToastIsError] = useState(false);
@@ -605,6 +607,30 @@ export function AdminDashboardModal({
                 <button
                   type="button"
                   onClick={() => {
+                    setActiveTab("orders");
+                    setEditingProduct(null);
+                    setEditingCategory(null);
+                  }}
+                  style={
+                    activeTab === "orders"
+                      ? {
+                          backgroundColor: theme.colors.accentPrimary,
+                          color: "#FFFFFF",
+                        }
+                      : {
+                          backgroundColor: theme.colors.bgElevated,
+                          color: theme.colors.textPrimary,
+                        }
+                  }
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold shadow-sm transition"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span>{t.adminTabsOrders}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
                     setActiveTab("settings");
                     setSettingsForm(settings);
                   }}
@@ -644,6 +670,14 @@ export function AdminDashboardModal({
 
             {/* Tab Content Area */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
+              {activeTab === "orders" && (
+                <OrdersAdminPanel
+                  adminToken={adminToken}
+                  lang={lang}
+                  theme={theme}
+                />
+              )}
+
               {/* TAB 1: PRODUCTS & INVENTORY */}
               {activeTab === "products" && (
                 <>

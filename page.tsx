@@ -127,32 +127,38 @@ export default function StorefrontPage() {
   }, []);
 
   useEffect(() => {
-    fetchStoreData();
-    try {
-      const savedCart = localStorage.getItem("atelier_cart_v1");
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
+    const timer = window.setTimeout(() => {
+      fetchStoreData();
+      try {
+        const savedCart = localStorage.getItem("atelier_cart_v1");
+        if (savedCart) {
+          setCart(JSON.parse(savedCart));
+        }
+        const savedTheme = localStorage.getItem("atelier_theme_v1") as ThemeId;
+        if (savedTheme && THEMES.some((th) => th.id === savedTheme)) {
+          setThemeId(savedTheme);
+        }
+      } catch {
+        // ignore storage errors
       }
-      const savedTheme = localStorage.getItem("atelier_theme_v1") as ThemeId;
-      if (savedTheme && THEMES.some((th) => th.id === savedTheme)) {
-        setThemeId(savedTheme);
-      }
-    } catch {
-      // ignore storage errors
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [fetchStoreData]);
 
   // Keep cart synced with latest product prices/stocks from DB
   useEffect(() => {
     if (products.length === 0) return;
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          const fresh = products.find((p) => p.id === item.product.id);
-          return fresh ? { ...item, product: fresh } : item;
-        })
-        .filter((item) => products.some((p) => p.id === item.product.id))
-    );
+    const timer = window.setTimeout(() => {
+      setCart((prev) =>
+        prev
+          .map((item) => {
+            const fresh = products.find((p) => p.id === item.product.id);
+            return fresh ? { ...item, product: fresh } : item;
+          })
+          .filter((item) => products.some((p) => p.id === item.product.id))
+      );
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [products]);
 
   const saveCart = (nextCart: CartItem[]) => {

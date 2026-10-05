@@ -15,11 +15,13 @@ import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
+import { OrderTrackingSection, type OrderTrackingRequest } from "@/components/OrderTrackingSection";
 import { WhatsAppOrderPanel } from "@/components/WhatsAppOrderPanel";
 import {
   BookOpen,
   Search,
   ShoppingBag,
+  PackageSearch,
   Palette,
   Globe,
   ShieldCheck,
@@ -90,6 +92,28 @@ export default function StorefrontPage() {
 
   // Shopping Cart state (persisted in localStorage)
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [trackingRequest, setTrackingRequest] =
+    useState<OrderTrackingRequest | null>(null);
+
+  // The same tracking area is available from navigation and order confirmation.
+  const goToOrderTracking = useCallback(
+    (orderNumber?: string, phone?: string) => {
+      if (orderNumber && phone) {
+        setTrackingRequest({
+          orderNumber,
+          phone,
+          requestId: Date.now(),
+        });
+      }
+      setIsCartOpen(false);
+      window.setTimeout(() => {
+        document
+          .getElementById("order-tracking")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    },
+    []
+  );
 
   // Fetch live store data from PostgreSQL API
   const fetchStoreData = useCallback(async () => {
@@ -127,32 +151,38 @@ export default function StorefrontPage() {
   }, []);
 
   useEffect(() => {
-    fetchStoreData();
-    try {
-      const savedCart = localStorage.getItem("atelier_cart_v1");
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
+    const timer = window.setTimeout(() => {
+      fetchStoreData();
+      try {
+        const savedCart = localStorage.getItem("atelier_cart_v1");
+        if (savedCart) {
+          setCart(JSON.parse(savedCart));
+        }
+        const savedTheme = localStorage.getItem("atelier_theme_v1") as ThemeId;
+        if (savedTheme && THEMES.some((th) => th.id === savedTheme)) {
+          setThemeId(savedTheme);
+        }
+      } catch {
+        // ignore storage errors
       }
-      const savedTheme = localStorage.getItem("atelier_theme_v1") as ThemeId;
-      if (savedTheme && THEMES.some((th) => th.id === savedTheme)) {
-        setThemeId(savedTheme);
-      }
-    } catch {
-      // ignore storage errors
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [fetchStoreData]);
 
   // Keep cart synced with latest product prices/stocks from DB
   useEffect(() => {
     if (products.length === 0) return;
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          const fresh = products.find((p) => p.id === item.product.id);
-          return fresh ? { ...item, product: fresh } : item;
-        })
-        .filter((item) => products.some((p) => p.id === item.product.id))
-    );
+    const timer = window.setTimeout(() => {
+      setCart((prev) =>
+        prev
+          .map((item) => {
+            const fresh = products.find((p) => p.id === item.product.id);
+            return fresh ? { ...item, product: fresh } : item;
+          })
+          .filter((item) => products.some((p) => p.id === item.product.id))
+      );
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [products]);
 
   const saveCart = (nextCart: CartItem[]) => {
@@ -610,6 +640,24 @@ export default function StorefrontPage() {
                 className="h-4 w-4"
               />
               <span>{lang === "en" ? "العربية" : "English"}</span>
+            </button>
+
+            {/* Order Tracking Shortcut */}
+            <button
+              type="button"
+              onClick={() => goToOrderTracking()}
+              style={{
+                backgroundColor: currentTheme.colors.bgSecondary,
+                borderColor: currentTheme.colors.border,
+                color: currentTheme.colors.textPrimary,
+              }}
+              className="hidden lg:flex items-center gap-1.5 rounded-none border px-3 py-2 text-xs font-bold transition hover:opacity-85"
+            >
+              <PackageSearch
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4"
+              />
+              <span>{t.trackOrder}</span>
             </button>
 
             {/* Secured Admin Button */}
@@ -1591,6 +1639,12 @@ export default function StorefrontPage() {
         </div>
       </section>
 
+      <OrderTrackingSection
+        lang={lang}
+        theme={currentTheme}
+        trackingRequest={trackingRequest}
+      />
+
       {/* =====================================================================
           7. FOOTER WITH LIVE CONTACT INFORMATION & WHATSAPP DIRECT LINK
       ===================================================================== */}
@@ -1634,6 +1688,18 @@ export default function StorefrontPage() {
               >
                 <ShieldCheck className="h-4 w-4" />
                 <span>{t.adminBtn}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => goToOrderTracking()}
+                style={{
+                  backgroundColor: currentTheme.colors.bgElevated,
+                  borderColor: currentTheme.colors.border,
+                }}
+                className="inline-flex items-center gap-1.5 rounded-none border px-3.5 py-2 text-xs font-bold"
+              >
+                <PackageSearch className="h-4 w-4" />
+                <span>{t.trackOrder}</span>
               </button>
             </div>
           </div>
@@ -1770,6 +1836,18 @@ export default function StorefrontPage() {
 
         <button
           type="button"
+          onClick={() => goToOrderTracking()}
+          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
+        >
+          <PackageSearch
+            style={{ color: currentTheme.colors.accentPrimary }}
+            className="h-5 w-5"
+          />
+          <span>{t.trackOrderShort}</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setIsCartOpen(true)}
           style={{
             backgroundColor: "#25D366",
@@ -1826,6 +1904,7 @@ export default function StorefrontPage() {
         lang={lang}
         theme={currentTheme}
         currencySymbol={currencySymbol}
+        onTrackOrder={goToOrderTracking}
       />
 
       <ProductQuickViewModal
