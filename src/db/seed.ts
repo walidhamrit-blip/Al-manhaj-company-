@@ -738,6 +738,25 @@ export async function ensureDatabaseSeeded() {
       data_base64 TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS orders (
+      id SERIAL PRIMARY KEY,
+      order_number TEXT NOT NULL UNIQUE,
+      customer_name TEXT NOT NULL,
+      customer_phone TEXT NOT NULL,
+      customer_phone_normalized TEXT NOT NULL,
+      customer_notes TEXT NOT NULL DEFAULT '',
+      items JSONB NOT NULL,
+      total DOUBLE PRECISION NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'LYD',
+      status TEXT NOT NULL DEFAULT 'pending',
+      status_history JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders (created_at DESC);
+    CREATE INDEX IF NOT EXISTS orders_customer_phone_idx ON orders (customer_phone_normalized);
   `);
 
   // Migration: add is_hidden column if not exists (for existing DBs)

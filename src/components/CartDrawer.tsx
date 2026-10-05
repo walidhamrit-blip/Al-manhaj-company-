@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import type { Product, StoreSettings } from "@/db/schema";
+import type { OrderLineItem, Product, StoreSettings } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
 import { WhatsAppOrderPanel } from "@/components/WhatsAppOrderPanel";
 import {
   X,
   Trash2,
+  CheckCircle2,
+  ArrowRight,
   Plus,
   Minus,
   ShoppingBag,
@@ -33,6 +35,13 @@ interface CartDrawerProps {
   lang: Language;
   theme: ThemeConfig;
   currencySymbol: string;
+  onTrackOrder?: (orderNumber: string, phone: string) => void;
+}
+
+interface CreatedOrder {
+  orderNumber: string;
+  phone: string;
+  cartKey: string;
 }
 
 export function CartDrawer({
@@ -46,12 +55,27 @@ export function CartDrawer({
   lang,
   theme,
   currencySymbol,
+  onTrackOrder,
 }: CartDrawerProps) {
   const t = UI_TEXT[lang];
+  const cartKey = cart.map((item) => `${item.product.id}:${item.quantity}`).join("|");
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [customerNotes, setCustomerNotes] = useState("");
   const [copiedPreview, setCopiedPreview] = useState(false);
   const [showWaPanel, setShowWaPanel] = useState(false);
+  const [waPanelMessage, setWaPanelMessage] = useState("");
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [orderErrorState, setOrderErrorState] = useState<{
+    cartKey: string;
+    message: string;
+  } | null>(null);
+  const orderError =
+    orderErrorState?.cartKey === cartKey ? orderErrorState.message : "";
+  const setOrderError = (message: string) =>
+    setOrderErrorState(message ? { cartKey, message } : null);
+  const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
+  const activeOrder = createdOrder?.cartKey === cartKey ? createdOrder : null;
 
   if (!isOpen) return null;
 
@@ -94,7 +118,10 @@ export function CartDrawer({
     0
   );
 
-  const buildWhatsAppMessage = () => {
+  const buildWhatsAppMessage = (
+    orderNumber = "",
+    orderSnapshot?: { items: OrderLineItem[]; total: number }
+  ) => {
     const storeTitle = settings
       ? lang === "ar"
         ? settings.storeNameAr
@@ -102,24 +129,53 @@ export function CartDrawer({
       : lang === "ar"
         ? "شركة المنهج للقرطاسية"
         : "Al Manhaj Company for Stationery";
+    const messageItems = orderSnapshot
+      ? orderSnapshot.items.map((item) => ({
+          titleAr: item.titleAr,
+          titleEn: item.titleEn,
+          sku: item.sku,
+          quantity: Number(item.quantity),
+          unitPrice: Number(item.unitPrice),
+          lineTotal: Number(item.lineTotal),
+          modeLabelAr: "",
+          modeLabelEn: "",
+        }))
+      : lineCalculations.map((item) => ({
+          titleAr: item.product.titleAr,
+          titleEn: item.product.titleEn,
+          sku: item.product.sku,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          lineTotal: item.lineTotal,
+          modeLabelAr: item.isWholesale ? "سعر الجملة" : "سعر التقسيط",
+          modeLabelEn: item.isWholesale ? "Wholesale Rate" : "Retail Rate",
+        }));
+    const messageUnits = messageItems.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
+    const messageTotal = Number(orderSnapshot?.total ?? grandTotal);
+    const messageSavings = orderSnapshot ? 0 : totalSavings;
 
     if (lang === "ar") {
       const lines = [
         `🛍️ *طلب جديد - ${storeTitle}*`,
+        orderNumber ? `🔖 *رقم الطلب للتتبع:* ${orderNumber}` : "",
         customerName.trim() ? `👤 *العميل / المؤسسة:* ${customerName.trim()}` : "",
-        `📦 *تفاصيل السلة (${totalUnits} قطعة):*`,
+        customerPhone.trim() ? `📱 *هاتف العميل:* ${customerPhone.trim()}` : "",
+        `📦 *تفاصيل السلة (${messageUnits} قطعة):*`,
         "--------------------------------",
-        ...lineCalculations.map((item, idx) => {
-          const modeLabel = item.isWholesale ? "سعر الجملة" : "سعر التقسيط";
-          return `${idx + 1}. *${item.product.titleAr}* (${item.product.sku})\n   • الكمية: ${
+        ...messageItems.map((item, idx) => {
+          const rateText = item.modeLabelAr ? ` (${item.modeLabelAr})` : "";
+          return `${idx + 1}. *${item.titleAr}* (${item.sku})\n   • الكمية: ${
             item.quantity
-          } × ${formatPrice(item.unitPrice, "ar")} (${modeLabel}) = *${formatPrice(item.lineTotal, "ar")}*`;
+          } × ${formatPrice(item.unitPrice, "ar")}${rateText} = *${formatPrice(item.lineTotal, "ar")}*`;
         }),
         "--------------------------------",
-        totalSavings > 0
-          ? `✨ *إجمالي التوفير والخصم:* ${formatPrice(totalSavings, "ar")}`
+        messageSavings > 0
+          ? `✨ *إجمالي التوفير والخصم:* ${formatPrice(messageSavings, "ar")}`
           : "",
-        `💰 *المبلغ الإجمالي للطلب:* *${formatPrice(grandTotal, "ar")}*`,
+        `💰 *المبلغ الإجمالي للطلب:* *${formatPrice(messageTotal, "ar")}*`,
         customerNotes.trim() ? `📍 *ملاحظات التوصيل:* ${customerNotes.trim()}` : "",
         "\nيرجى تأكيد توفر الطلب وطريقة الدفع والتوصيل. شكراً لكم!",
       ].filter(Boolean);
@@ -127,20 +183,22 @@ export function CartDrawer({
     } else {
       const lines = [
         `🛍️ *NEW ORDER - ${storeTitle}*`,
+        orderNumber ? `🔖 *Order tracking reference:* ${orderNumber}` : "",
         customerName.trim() ? `👤 *Customer / Org:* ${customerName.trim()}` : "",
-        `📦 *Order Summary (${totalUnits} units):*`,
+        customerPhone.trim() ? `📱 *Customer phone:* ${customerPhone.trim()}` : "",
+        `📦 *Order Summary (${messageUnits} units):*`,
         "--------------------------------",
-        ...lineCalculations.map((item, idx) => {
-          const modeLabel = item.isWholesale ? "Wholesale Rate" : "Retail Rate";
-          return `${idx + 1}. *${item.product.titleEn}* (${item.product.sku})\n   • Qty: ${
+        ...messageItems.map((item, idx) => {
+          const rateText = item.modeLabelEn ? ` (${item.modeLabelEn})` : "";
+          return `${idx + 1}. *${item.titleEn}* (${item.sku})\n   • Qty: ${
             item.quantity
-          } × ${formatPrice(item.unitPrice, "en")} (${modeLabel}) = *${formatPrice(item.lineTotal, "en")}*`;
+          } × ${formatPrice(item.unitPrice, "en")}${rateText} = *${formatPrice(item.lineTotal, "en")}*`;
         }),
         "--------------------------------",
-        totalSavings > 0
-          ? `✨ *Total Bulk/Promo Savings:* ${formatPrice(totalSavings, "en")}`
+        messageSavings > 0
+          ? `✨ *Total Bulk/Promo Savings:* ${formatPrice(messageSavings, "en")}`
           : "",
-        `💰 *TOTAL ORDER AMOUNT:* *${formatPrice(grandTotal, "en")}*`,
+        `💰 *TOTAL ORDER AMOUNT:* *${formatPrice(messageTotal, "en")}*`,
         customerNotes.trim() ? `📍 *Delivery Notes:* ${customerNotes.trim()}` : "",
         "\nPlease confirm availability and delivery schedule. Thank you!",
       ].filter(Boolean);
@@ -149,30 +207,85 @@ export function CartDrawer({
   };
 
   const rawPhone = settings?.whatsappNumber || "218912145050";
+  const cleanStorePhone = rawPhone.replace(/[^0-9]/g, "");
+  const formattedStorePhone = cleanStorePhone.startsWith("218")
+    ? cleanStorePhone
+    : `218${cleanStorePhone}`;
 
-  const handleSendWhatsApp = () => {
-    if (cart.length === 0) return;
-    // Essayer l'ouverture directe d'abord (meilleure UX)
+  const openWhatsAppFallback = () => {
+    const message = buildWhatsAppMessage();
+    setWaPanelMessage(message);
+    const waUrl = `https://wa.me/${formattedStorePhone}?text=${encodeURIComponent(message)}`;
+    const opened = window.open(waUrl, "_blank", "noopener,noreferrer");
+    if (!opened) setShowWaPanel(true);
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (cart.length === 0 || activeOrder || isSubmittingOrder) return;
+    if (customerName.trim().length < 2) {
+      setOrderError(
+        lang === "ar"
+          ? "يرجى إدخال الاسم أو اسم المؤسسة لإتمام الطلب."
+          : "Please enter your name or organization to place the order."
+      );
+      return;
+    }
+    if (customerPhone.replace(/\D/g, "").length < 8) {
+      setOrderError(t.customerPhoneRequired);
+      return;
+    }
+
+    setOrderError("");
+    setIsSubmittingOrder(true);
+    // Open the window synchronously in the click handler so popup blockers do not
+    // block WhatsApp after the order has been safely stored.
+    const whatsappWindow = window.open("about:blank", "_blank");
+
     try {
-      const clean = rawPhone.replace(/[^0-9]/g, "");
-      const formatted = clean.startsWith("218") ? clean : "218" + clean;
-      const waUrl = `https://wa.me/${formatted}?text=${encodeURIComponent(buildWhatsAppMessage())}`;
-      const opened = window.open(waUrl, "_blank", "noopener,noreferrer");
-      // Si le popup est bloqué, afficher le panneau de copie manuelle en fallback
-      if (!opened) {
-        setShowWaPanel(true);
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          customerNotes: customerNotes.trim(),
+          items: cart.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.order?.orderNumber) {
+        whatsappWindow?.close();
+        setOrderError(t.orderCreateError);
+        return;
+      }
+
+      const orderNumber = String(data.order.orderNumber);
+      setCreatedOrder({ orderNumber, phone: customerPhone.trim(), cartKey });
+      const message = buildWhatsAppMessage(orderNumber, data.order);
+      setWaPanelMessage(message);
+      const waUrl = `https://wa.me/${formattedStorePhone}?text=${encodeURIComponent(message)}`;
+      if (whatsappWindow && !whatsappWindow.closed) {
+        whatsappWindow.opener = null;
+        whatsappWindow.location.href = waUrl;
       } else {
-        // Optionnel: garder le panneau ouvert aussi pour voir la confirmation
-        // setShowWaPanel(true);
+        setShowWaPanel(true);
       }
     } catch {
-      setShowWaPanel(true);
+      whatsappWindow?.close();
+      setOrderError(t.orderCreateError);
+    } finally {
+      setIsSubmittingOrder(false);
     }
   };
 
   const handleCopyMessage = async () => {
     try {
-      await navigator.clipboard?.writeText(buildWhatsAppMessage());
+      await navigator.clipboard?.writeText(
+        buildWhatsAppMessage(activeOrder?.orderNumber || "")
+      );
     } catch {
       /* ignore */
     }
@@ -415,33 +528,112 @@ export function CartDrawer({
             }}
             className="border-t p-4 space-y-3"
           >
-            {/* Optional Customer Info for WhatsApp Message */}
-            <div className="grid grid-cols-1 gap-2">
+            {/* Customer details needed to save and track an order */}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <input
                 type="text"
+                required
+                autoComplete="name"
+                maxLength={120}
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder={t.customerNamePlaceholder}
+                aria-label={t.customerNameLabel}
                 style={{
                   backgroundColor: theme.colors.bgSecondary,
                   borderColor: theme.colors.border,
                   color: theme.colors.textPrimary,
                 }}
-                className="w-full rounded-xl border px-3 py-2 text-xs outline-none"
+                className="w-full rounded-xl border px-3 py-2.5 text-xs outline-none focus:ring-2"
+              />
+              <input
+                type="tel"
+                required
+                autoComplete="tel"
+                dir="ltr"
+                maxLength={24}
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder={t.customerPhonePlaceholder}
+                aria-label={t.customerPhoneLabel}
+                style={{
+                  backgroundColor: theme.colors.bgSecondary,
+                  borderColor: theme.colors.border,
+                  color: theme.colors.textPrimary,
+                }}
+                className="w-full rounded-xl border px-3 py-2.5 text-xs outline-none focus:ring-2"
               />
               <input
                 type="text"
+                maxLength={500}
                 value={customerNotes}
                 onChange={(e) => setCustomerNotes(e.target.value)}
                 placeholder={t.customerNotesPlaceholder}
+                aria-label={t.customerNotesLabel}
                 style={{
                   backgroundColor: theme.colors.bgSecondary,
                   borderColor: theme.colors.border,
                   color: theme.colors.textPrimary,
                 }}
-                className="w-full rounded-xl border px-3 py-2 text-xs outline-none"
+                className="w-full rounded-xl border px-3 py-2.5 text-xs outline-none focus:ring-2 sm:col-span-2"
               />
             </div>
+
+            {orderError && (
+              <div
+                role="alert"
+                className="space-y-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs leading-5 text-rose-700"
+              >
+                <p className="font-semibold">{orderError}</p>
+                {customerName.trim().length >= 2 &&
+                  customerPhone.replace(/\D/g, "").length >= 8 && (
+                    <button
+                      type="button"
+                      onClick={openWhatsAppFallback}
+                      className="inline-flex items-center gap-1.5 font-extrabold underline underline-offset-2"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      {t.continueWithoutTracking}
+                    </button>
+                  )}
+              </div>
+            )}
+
+            {activeOrder && (
+              <div
+                style={{
+                  backgroundColor: "#ECFDF5",
+                  borderColor: "#A7F3D0",
+                }}
+                className="rounded-xl border p-3"
+              >
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-extrabold text-emerald-900">
+                      {t.orderPlacedTitle}
+                    </p>
+                    <p className="mt-1 text-[11px] leading-4 text-emerald-800">
+                      {t.orderPlacedSub}
+                    </p>
+                    <p dir="ltr" className="mt-2 font-mono text-sm font-black tracking-wide text-emerald-950">
+                      {activeOrder.orderNumber}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onTrackOrder?.(activeOrder.orderNumber, activeOrder.phone)
+                      }
+                      style={{ color: theme.colors.accentPrimary }}
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-extrabold underline underline-offset-2"
+                    >
+                      {t.trackThisOrder}
+                      <ArrowRight className={`h-3.5 w-3.5 ${lang === "ar" ? "rotate-180" : ""}`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Totals Breakdown */}
             <div className="space-y-1 pt-1">
@@ -461,46 +653,52 @@ export function CartDrawer({
               </div>
             </div>
 
-            {/* Primary WhatsApp Order Button */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleSendWhatsApp}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white py-3.5 px-4 text-sm font-extrabold shadow-lg transition active:scale-[0.99]"
-                title={lang === "ar" ? "فتح واتساب مباشرة مع الطلب جاهز للإرسال" : "Open WhatsApp directly with order pre-filled"}
-              >
-                <MessageCircle className="h-5 w-5 fill-current" />
-                <span>{t.checkoutWhatsAppBtn} ↗</span>
-              </button>
+            {/* Create a trackable order, then continue the conversation on WhatsApp */}
+            {!activeOrder && (
+              <>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSendWhatsApp}
+                    disabled={isSubmittingOrder}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white py-3.5 px-4 text-sm font-extrabold shadow-lg transition active:scale-[0.99] disabled:cursor-wait disabled:opacity-70"
+                    title={lang === "ar" ? "حفظ الطلب ثم فتح واتساب" : "Save your order and continue on WhatsApp"}
+                  >
+                    <MessageCircle className="h-5 w-5 fill-current" />
+                    <span>{isSubmittingOrder ? t.orderSaving : `${t.checkoutWhatsAppBtn} ↗`}</span>
+                  </button>
 
-              <button
-                type="button"
-                onClick={handleCopyMessage}
-                style={{
-                  backgroundColor: theme.colors.bgSecondary,
-                  color: theme.colors.textPrimary,
-                  borderColor: theme.colors.border,
-                }}
-                title={
-                  lang === "ar"
-                    ? "نسخ نص الطلب"
-                    : "Copy formatted order message"
-                }
-                className="flex items-center justify-center rounded-xl border px-3.5 py-3.5 text-xs font-bold transition hover:opacity-80"
-              >
-                {copiedPreview ? (
-                  <Check className="h-4 w-4 text-emerald-600" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyMessage}
+                    disabled={isSubmittingOrder}
+                    style={{
+                      backgroundColor: theme.colors.bgSecondary,
+                      color: theme.colors.textPrimary,
+                      borderColor: theme.colors.border,
+                    }}
+                    title={
+                      lang === "ar"
+                        ? "نسخ نص الطلب"
+                        : "Copy formatted order message"
+                    }
+                    className="flex items-center justify-center rounded-xl border px-3.5 py-3.5 text-xs font-bold transition hover:opacity-80 disabled:opacity-50"
+                  >
+                    {copiedPreview ? (
+                      <Check className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
 
-            <p className="text-center text-[11px] font-medium opacity-70">
-              {lang === "ar"
-                ? "افتح واتساب ثم الصق هذه الرسالة في المحادثة"
-                : "Open WhatsApp and paste this message into the chat"}
-            </p>
+                <p className="text-center text-[11px] font-medium opacity-70">
+                  {lang === "ar"
+                    ? "سيتم حفظ الطلب أولاً لإصدار رقم تتبع، ثم فتح واتساب لتأكيده."
+                    : "We’ll save your order and create a tracking reference before opening WhatsApp."}
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -509,7 +707,7 @@ export function CartDrawer({
         isOpen={showWaPanel}
         onClose={() => setShowWaPanel(false)}
         phoneNumber={rawPhone}
-        message={buildWhatsAppMessage()}
+        message={waPanelMessage || buildWhatsAppMessage(activeOrder?.orderNumber || "")}
         lang={lang}
         theme={theme}
       />
