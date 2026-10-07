@@ -1329,12 +1329,12 @@ export default function StorefrontPage() {
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {[1, 2, 3, 4, 5].map((n) => (
               <div
                 key={n}
                 style={{ backgroundColor: currentTheme.colors.bgSecondary }}
-                className="h-96 rounded-none animate-pulse"
+                className="h-44 sm:h-52 rounded-2xl animate-pulse"
               />
             ))}
           </div>
@@ -1370,7 +1370,7 @@ export default function StorefrontPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {filteredProducts.map((product) => {
               const cat = categories.find(
                 (c) => c.slug === product.categorySlug
@@ -1388,6 +1388,7 @@ export default function StorefrontPage() {
                   cartQty={inCart}
                   onAddToCart={handleAddToCart}
                   onQuickView={setQuickViewProduct}
+                  layout="list"
                 />
               );
             })}

@@ -26,6 +26,7 @@ interface ProductCardProps {
   cartQty: number;
   onAddToCart: (product: Product, qty: number) => void;
   onQuickView: (product: Product) => void;
+  layout?: "card" | "list";
 }
 
 export function ProductCard({
@@ -37,8 +38,10 @@ export function ProductCard({
   cartQty,
   onAddToCart,
   onQuickView,
+  layout = "card",
 }: ProductCardProps) {
   const t = UI_TEXT[lang];
+  const isListLayout = layout === "list";
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
@@ -99,10 +102,18 @@ export function ProductCard({
         borderColor: theme.colors.border,
         color: theme.colors.textPrimary,
       }}
-      className="group relative flex flex-col rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
+      className={`group relative flex ${
+        isListLayout ? "flex-col sm:flex-row sm:items-stretch" : "flex-col"
+      } rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden`}
     >
       {/* Image Gallery Container (Scrollable 1 or 2 photos) */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100">
+      <div
+        className={`relative w-full overflow-hidden bg-neutral-100 ${
+          isListLayout
+            ? "aspect-[16/9] sm:aspect-square sm:h-52 sm:w-52 sm:shrink-0 sm:self-center sm:ms-3 sm:rounded-xl"
+            : "aspect-[16/9]"
+        }`}
+      >
         <div
           ref={scrollRef}
           onScroll={handleScroll}
