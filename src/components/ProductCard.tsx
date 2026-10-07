@@ -102,7 +102,7 @@ export function ProductCard({
       className="group relative flex flex-col rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
     >
       {/* Image Gallery Container (Scrollable 1 or 2 photos) */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
@@ -229,7 +229,7 @@ export function ProductCard({
       </div>
 
       {/* Card Body */}
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
         {/* Category & Stock Row */}
         <div className="mb-2 flex items-center justify-between gap-2 text-xs">
           <span
@@ -268,7 +268,7 @@ export function ProductCard({
         <div className="mb-3 flex-1">
           <p
             style={{ color: theme.colors.textSecondary }}
-            className={`text-xs sm:text-sm leading-relaxed ${detailsExpanded ? "" : "line-clamp-2"}`}
+            className={`text-xs sm:text-sm leading-relaxed ${detailsExpanded ? "" : "line-clamp-1"}`}
           >
             {description}
           </p>
@@ -295,13 +295,13 @@ export function ProductCard({
         </div>
 
         {/* Retail price stays visible; wholesale pricing is disclosed on request. */}
-        <div className="mb-4 space-y-2">
+        <div className="mb-3 space-y-1.5">
           <div
             style={{
               backgroundColor: theme.colors.bgSecondary,
               borderColor: theme.colors.border,
             }}
-            className="rounded-xl border p-3"
+            className="rounded-xl border p-2.5"
           >
             <span
               style={{ color: theme.colors.textSecondary }}
@@ -310,7 +310,7 @@ export function ProductCard({
               {t.retailPrice}
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span dir="ltr" className="text-lg sm:text-xl font-extrabold tabular-nums">
+              <span dir="ltr" className="text-base sm:text-lg font-extrabold tabular-nums">
                 {formatPrice(product.price, lang)}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
@@ -339,7 +339,7 @@ export function ProductCard({
                 : theme.colors.accentPrimary,
               color: "#FFFFFF",
             }}
-            className="col-span-3 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold shadow-sm transition hover:opacity-95 active:scale-[0.98] disabled:opacity-40"
+            className="col-span-3 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold shadow-sm transition hover:opacity-95 active:scale-[0.98] disabled:opacity-40"
           >
             {justAdded ? (
               <>
@@ -367,7 +367,7 @@ export function ProductCard({
               color: theme.colors.textPrimary,
             }}
             title={`${t.addWholesaleMin} (+${product.wholesaleMinQty})`}
-            className="col-span-2 flex items-center justify-center gap-1 rounded-xl border py-2.5 px-2 text-xs font-semibold transition hover:opacity-80 active:scale-[0.98] disabled:opacity-40"
+            className="col-span-2 flex items-center justify-center gap-1 rounded-xl border py-2 px-2 text-xs font-semibold transition hover:opacity-80 active:scale-[0.98] disabled:opacity-40"
           >
             <Layers
               style={{ color: theme.colors.accentPrimary }}

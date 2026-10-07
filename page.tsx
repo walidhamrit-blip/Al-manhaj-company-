@@ -862,7 +862,7 @@ export default function StorefrontPage() {
               style={{ color: currentTheme.colors.accentPrimary }}
               className="text-xs font-extrabold uppercase tracking-widest block mb-1"
             >
-              {lang === "ar" ? "أقسام المتجر السبعة" : "7 SPECIALIZED DEPARTMENTS"}
+              {lang === "ar" ? "أقسامنا الرئيسية" : "OUR MAIN CATEGORIES"}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
               {t.categoriesTitle}
@@ -890,8 +890,8 @@ export default function StorefrontPage() {
           </button>
         </div>
 
-        {/* 7 Visual Category Bento Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
+        {/* Main Category Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => p.categorySlug === cat.slug

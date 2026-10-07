@@ -892,7 +892,7 @@ export default function StorefrontPage() {
         <div className="mb-6 sm:mb-8 flex flex-col items-center text-center gap-3">
           <div className="text-center">
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-black border-b border-black pb-1 block mb-3">
-              {lang === "ar" ? "أقسام المتجر السبعة" : "SHOP BY CATEGORY"}
+              {lang === "ar" ? "أقسامنا الرئيسية" : "SHOP BY CATEGORY"}
             </span>
             <h2 style={{fontFamily: "'Cormorant Garamond',serif"}} className="text-2xl sm:text-3xl font-medium tracking-tight text-black">
               {t.categoriesTitle}
@@ -920,8 +920,8 @@ export default function StorefrontPage() {
           </button>
         </div>
 
-        {/* 7 Visual Category Bento Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
+        {/* Main Category Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => !p.isHidden && p.categorySlug === cat.slug
@@ -938,7 +938,7 @@ export default function StorefrontPage() {
                     ? currentTheme.colors.accentPrimary
                     : currentTheme.colors.border,
                 }}
-                className={`group relative flex h-48 sm:h-56 flex-col overflow-hidden rounded-none border-2 bg-white text-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
+                className={`group relative flex h-64 sm:h-72 flex-col overflow-hidden rounded-none border-2 bg-white text-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
                   isSelected ? "ring-2 ring-offset-2" : ""
                 }`}
               >
@@ -946,7 +946,7 @@ export default function StorefrontPage() {
                   slug={cat.slug}
                   src={cat.imageUrl}
                   alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                  className="h-[68%] w-full bg-white object-contain px-3 pt-3 transition-transform duration-300 group-hover:scale-105"
+                  className="h-[78%] w-full scale-125 bg-white object-contain px-2 pt-2 transition-transform duration-300 group-hover:scale-150"
                 />
 
                 <div
@@ -1105,7 +1105,7 @@ export default function StorefrontPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
             {featuredProducts.map((product) => {
               const cat = categories.find(
                 (c) => c.slug === product.categorySlug
@@ -1329,8 +1329,8 @@ export default function StorefrontPage() {
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+            {[1, 2, 3, 4, 5].map((n) => (
               <div
                 key={n}
                 style={{ backgroundColor: currentTheme.colors.bgSecondary }}
@@ -1370,7 +1370,7 @@ export default function StorefrontPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
             {filteredProducts.map((product) => {
               const cat = categories.find(
                 (c) => c.slug === product.categorySlug
