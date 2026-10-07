@@ -357,6 +357,17 @@ export default function StorefrontPage() {
     });
   }, [products, selectedCategory, maxPrice, onlyPromo, searchQuery, sortBy]);
 
+  // Keep every product under its parent category in the complete catalog.
+  const catalogGroups = useMemo(() => {
+    return [...categories]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((category) => ({
+        category,
+        items: filteredProducts.filter((product) => product.categorySlug === category.slug),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [categories, filteredProducts]);
+
   // Category selection handler that smoothly scrolls to the catalog section
   const handleSelectCategoryAndScroll = (slug: string) => {
     setSelectedCategory(slug);
@@ -1276,51 +1287,63 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          {/* Horizontal Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
+          {/* Keep every category visible without a horizontal scrolling strip. */}
+          <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3 xl:grid-cols-4">
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
+              aria-pressed={selectedCategory === "all"}
               style={
                 selectedCategory === "all"
                   ? {
                       backgroundColor: currentTheme.colors.accentPrimary,
+                      borderColor: currentTheme.colors.accentPrimary,
                       color: "#FFFFFF",
                     }
                   : {
                       backgroundColor: currentTheme.colors.bgSecondary,
+                      borderColor: currentTheme.colors.border,
                       color: currentTheme.colors.textPrimary,
                     }
               }
-              className="shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition"
+              className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-bold transition hover:opacity-85"
             >
-              {t.allCategories} ({products.filter(p=>!p.isHidden).length})
+              <span className="min-w-0 flex-1 line-clamp-2">{t.allCategories}</span>
+              <span className="shrink-0 tabular-nums opacity-75">
+                ({products.filter((product) => !product.isHidden).length})
+              </span>
             </button>
 
             {categories.map((cat) => {
               const countInCat = products.filter(
-              (p) => !p.isHidden && p.categorySlug === cat.slug
-            ).length;
+                (product) => !product.isHidden && product.categorySlug === cat.slug
+              ).length;
               const active = selectedCategory === cat.slug;
               return (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategory(cat.slug)}
+                  aria-pressed={active}
                   style={
                     active
                       ? {
                           backgroundColor: currentTheme.colors.accentPrimary,
+                          borderColor: currentTheme.colors.accentPrimary,
                           color: "#FFFFFF",
                         }
                       : {
                           backgroundColor: currentTheme.colors.bgSecondary,
+                          borderColor: currentTheme.colors.border,
                           color: currentTheme.colors.textPrimary,
                         }
                   }
-                  className="shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition"
+                  className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-semibold transition hover:opacity-85"
                 >
-                  {lang === "ar" ? cat.nameAr : cat.nameEn} ({countInCat})
+                  <span className="min-w-0 flex-1 line-clamp-2">
+                    {lang === "ar" ? cat.nameAr : cat.nameEn}
+                  </span>
+                  <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
                 </button>
               );
             })}
@@ -1370,28 +1393,72 @@ export default function StorefrontPage() {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3 sm:gap-4">
-            {filteredProducts.map((product) => {
-              const cat = categories.find(
-                (c) => c.slug === product.categorySlug
-              );
-              const inCart =
-                cart.find((c) => c.product.id === product.id)?.quantity || 0;
-              return (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  category={cat}
-                  lang={lang}
-                  theme={currentTheme}
-                  currencySymbol={currencySymbol}
-                  cartQty={inCart}
-                  onAddToCart={handleAddToCart}
-                  onQuickView={setQuickViewProduct}
-                  layout="list"
-                />
-              );
-            })}
+          <div className="space-y-8">
+            {catalogGroups.map(({ category, items: categoryProducts }) => (
+              <section
+                key={category.id}
+                id={`catalog-category-${category.slug}`}
+                className="scroll-mt-28 space-y-3 sm:space-y-4"
+              >
+                <div
+                  style={{
+                    backgroundColor: currentTheme.colors.bgElevated,
+                    borderColor: currentTheme.colors.border,
+                  }}
+                  className="flex items-center justify-between gap-3 rounded-2xl border p-3 sm:p-4"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <CategoryImage
+                      slug={category.slug}
+                      src={category.imageUrl}
+                      alt={lang === "ar" ? category.nameAr : category.nameEn}
+                      className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain p-1"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-extrabold sm:text-base">
+                        {lang === "ar" ? category.nameAr : category.nameEn}
+                      </h3>
+                      <p
+                        style={{ color: currentTheme.colors.textSecondary }}
+                        className="line-clamp-1 text-xs"
+                      >
+                        {lang === "ar" ? category.descriptionAr : category.descriptionEn}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      backgroundColor: currentTheme.colors.badgeBg,
+                      color: currentTheme.colors.badgeText,
+                    }}
+                    className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:text-xs"
+                  >
+                    {categoryProducts.length} {t.itemsLabel}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:gap-4">
+                  {categoryProducts.map((product) => {
+                    const inCart =
+                      cart.find((item) => item.product.id === product.id)?.quantity || 0;
+                    return (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        category={category}
+                        lang={lang}
+                        theme={currentTheme}
+                        currencySymbol={currencySymbol}
+                        cartQty={inCart}
+                        onAddToCart={handleAddToCart}
+                        onQuickView={setQuickViewProduct}
+                        layout="list"
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         )}
       </section>

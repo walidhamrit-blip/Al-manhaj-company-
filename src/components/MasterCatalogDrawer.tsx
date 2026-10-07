@@ -163,29 +163,33 @@ export function MasterCatalogDrawer({
             </div>
           </div>
 
-          {/* Department Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          {/* Keep all departments visible rather than hiding them in a horizontal scroller. */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
             <button
               type="button"
               onClick={() => setActiveDeptSlug("all")}
+              aria-pressed={activeDeptSlug === "all"}
               style={
                 activeDeptSlug === "all"
                   ? {
                       backgroundColor: theme.colors.accentPrimary,
+                      borderColor: theme.colors.accentPrimary,
                       color: "#FFFFFF",
                     }
                   : {
                       backgroundColor: theme.colors.bgSecondary,
+                      borderColor: theme.colors.border,
                       color: theme.colors.textPrimary,
                     }
               }
-              className="shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition"
+              className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-bold transition hover:opacity-85"
             >
-              {t.allCategories} ({products.length})
+              <span className="min-w-0 flex-1 line-clamp-2">{t.allCategories}</span>
+              <span className="shrink-0 tabular-nums opacity-75">({products.length})</span>
             </button>
             {categories.map((cat) => {
               const countInCat = products.filter(
-                (p) => p.categorySlug === cat.slug
+                (product) => product.categorySlug === cat.slug
               ).length;
               const isSelected = activeDeptSlug === cat.slug;
               return (
@@ -193,20 +197,26 @@ export function MasterCatalogDrawer({
                   key={cat.id}
                   type="button"
                   onClick={() => setActiveDeptSlug(cat.slug)}
+                  aria-pressed={isSelected}
                   style={
                     isSelected
                       ? {
                           backgroundColor: theme.colors.accentPrimary,
+                          borderColor: theme.colors.accentPrimary,
                           color: "#FFFFFF",
                         }
                       : {
                           backgroundColor: theme.colors.bgSecondary,
+                          borderColor: theme.colors.border,
                           color: theme.colors.textPrimary,
                         }
                   }
-                  className="shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition"
+                  className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-semibold transition hover:opacity-85"
                 >
-                  {lang === "ar" ? cat.nameAr : cat.nameEn} ({countInCat})
+                  <span className="min-w-0 flex-1 line-clamp-2">
+                    {lang === "ar" ? cat.nameAr : cat.nameEn}
+                  </span>
+                  <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
                 </button>
               );
             })}
