@@ -581,6 +581,28 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
 export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
   storeNameEn: "Al Manhaj Company for Stationery",
   storeNameAr: "شركة المنهج للقرطاسية",
+  announcementEnabled: true,
+  announcementEn:
+    "توصيل مجاني داخل طرابلس فوق 1900 د.ل — Free Standard Shipping $60+ →",
+  announcementAr:
+    "توصيل مجاني داخل طرابلس فوق 1900 د.ل — Free Standard Shipping $60+ →",
+  announcementShortEn: "توصيل مجاني 1900 د.ل+ →",
+  announcementShortAr: "توصيل مجاني 1900 د.ل+ →",
+  announcementNoteEn: "البيفي، طرابلس • 0912145050",
+  announcementNoteAr: "البيفي، طرابلس • 0912145050",
+  headerTaglineEn: "PAPER • STATIONERY • ATELIER • TRIPOLI",
+  headerTaglineAr: "ورق • قرطاسية • أدوات هندسية • طرابلس",
+  storefrontImage: "/images/new/main-storefront-hq.jpg",
+  storefrontBadgeEn: "Al Bivi, Tripoli, Libya",
+  storefrontBadgeAr: "البيفي، طرابلس، ليبيا",
+  storefrontTitleEn: "Al Manhaj Company for Stationery",
+  storefrontTitleAr: "شركة المنهج للقرطاسية",
+  storefrontSubtitleEn: "Almanhaj for Stationery and Computer Equipment",
+  storefrontSubtitleAr: "شركة المنهج للقرطاسية ومعدات الحاسوب",
+  storefrontDescriptionEn:
+    "Office tools • Engineering equipment • School supplies • Cabinets • Printer ink & computer equipment",
+  storefrontDescriptionAr:
+    "أدوات مكتبية • معدات هندسية • أدوات مدرسية • خزائن مختلفة • حبر طابعات ومعدات الحاسوب",
   taglineEn:
     "Office Tools • Engineering Equipment • School Supplies • Cabinets • Printer Ink & Computer Equipment",
   taglineAr:

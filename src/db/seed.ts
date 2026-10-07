@@ -581,6 +581,28 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
 export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
   storeNameEn: "Al Manhaj Company for Stationery",
   storeNameAr: "شركة المنهج للقرطاسية",
+  announcementEnabled: true,
+  announcementEn:
+    "توصيل مجاني داخل طرابلس فوق 1900 د.ل — Free Standard Shipping $60+ →",
+  announcementAr:
+    "توصيل مجاني داخل طرابلس فوق 1900 د.ل — Free Standard Shipping $60+ →",
+  announcementShortEn: "توصيل مجاني 1900 د.ل+ →",
+  announcementShortAr: "توصيل مجاني 1900 د.ل+ →",
+  announcementNoteEn: "البيفي، طرابلس • 0912145050",
+  announcementNoteAr: "البيفي، طرابلس • 0912145050",
+  headerTaglineEn: "PAPER • STATIONERY • ATELIER • TRIPOLI",
+  headerTaglineAr: "ورق • قرطاسية • أدوات هندسية • طرابلس",
+  storefrontImage: "/images/new/main-storefront-hq.jpg",
+  storefrontBadgeEn: "Al Bivi, Tripoli, Libya",
+  storefrontBadgeAr: "البيفي، طرابلس، ليبيا",
+  storefrontTitleEn: "Al Manhaj Company for Stationery",
+  storefrontTitleAr: "شركة المنهج للقرطاسية",
+  storefrontSubtitleEn: "Almanhaj for Stationery and Computer Equipment",
+  storefrontSubtitleAr: "شركة المنهج للقرطاسية ومعدات الحاسوب",
+  storefrontDescriptionEn:
+    "Office tools • Engineering equipment • School supplies • Cabinets • Printer ink & computer equipment",
+  storefrontDescriptionAr:
+    "أدوات مكتبية • معدات هندسية • أدوات مدرسية • خزائن مختلفة • حبر طابعات ومعدات الحاسوب",
   taglineEn:
     "Office Tools • Engineering Equipment • School Supplies • Cabinets • Printer Ink & Computer Equipment",
   taglineAr:
@@ -709,6 +731,24 @@ export async function ensureDatabaseSeeded() {
       id SERIAL PRIMARY KEY,
       store_name_en TEXT NOT NULL,
       store_name_ar TEXT NOT NULL,
+      announcement_enabled BOOLEAN NOT NULL DEFAULT true,
+      announcement_en TEXT NOT NULL DEFAULT '',
+      announcement_ar TEXT NOT NULL DEFAULT '',
+      announcement_short_en TEXT NOT NULL DEFAULT '',
+      announcement_short_ar TEXT NOT NULL DEFAULT '',
+      announcement_note_en TEXT NOT NULL DEFAULT '',
+      announcement_note_ar TEXT NOT NULL DEFAULT '',
+      header_tagline_en TEXT NOT NULL DEFAULT '',
+      header_tagline_ar TEXT NOT NULL DEFAULT '',
+      storefront_image TEXT NOT NULL DEFAULT '/images/new/main-storefront-hq.jpg',
+      storefront_badge_en TEXT NOT NULL DEFAULT '',
+      storefront_badge_ar TEXT NOT NULL DEFAULT '',
+      storefront_title_en TEXT NOT NULL DEFAULT '',
+      storefront_title_ar TEXT NOT NULL DEFAULT '',
+      storefront_subtitle_en TEXT NOT NULL DEFAULT '',
+      storefront_subtitle_ar TEXT NOT NULL DEFAULT '',
+      storefront_description_en TEXT NOT NULL DEFAULT '',
+      storefront_description_ar TEXT NOT NULL DEFAULT '',
       tagline_en TEXT NOT NULL,
       tagline_ar TEXT NOT NULL,
       whatsapp_number TEXT NOT NULL,
@@ -762,6 +802,28 @@ export async function ensureDatabaseSeeded() {
   // Migration: add is_hidden column if not exists (for existing DBs)
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false;`);
 
+  // Migration: editable homepage content (banner, texts & storefront photo)
+  await pool.query(`
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_enabled BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_ar TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_short_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_short_ar TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_note_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_note_ar TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS header_tagline_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS header_tagline_ar TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_image TEXT NOT NULL DEFAULT '/images/new/main-storefront-hq.jpg';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_badge_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_badge_ar TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_title_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_title_ar TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_subtitle_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_subtitle_ar TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_description_en TEXT NOT NULL DEFAULT '';
+    ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS storefront_description_ar TEXT NOT NULL DEFAULT '';
+  `);
+
   const [{ value: catCount }] = await db.select({ value: count() }).from(categories);
   if (catCount === 0) {
     await db.insert(categories).values(INITIAL_CATEGORIES);
@@ -804,10 +866,24 @@ export async function ensureDatabaseSeeded() {
           wholesale_price = ROUND((wholesale_price * 5.5)::numeric, 2)
       `);
     }
-    await db
-      .update(storeSettings)
-      .set(INITIAL_STORE_SETTINGS)
-      .where(eq(storeSettings.id, current.id));
+    // Backfill ONLY the columns that are still empty: the homepage content is
+    // now managed from the admin panel, so admin edits must never be reset by
+    // a redeploy / cold start.
+    const defaults = INITIAL_STORE_SETTINGS as unknown as Record<string, unknown>;
+    const currentRow = current as unknown as Record<string, unknown>;
+    const patch: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(defaults)) {
+      const existingValue = currentRow[key];
+      if (existingValue === null || existingValue === undefined || existingValue === "") {
+        patch[key] = value;
+      }
+    }
+    if (Object.keys(patch).length > 0) {
+      await db
+        .update(storeSettings)
+        .set(patch as NewStoreSettings)
+        .where(eq(storeSettings.id, current.id));
+    }
   }
 
   isInitialized = true;

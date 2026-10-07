@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import type { Category, Product, StoreSettings } from "@/db/schema";
+import type {
+  Category,
+  HeroSlide,
+  LandscapeBannerConfig,
+  Product,
+  StoreSettings,
+} from "@/db/schema";
 import {
   THEMES,
   UI_TEXT,
@@ -28,7 +34,146 @@ import {
   SearchX,
   Eye,
   EyeOff,
+  Home,
+  Megaphone,
+  Images,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
+
+/* ---------------------------------------------------------------------------
+   Small building blocks shared by the "Store & homepage" tab.
+--------------------------------------------------------------------------- */
+
+function TextField({
+  label,
+  value,
+  onChange,
+  theme,
+  rtl,
+  textarea,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  theme: ThemeConfig;
+  rtl?: boolean;
+  textarea?: boolean;
+  placeholder?: string;
+}) {
+  const style = {
+    backgroundColor: theme.colors.bgSecondary,
+    borderColor: theme.colors.border,
+  };
+  const className = "w-full rounded-xl border px-3 py-2 text-sm";
+  return (
+    <div dir={rtl ? "rtl" : undefined}>
+      <label className="block text-xs font-bold mb-1">{label}</label>
+      {textarea ? (
+        <textarea
+          rows={3}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          style={style}
+          className={className}
+        />
+      ) : (
+        <input
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          style={style}
+          className={className}
+        />
+      )}
+    </div>
+  );
+}
+
+function BilingualField({
+  labelEn,
+  labelAr,
+  valueEn,
+  valueAr,
+  onChangeEn,
+  onChangeAr,
+  theme,
+  textarea,
+}: {
+  labelEn: string;
+  labelAr: string;
+  valueEn: string;
+  valueAr: string;
+  onChangeEn: (value: string) => void;
+  onChangeAr: (value: string) => void;
+  theme: ThemeConfig;
+  textarea?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <TextField
+        label={labelEn}
+        value={valueEn}
+        onChange={onChangeEn}
+        theme={theme}
+        textarea={textarea}
+      />
+      <TextField
+        label={labelAr}
+        value={valueAr}
+        onChange={onChangeAr}
+        theme={theme}
+        rtl
+        textarea={textarea}
+      />
+    </div>
+  );
+}
+
+function PanelSection({
+  title,
+  hint,
+  icon,
+  theme,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  icon: React.ReactNode;
+  theme: ThemeConfig;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      style={{
+        backgroundColor: theme.colors.bgSecondary,
+        borderColor: theme.colors.border,
+      }}
+      className="rounded-2xl border p-4 space-y-3"
+    >
+      <div className="flex items-start gap-2.5">
+        <span style={{ color: theme.colors.accentPrimary }} className="mt-0.5">
+          {icon}
+        </span>
+        <div>
+          <h3 className="text-sm font-extrabold">{title}</h3>
+          {hint ? (
+            <p
+              style={{ color: theme.colors.textSecondary }}
+              className="text-[11px] leading-relaxed"
+            >
+              {hint}
+            </p>
+          ) : null}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 function normalizeSearch(value: string): string {
   return value
@@ -75,7 +220,7 @@ export function AdminDashboardModal({
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "products" | "categories" | "orders" | "settings"
+    "products" | "categories" | "orders" | "homepage" | "settings"
   >("products");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [toastIsError, setToastIsError] = useState(false);
@@ -390,6 +535,76 @@ export function AdminDashboardModal({
     }
   };
 
+  /* -------------------------------------------------------------------------
+     Homepage editor helpers (announcement bar, storefront photo, slides…)
+  ------------------------------------------------------------------------- */
+
+  const patchSettings = (patch: Partial<StoreSettings>) => {
+    setSettingsForm((prev) => (prev ? { ...prev, ...patch } : prev));
+  };
+
+  const homepageSlides: HeroSlide[] = Array.isArray(settingsForm?.heroSlides)
+    ? settingsForm.heroSlides
+    : [];
+
+  const setHomepageSlides = (slides: HeroSlide[]) =>
+    patchSettings({ heroSlides: slides });
+
+  const updateSlide = (index: number, patch: Partial<HeroSlide>) => {
+    setHomepageSlides(
+      homepageSlides.map((slide, i) => (i === index ? { ...slide, ...patch } : slide))
+    );
+  };
+
+  const addSlide = () => {
+    setHomepageSlides([
+      ...homepageSlides,
+      {
+        id: `slide-${Date.now()}`,
+        imageUrl: "/images/new/hero-stationery-01.jpg",
+        badgeEn: "",
+        badgeAr: "",
+        titleEn: "",
+        titleAr: "",
+        subtitleEn: "",
+        subtitleAr: "",
+        ctaEn: "",
+        ctaAr: "",
+        targetCategory: categories[0]?.slug ?? "",
+      },
+    ]);
+  };
+
+  const removeSlide = (index: number) =>
+    setHomepageSlides(homepageSlides.filter((_, i) => i !== index));
+
+  const moveSlide = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= homepageSlides.length) return;
+    const next = [...homepageSlides];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    setHomepageSlides(next);
+  };
+
+  const landscapeBannerForm: LandscapeBannerConfig =
+    settingsForm?.landscapeBanner ?? {
+      imageUrl: "/images/new/landscape-01.jpg",
+      badgeEn: "",
+      badgeAr: "",
+      titleEn: "",
+      titleAr: "",
+      subtitleEn: "",
+      subtitleAr: "",
+      ctaEn: "",
+      ctaAr: "",
+    };
+
+  const updateBanner = (patch: Partial<LandscapeBannerConfig>) =>
+    patchSettings({
+      landscapeBanner: { ...landscapeBannerForm, ...patch },
+    });
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       <div
@@ -602,6 +817,31 @@ export function AdminDashboardModal({
                 >
                   <FolderKanban className="h-4 w-4" />
                   <span>{t.adminTabsCategories}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("homepage");
+                    setEditingProduct(null);
+                    setEditingCategory(null);
+                    setSettingsForm(settings);
+                  }}
+                  style={
+                    activeTab === "homepage"
+                      ? {
+                          backgroundColor: theme.colors.accentPrimary,
+                          color: "#FFFFFF",
+                        }
+                      : {
+                          backgroundColor: theme.colors.bgElevated,
+                          color: theme.colors.textPrimary,
+                        }
+                  }
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold shadow-sm transition"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>{t.adminTabsHomepage}</span>
                 </button>
 
                 <button
@@ -1556,6 +1796,405 @@ export function AdminDashboardModal({
               )}
 
               {/* TAB 3: STORE CONTACT, WHATSAPP & WHOLESALE SETTINGS */}
+              {/* Settings could not be loaded (database unreachable) */}
+              {(activeTab === "homepage" || activeTab === "settings") &&
+                !settingsForm && (
+                  <p className="mx-auto max-w-4xl rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-xs font-bold">
+                    {isAr
+                      ? "تعذّر تحميل إعدادات المتجر. تحقق من الاتصال بقاعدة البيانات ثم أعد فتح اللوحة."
+                      : "Store settings could not be loaded. Check the database connection and reopen the panel."}
+                  </p>
+                )}
+
+              {/* TAB: STORE & HOMEPAGE (announcement bar, main photo, slides) */}
+              {activeTab === "homepage" && settingsForm && (
+                <form
+                  onSubmit={handleSaveSettings}
+                  className="mx-auto max-w-4xl space-y-5"
+                >
+                  {/* --- 1. Top announcement bar --- */}
+                  <PanelSection
+                    title={t.homepageAnnouncement}
+                    hint={t.homepageAnnouncementHint}
+                    icon={<Megaphone className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    <label className="flex items-center gap-2 text-xs font-bold">
+                      <input
+                        type="checkbox"
+                        checked={settingsForm.announcementEnabled}
+                        onChange={(e) =>
+                          patchSettings({ announcementEnabled: e.target.checked })
+                        }
+                        className="h-4 w-4"
+                      />
+                      <span>{t.homepageAnnouncementVisible}</span>
+                    </label>
+
+                    <BilingualField
+                      labelEn={`${t.homepageAnnouncementDesktop} (EN)`}
+                      labelAr={`${t.homepageAnnouncementDesktop} (AR)`}
+                      valueEn={settingsForm.announcementEn}
+                      valueAr={settingsForm.announcementAr}
+                      onChangeEn={(v) => patchSettings({ announcementEn: v })}
+                      onChangeAr={(v) => patchSettings({ announcementAr: v })}
+                      theme={theme}
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageAnnouncementMobile} (EN)`}
+                      labelAr={`${t.homepageAnnouncementMobile} (AR)`}
+                      valueEn={settingsForm.announcementShortEn}
+                      valueAr={settingsForm.announcementShortAr}
+                      onChangeEn={(v) => patchSettings({ announcementShortEn: v })}
+                      onChangeAr={(v) => patchSettings({ announcementShortAr: v })}
+                      theme={theme}
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageAnnouncementNote} (EN)`}
+                      labelAr={`${t.homepageAnnouncementNote} (AR)`}
+                      valueEn={settingsForm.announcementNoteEn}
+                      valueAr={settingsForm.announcementNoteAr}
+                      onChangeEn={(v) => patchSettings({ announcementNoteEn: v })}
+                      onChangeAr={(v) => patchSettings({ announcementNoteAr: v })}
+                      theme={theme}
+                    />
+                  </PanelSection>
+
+                  {/* --- 2. Header tagline + main storefront photo --- */}
+                  <PanelSection
+                    title={t.homepageStorefront}
+                    hint={t.homepageStorefrontHint}
+                    icon={<Home className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    <BilingualField
+                      labelEn={`${t.homepageHeaderTagline} (EN)`}
+                      labelAr={`${t.homepageHeaderTagline} (AR)`}
+                      valueEn={settingsForm.headerTaglineEn}
+                      valueAr={settingsForm.headerTaglineAr}
+                      onChangeEn={(v) => patchSettings({ headerTaglineEn: v })}
+                      onChangeAr={(v) => patchSettings({ headerTaglineAr: v })}
+                      theme={theme}
+                    />
+
+                    <ImageUploadField
+                      label={
+                        isAr
+                          ? "صورة واجهة المتجر (الخلفية الرئيسية)"
+                          : "Main storefront photo (hero background)"
+                      }
+                      value={settingsForm.storefrontImage}
+                      onChange={(url) => patchSettings({ storefrontImage: url })}
+                      adminToken={adminToken}
+                      lang={lang}
+                      theme={theme}
+                      required
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageBadge} (EN)`}
+                      labelAr={`${t.homepageBadge} (AR)`}
+                      valueEn={settingsForm.storefrontBadgeEn}
+                      valueAr={settingsForm.storefrontBadgeAr}
+                      onChangeEn={(v) => patchSettings({ storefrontBadgeEn: v })}
+                      onChangeAr={(v) => patchSettings({ storefrontBadgeAr: v })}
+                      theme={theme}
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageTitle} (EN)`}
+                      labelAr={`${t.homepageTitle} (AR)`}
+                      valueEn={settingsForm.storefrontTitleEn}
+                      valueAr={settingsForm.storefrontTitleAr}
+                      onChangeEn={(v) => patchSettings({ storefrontTitleEn: v })}
+                      onChangeAr={(v) => patchSettings({ storefrontTitleAr: v })}
+                      theme={theme}
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageSubtitle} (EN)`}
+                      labelAr={`${t.homepageSubtitle} (AR)`}
+                      valueEn={settingsForm.storefrontSubtitleEn}
+                      valueAr={settingsForm.storefrontSubtitleAr}
+                      onChangeEn={(v) => patchSettings({ storefrontSubtitleEn: v })}
+                      onChangeAr={(v) => patchSettings({ storefrontSubtitleAr: v })}
+                      theme={theme}
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageDescription} (EN)`}
+                      labelAr={`${t.homepageDescription} (AR)`}
+                      valueEn={settingsForm.storefrontDescriptionEn}
+                      valueAr={settingsForm.storefrontDescriptionAr}
+                      onChangeEn={(v) =>
+                        patchSettings({ storefrontDescriptionEn: v })
+                      }
+                      onChangeAr={(v) =>
+                        patchSettings({ storefrontDescriptionAr: v })
+                      }
+                      theme={theme}
+                      textarea
+                    />
+                  </PanelSection>
+
+                  {/* --- 3. Homepage slideshow --- */}
+                  <PanelSection
+                    title={t.homepageSlides}
+                    hint={
+                      isAr
+                        ? "عدّل صور ونصوص كل شريحة، بدّل ترتيبها أو احذفها."
+                        : "Edit the photo and text of every slide, reorder or delete them."
+                    }
+                    icon={<Images className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    {homepageSlides.length === 0 ? (
+                      <p
+                        style={{ color: theme.colors.textSecondary }}
+                        className="text-xs"
+                      >
+                        {isAr
+                          ? "لا توجد شرائح حالياً. أضف شريحة للبدء."
+                          : "No slides yet — add one to get started."}
+                      </p>
+                    ) : null}
+
+                    {homepageSlides.map((slide, index) => (
+                      <div
+                        key={slide.id || index}
+                        style={{
+                          backgroundColor: theme.colors.bgElevated,
+                          borderColor: theme.colors.border,
+                        }}
+                        className="space-y-3 rounded-xl border p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-extrabold uppercase tracking-widest">
+                            {t.homepageSlide} {index + 1}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => moveSlide(index, -1)}
+                              disabled={index === 0}
+                              title={t.homepageMoveUp}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveSlide(index, 1)}
+                              disabled={index === homepageSlides.length - 1}
+                              title={t.homepageMoveDown}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeSlide(index)}
+                              title={isAr ? "حذف الشريحة" : "Delete slide"}
+                              className="rounded-lg bg-red-600 p-1.5 text-white transition hover:bg-red-500"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <ImageUploadField
+                          label={
+                            isAr
+                              ? `صورة الشريحة ${index + 1}`
+                              : `Slide ${index + 1} photo`
+                          }
+                          value={slide.imageUrl}
+                          onChange={(url) => updateSlide(index, { imageUrl: url })}
+                          adminToken={adminToken}
+                          lang={lang}
+                          theme={theme}
+                          required
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageBadgeText} (EN)`}
+                          labelAr={`${t.homepageBadgeText} (AR)`}
+                          valueEn={slide.badgeEn}
+                          valueAr={slide.badgeAr}
+                          onChangeEn={(v) => updateSlide(index, { badgeEn: v })}
+                          onChangeAr={(v) => updateSlide(index, { badgeAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageTitle} (EN)`}
+                          labelAr={`${t.homepageTitle} (AR)`}
+                          valueEn={slide.titleEn}
+                          valueAr={slide.titleAr}
+                          onChangeEn={(v) => updateSlide(index, { titleEn: v })}
+                          onChangeAr={(v) => updateSlide(index, { titleAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageDescription} (EN)`}
+                          labelAr={`${t.homepageDescription} (AR)`}
+                          valueEn={slide.subtitleEn}
+                          valueAr={slide.subtitleAr}
+                          onChangeEn={(v) => updateSlide(index, { subtitleEn: v })}
+                          onChangeAr={(v) => updateSlide(index, { subtitleAr: v })}
+                          theme={theme}
+                          textarea
+                        />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <TextField
+                            label={`${t.homepageCtaText} (EN)`}
+                            value={slide.ctaEn}
+                            onChange={(v) => updateSlide(index, { ctaEn: v })}
+                            theme={theme}
+                          />
+                          <TextField
+                            label={`${t.homepageCtaText} (AR)`}
+                            value={slide.ctaAr}
+                            onChange={(v) => updateSlide(index, { ctaAr: v })}
+                            theme={theme}
+                            rtl
+                          />
+                          <div>
+                            <label className="block text-xs font-bold mb-1">
+                              {t.homepageTargetCategory}
+                            </label>
+                            <select
+                              value={slide.targetCategory}
+                              onChange={(e) =>
+                                updateSlide(index, {
+                                  targetCategory: e.target.value,
+                                })
+                              }
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                                color: theme.colors.textPrimary,
+                              }}
+                              className="w-full rounded-xl border px-3 py-2 text-sm"
+                            >
+                              {categories.map((cat) => (
+                                <option key={cat.id} value={cat.slug}>
+                                  {isAr ? cat.nameAr : cat.nameEn}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addSlide}
+                      style={{
+                        backgroundColor: theme.colors.bgElevated,
+                        borderColor: theme.colors.border,
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-extrabold transition hover:opacity-80"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>{t.homepageAddSlide}</span>
+                    </button>
+                  </PanelSection>
+
+                  {/* --- 4. Wide panoramic banner --- */}
+                  <PanelSection
+                    title={t.homepageBanner}
+                    hint={
+                      isAr
+                        ? "الشريط العريض أسفل الشرائح مباشرة."
+                        : "The wide banner displayed right below the slideshow."
+                    }
+                    icon={<Images className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    <ImageUploadField
+                      label={isAr ? "صورة الشريط العريض" : "Wide banner photo"}
+                      value={landscapeBannerForm.imageUrl}
+                      onChange={(url) => updateBanner({ imageUrl: url })}
+                      adminToken={adminToken}
+                      lang={lang}
+                      theme={theme}
+                      required
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageBadgeText} (EN)`}
+                      labelAr={`${t.homepageBadgeText} (AR)`}
+                      valueEn={landscapeBannerForm.badgeEn}
+                      valueAr={landscapeBannerForm.badgeAr}
+                      onChangeEn={(v) => updateBanner({ badgeEn: v })}
+                      onChangeAr={(v) => updateBanner({ badgeAr: v })}
+                      theme={theme}
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageTitle} (EN)`}
+                      labelAr={`${t.homepageTitle} (AR)`}
+                      valueEn={landscapeBannerForm.titleEn}
+                      valueAr={landscapeBannerForm.titleAr}
+                      onChangeEn={(v) => updateBanner({ titleEn: v })}
+                      onChangeAr={(v) => updateBanner({ titleAr: v })}
+                      theme={theme}
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageDescription} (EN)`}
+                      labelAr={`${t.homepageDescription} (AR)`}
+                      valueEn={landscapeBannerForm.subtitleEn}
+                      valueAr={landscapeBannerForm.subtitleAr}
+                      onChangeEn={(v) => updateBanner({ subtitleEn: v })}
+                      onChangeAr={(v) => updateBanner({ subtitleAr: v })}
+                      theme={theme}
+                      textarea
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageCtaText} (EN)`}
+                      labelAr={`${t.homepageCtaText} (AR)`}
+                      valueEn={landscapeBannerForm.ctaEn}
+                      valueAr={landscapeBannerForm.ctaAr}
+                      onChangeEn={(v) => updateBanner({ ctaEn: v })}
+                      onChangeAr={(v) => updateBanner({ ctaAr: v })}
+                      theme={theme}
+                    />
+                  </PanelSection>
+
+                  <div className="flex justify-end pb-2">
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      style={{
+                        backgroundColor: theme.colors.accentPrimary,
+                        color: "#FFFFFF",
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-extrabold shadow-lg transition hover:opacity-95"
+                    >
+                      <Save className="h-4 w-4" />
+                      <span>{isSaving ? t.savingBtn : t.saveChangesBtn}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* TAB: CONTACT, WHATSAPP & WHOLESALE */}
               {activeTab === "settings" && settingsForm && (
                 <form
                   onSubmit={handleSaveSettings}
