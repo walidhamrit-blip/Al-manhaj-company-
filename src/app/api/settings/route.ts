@@ -32,6 +32,58 @@ export async function PUT(request: NextRequest) {
       .set({
         storeNameEn: String(body.storeNameEn ?? existing.storeNameEn),
         storeNameAr: String(body.storeNameAr ?? existing.storeNameAr),
+        // ----- Editable homepage content -----
+        announcementEnabled:
+          typeof body.announcementEnabled === "boolean"
+            ? body.announcementEnabled
+            : existing.announcementEnabled,
+        announcementEn: String(body.announcementEn ?? existing.announcementEn),
+        announcementAr: String(body.announcementAr ?? existing.announcementAr),
+        announcementShortEn: String(
+          body.announcementShortEn ?? existing.announcementShortEn
+        ),
+        announcementShortAr: String(
+          body.announcementShortAr ?? existing.announcementShortAr
+        ),
+        announcementNoteEn: String(
+          body.announcementNoteEn ?? existing.announcementNoteEn
+        ),
+        announcementNoteAr: String(
+          body.announcementNoteAr ?? existing.announcementNoteAr
+        ),
+        headerTaglineEn: String(
+          body.headerTaglineEn ?? existing.headerTaglineEn
+        ),
+        headerTaglineAr: String(
+          body.headerTaglineAr ?? existing.headerTaglineAr
+        ),
+        storefrontImage: String(
+          body.storefrontImage ?? existing.storefrontImage
+        ),
+        storefrontBadgeEn: String(
+          body.storefrontBadgeEn ?? existing.storefrontBadgeEn
+        ),
+        storefrontBadgeAr: String(
+          body.storefrontBadgeAr ?? existing.storefrontBadgeAr
+        ),
+        storefrontTitleEn: String(
+          body.storefrontTitleEn ?? existing.storefrontTitleEn
+        ),
+        storefrontTitleAr: String(
+          body.storefrontTitleAr ?? existing.storefrontTitleAr
+        ),
+        storefrontSubtitleEn: String(
+          body.storefrontSubtitleEn ?? existing.storefrontSubtitleEn
+        ),
+        storefrontSubtitleAr: String(
+          body.storefrontSubtitleAr ?? existing.storefrontSubtitleAr
+        ),
+        storefrontDescriptionEn: String(
+          body.storefrontDescriptionEn ?? existing.storefrontDescriptionEn
+        ),
+        storefrontDescriptionAr: String(
+          body.storefrontDescriptionAr ?? existing.storefrontDescriptionAr
+        ),
         taglineEn: String(body.taglineEn ?? existing.taglineEn),
         taglineAr: String(body.taglineAr ?? existing.taglineAr),
         whatsappNumber: String(body.whatsappNumber ?? existing.whatsappNumber),

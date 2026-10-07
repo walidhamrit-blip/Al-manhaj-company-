@@ -438,6 +438,69 @@ export default function StorefrontPage() {
     ctaAr: "افتح الكتالوج الشامل",
   };
 
+  // Editable homepage strings (Admin → Store & homepage) with their built-in fallbacks
+  const announcementEnabled = settings?.announcementEnabled ?? true;
+  const pickText = (en?: string | null, ar?: string | null, fallback = "") =>
+    ((lang === "ar" ? ar : en) || "").trim() || fallback;
+  const announcementText = pickText(
+    settings?.announcementEn,
+    settings?.announcementAr,
+    lang === "ar"
+      ? "توصيل مجاني داخل طرابلس فوق 1900 د.ل — Free Standard Shipping $60+"
+      : "Free shipping inside Tripoli over 1,900 LYD"
+  );
+  const announcementShort = pickText(
+    settings?.announcementShortEn,
+    settings?.announcementShortAr,
+    lang === "ar" ? "توصيل مجاني 1900 د.ل+" : "Free shipping 1,900 LYD+"
+  );
+  const announcementNote = pickText(
+    settings?.announcementNoteEn,
+    settings?.announcementNoteAr,
+    lang === "ar" ? "البيفي، طرابلس • 0912145050" : "Al Bivi, Tripoli • 0912145050"
+  );
+  // Contact details shown in the homepage hero come from the admin panel too
+  const whatsappDigits = (settings?.whatsappNumber || "218912145050").replace(
+    /[^\d]/g,
+    ""
+  );
+  const contactPhoneDisplay =
+    (settings?.contactPhone || "").trim() || "+218 91-214-5050";
+  const headerTagline = pickText(
+    settings?.headerTaglineEn,
+    settings?.headerTaglineAr,
+    "PAPER • STATIONERY • ATELIER • TRIPOLI"
+  );
+  const storefront = {
+    image: settings?.storefrontImage || "/images/new/main-storefront-hq.jpg",
+    badge: pickText(
+      settings?.storefrontBadgeEn,
+      settings?.storefrontBadgeAr,
+      lang === "ar"
+        ? "البيفي، طرابلس، ليبيا"
+        : "Al Bivi, Tripoli, Libya"
+    ),
+    title: pickText(
+      settings?.storefrontTitleEn,
+      settings?.storefrontTitleAr,
+      lang === "ar"
+        ? "شركة المنهج للقرطاسية"
+        : "Al Manhaj Company for Stationery"
+    ),
+    subtitle: pickText(
+      settings?.storefrontSubtitleEn,
+      settings?.storefrontSubtitleAr,
+      "Almanhaj for Stationery and Computer Equipment"
+    ),
+    description: pickText(
+      settings?.storefrontDescriptionEn,
+      settings?.storefrontDescriptionAr,
+      lang === "ar"
+        ? "أدوات مكتبية • معدات هندسية • أدوات مدرسية • خزائن مختلفة • حبر طابعات ومعدات الحاسوب"
+        : "Office tools • Engineering equipment • School supplies • Cabinets • Printer ink & computer equipment"
+    ),
+  };
+
   return (
     <div
       dir={isRtl ? "rtl" : "ltr"}
@@ -447,12 +510,19 @@ export default function StorefrontPage() {
       }}
       className="min-h-screen flex flex-col transition-colors duration-300 pb-20 lg:pb-0"
     >
-      {/* ===== PAPER SOURCE TOP BAR ===== */}
-      <div className="w-full bg-black text-white text-center py-2 text-[11px] sm:text-xs font-semibold tracking-widest uppercase">
-        <span className="hidden sm:inline">توصيل مجاني داخل طرابلس فوق 1900 د.ل — Free Standard Shipping $60+ → </span>
-        <span className="sm:hidden">توصيل مجاني 1900 د.ل+ →</span>
-        <span className="opacity-60 font-normal normal-case tracking-normal hidden md:inline"> &nbsp;•&nbsp; البيفي، طرابلس • 0912145050</span>
-      </div>
+      {/* ===== PAPER SOURCE TOP BAR (editable from Admin → Store & homepage) ===== */}
+      {announcementEnabled && (
+        <div className="w-full bg-black text-white text-center py-2 text-[11px] sm:text-xs font-semibold tracking-widest uppercase">
+          <span className="hidden sm:inline">{announcementText}</span>
+          <span className="sm:hidden">{announcementShort}</span>
+          {announcementNote ? (
+            <span className="opacity-60 font-normal normal-case tracking-normal hidden md:inline">
+              {" "}
+              &nbsp;•&nbsp; {announcementNote}
+            </span>
+          ) : null}
+        </div>
+      )}
       {/* ===== PAPER SOURCE HEADER - Minimal White ===== */}
       <header
         style={{
@@ -495,7 +565,7 @@ export default function StorefrontPage() {
                 style={{ color: "#6B6B6B" }}
                 className="hidden md:block text-[10px] font-medium tracking-[0.14em] uppercase truncate max-w-xs"
               >
-                PAPER • STATIONERY • ATELIER • TRIPOLI
+                {headerTagline}
               </span>
             </a>
           </div>
@@ -715,12 +785,8 @@ export default function StorefrontPage() {
         className="relative w-full overflow-hidden h-[64vh] min-h-[420px] sm:h-[78vh] sm:min-h-[560px] max-h-[860px]"
       >
         <img
-          src="/images/new/main-storefront-hq.jpg"
-          alt={
-            lang === "ar"
-              ? "واجهة شركة المنهج للقرطاسية — البيفي، طرابلس"
-              : "Al Manhaj Company for Stationery storefront — Al Bivi, Tripoli"
-          }
+          src={storefront.image}
+          alt={storefront.title}
           className="absolute inset-0 h-full w-full object-cover kenburns-bg"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -730,24 +796,18 @@ export default function StorefrontPage() {
           <div className="max-w-3xl space-y-3 sm:space-y-5">
             <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-black/35 px-3.5 py-1.5 text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.18em] text-amber-200 backdrop-blur-md">
               <MapPin className="h-3.5 w-3.5" />
-              {lang === "ar"
-                ? "البيفي، طرابلس، ليبيا"
-                : "Al Bivi, Tripoli, Libya"}
+              {storefront.badge}
             </span>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight drop-shadow-none">
-              {lang === "ar"
-                ? "شركة المنهج للقرطاسية"
-                : "Al Manhaj Company for Stationery"}
+              {storefront.title}
             </h1>
             <p className="text-sm sm:text-xl font-bold tracking-[0.12em] text-amber-300/95 uppercase">
-              Almanhaj for Stationery and Computer Equipment
+              {storefront.subtitle}
             </p>
 
             <p className="text-sm sm:text-lg text-white/90 leading-relaxed max-w-2xl">
-              {lang === "ar"
-                ? "أدوات مكتبية • معدات هندسية • أدوات مدرسية • خزائن مختلفة • حبر طابعات ومعدات الحاسوب"
-                : "Office tools • Engineering equipment • School supplies • Cabinets • Printer ink & computer equipment"}
+              {storefront.description}
             </p>
 
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1">
@@ -764,11 +824,11 @@ export default function StorefrontPage() {
                 className="inline-flex items-center gap-2 rounded-none bg-[#25D366] px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-white shadow-none transition hover:bg-[#1EBE5D]"
               >
                 <MessageCircle className="h-4 w-4 fill-current" />
-                <span dir="ltr">+218 91-214-5050</span>
+                <span dir="ltr">{contactPhoneDisplay}</span>
               </button>
 
               <a
-                href="tel:+218912145050"
+                href={`tel:+${whatsappDigits}`}
                 className="inline-flex items-center gap-2 rounded-none bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white transition"
               >
                 <Phone className="h-4 w-4" />
