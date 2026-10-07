@@ -3,6 +3,9 @@
 import React, { useState, useMemo } from "react";
 import type { Category, Product } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
+import { ProductImage } from "@/components/ProductImage";
+import { CategoryImage } from "@/components/CategoryImage";
+import { WholesalePriceDisclosure } from "@/components/WholesalePriceDisclosure";
 import {
   X,
   Search,
@@ -43,6 +46,7 @@ export function MasterCatalogDrawer({
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDeptSlug, setActiveDeptSlug] = useState<string>("all");
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
+  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
 
   const groupedCatalog = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -159,29 +163,33 @@ export function MasterCatalogDrawer({
             </div>
           </div>
 
-          {/* Department Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          {/* Keep all departments visible rather than hiding them in a horizontal scroller. */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
             <button
               type="button"
               onClick={() => setActiveDeptSlug("all")}
+              aria-pressed={activeDeptSlug === "all"}
               style={
                 activeDeptSlug === "all"
                   ? {
                       backgroundColor: theme.colors.accentPrimary,
+                      borderColor: theme.colors.accentPrimary,
                       color: "#FFFFFF",
                     }
                   : {
                       backgroundColor: theme.colors.bgSecondary,
+                      borderColor: theme.colors.border,
                       color: theme.colors.textPrimary,
                     }
               }
-              className="shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition"
+              className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-bold transition hover:opacity-85"
             >
-              {t.allCategories} ({products.length})
+              <span className="min-w-0 flex-1 line-clamp-2">{t.allCategories}</span>
+              <span className="shrink-0 tabular-nums opacity-75">({products.length})</span>
             </button>
             {categories.map((cat) => {
               const countInCat = products.filter(
-                (p) => p.categorySlug === cat.slug
+                (product) => product.categorySlug === cat.slug
               ).length;
               const isSelected = activeDeptSlug === cat.slug;
               return (
@@ -189,20 +197,26 @@ export function MasterCatalogDrawer({
                   key={cat.id}
                   type="button"
                   onClick={() => setActiveDeptSlug(cat.slug)}
+                  aria-pressed={isSelected}
                   style={
                     isSelected
                       ? {
                           backgroundColor: theme.colors.accentPrimary,
+                          borderColor: theme.colors.accentPrimary,
                           color: "#FFFFFF",
                         }
                       : {
                           backgroundColor: theme.colors.bgSecondary,
+                          borderColor: theme.colors.border,
                           color: theme.colors.textPrimary,
                         }
                   }
-                  className="shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition"
+                  className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-semibold transition hover:opacity-85"
                 >
-                  {lang === "ar" ? cat.nameAr : cat.nameEn} ({countInCat})
+                  <span className="min-w-0 flex-1 line-clamp-2">
+                    {lang === "ar" ? cat.nameAr : cat.nameEn}
+                  </span>
+                  <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
                 </button>
               );
             })}
@@ -242,10 +256,11 @@ export function MasterCatalogDrawer({
                   className="flex flex-wrap items-center justify-between gap-4 border-b p-4"
                 >
                   <div className="flex items-center gap-3.5">
-                    <img
+                    <CategoryImage
+                      slug={category.slug}
                       src={category.imageUrl}
                       alt={lang === "ar" ? category.nameAr : category.nameEn}
-                      className="h-14 w-14 rounded-xl object-cover shadow-sm"
+                      className="h-14 w-14 rounded-xl bg-white object-contain shadow-sm"
                     />
                     <div>
                       <div className="flex items-center gap-2">
@@ -320,13 +335,15 @@ export function MasterCatalogDrawer({
                             onClick={() => onQuickView(item)}
                             className="cursor-pointer flex gap-1.5 shrink-0"
                           >
-                            <img
+                            <ProductImage
+                              product={item}
                               src={img1}
                               alt={item.titleEn}
                               className="h-16 w-16 rounded-xl object-cover border border-black/10"
                             />
                             {img2 && (
-                              <img
+                              <ProductImage
+                                product={item}
                                 src={img2}
                                 alt={item.titleEn}
                                 className="hidden md:block h-16 w-16 rounded-xl object-cover border border-black/10 opacity-90"
@@ -359,14 +376,14 @@ export function MasterCatalogDrawer({
 
                             <p
                               style={{ color: theme.colors.textSecondary }}
-                              className="text-xs line-clamp-1 mt-0.5"
+                              className={`text-xs mt-0.5 ${expandedProductId === item.id ? "" : "line-clamp-1"}`}
                             >
                               {lang === "ar"
                                 ? item.descriptionAr
                                 : item.descriptionEn}
                             </p>
 
-                            {(item.specsEn || item.specsAr) && (
+                            {expandedProductId === item.id && (item.specsEn || item.specsAr) && (
                               <p
                                 style={{ color: theme.colors.accentPrimary }}
                                 className="text-[11px] font-medium mt-1"
@@ -374,22 +391,41 @@ export function MasterCatalogDrawer({
                                 {lang === "ar" ? item.specsAr : item.specsEn}
                               </p>
                             )}
+                            <button
+                              type="button"
+                              aria-expanded={expandedProductId === item.id}
+                              onClick={() =>
+                                setExpandedProductId((current) =>
+                                  current === item.id ? null : item.id
+                                )
+                              }
+                              style={{ color: theme.colors.accentPrimary }}
+                              className="mt-1 text-[11px] font-bold underline underline-offset-2"
+                            >
+                              {expandedProductId === item.id ? t.hideDetails : t.readDetails}
+                            </button>
                           </div>
                         </div>
 
                         {/* Pricing & Direct Actions */}
                         <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-dashed border-gray-200">
-                          <div className="text-start sm:text-end">
+                          <div className="w-full max-w-[210px] text-start sm:text-end">
+                            <span
+                              style={{ color: theme.colors.textSecondary }}
+                              className="text-[10px] font-semibold"
+                            >
+                              {t.retailPrice}
+                            </span>
                             <div dir="ltr" className="text-sm sm:text-base font-extrabold tabular-nums">
                               {formatPrice(item.price, lang)}
                             </div>
-                            <div
-                              style={{ color: theme.colors.accentPrimary }}
-                              dir="ltr"
-                              className="text-[11px] font-bold tabular-nums"
-                            >
-                              {t.wholesalePrice}: {formatPrice(item.wholesalePrice, lang)} (
-                              {item.wholesaleMinQty}+)
+                            <div className="mt-1 sm:ms-auto sm:max-w-[210px]">
+                              <WholesalePriceDisclosure
+                                product={item}
+                                lang={lang}
+                                theme={theme}
+                                compact
+                              />
                             </div>
                           </div>
 

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import type { Product, Category } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
+import { ProductImage } from "@/components/ProductImage";
+import { WholesalePriceDisclosure } from "@/components/WholesalePriceDisclosure";
 import {
   X,
   ShoppingBag,
@@ -35,6 +37,7 @@ export function ProductQuickViewModal({
 }: ProductQuickViewModalProps) {
   const [selectedImg, setSelectedImg] = useState(0);
   const [qty, setQty] = useState(1);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   if (!product) return null;
 
@@ -77,7 +80,8 @@ export function ProductQuickViewModal({
         {/* Image Gallery Column */}
         <div className="relative flex flex-col bg-neutral-100">
           <div className="relative aspect-[4/3] md:aspect-square w-full overflow-hidden">
-            <img
+            <ProductImage
+              product={product}
               src={activeImgUrl}
               alt={lang === "ar" ? product.titleAr : product.titleEn}
               className="h-full w-full object-cover"
@@ -127,7 +131,8 @@ export function ProductQuickViewModal({
                   }}
                   className="h-14 w-20 rounded-xl border-2 overflow-hidden transition"
                 >
-                  <img
+                  <ProductImage
+                    product={product}
                     src={url}
                     alt={`Thumb ${idx + 1}`}
                     className="h-full w-full object-cover"
@@ -159,58 +164,55 @@ export function ProductQuickViewModal({
               {lang === "ar" ? product.titleAr : product.titleEn}
             </h2>
 
-            {(product.specsEn || product.specsAr) && (
-              <div
-                style={{
-                  backgroundColor: theme.colors.bgSecondary,
-                  color: theme.colors.textSecondary,
-                }}
-                className="mb-3 inline-block rounded-lg px-3 py-1 text-xs font-semibold"
+            <div className="mb-3">
+              <p
+                style={{ color: theme.colors.textSecondary }}
+                className={`text-sm leading-relaxed ${detailsExpanded ? "" : "line-clamp-2"}`}
               >
-                {lang === "ar" ? product.specsAr : product.specsEn}
-              </div>
-            )}
+                {lang === "ar" ? product.descriptionAr : product.descriptionEn}
+              </p>
+              {detailsExpanded && (product.specsEn || product.specsAr) && (
+                <div
+                  style={{
+                    backgroundColor: theme.colors.bgSecondary,
+                    color: theme.colors.textSecondary,
+                  }}
+                  className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold"
+                >
+                  {lang === "ar" ? product.specsAr : product.specsEn}
+                </div>
+              )}
+              <button
+                type="button"
+                aria-expanded={detailsExpanded}
+                onClick={() => setDetailsExpanded((expanded) => !expanded)}
+                style={{ color: theme.colors.accentPrimary }}
+                className="mt-1.5 text-xs font-bold underline underline-offset-2"
+              >
+                {detailsExpanded ? t.hideDetails : t.readDetails}
+              </button>
+            </div>
 
-            <p
-              style={{ color: theme.colors.textSecondary }}
-              className="text-sm leading-relaxed mb-4"
-            >
-              {lang === "ar" ? product.descriptionAr : product.descriptionEn}
-            </p>
-
-            {/* Pricing Grid */}
+            {/* Retail price is public; wholesale details open only on request. */}
             <div
               style={{
                 backgroundColor: theme.colors.bgSecondary,
                 borderColor: theme.colors.border,
               }}
-              className="grid grid-cols-2 gap-3 rounded-2xl border p-3.5 mb-4"
+              className="rounded-2xl border p-3.5 mb-2"
             >
-              <div>
-                <span
-                  style={{ color: theme.colors.textSecondary }}
-                  className="text-xs block"
-                >
-                  {t.retailPrice}
-                </span>
-                <span dir="ltr" className="text-xl font-extrabold tabular-nums">
-                  {formatPrice(product.price, lang)}
-                </span>
-              </div>
-              <div
-                style={{
-                  backgroundColor: theme.colors.badgeBg,
-                  color: theme.colors.badgeText,
-                }}
-                className="rounded-xl p-2.5"
+              <span
+                style={{ color: theme.colors.textSecondary }}
+                className="text-xs block"
               >
-                <span className="text-xs font-bold block">
-                  {t.wholesalePrice} ({product.wholesaleMinQty}+ {t.units})
-                </span>
-                <span dir="ltr" className="text-xl font-extrabold tabular-nums">
-                  {formatPrice(product.wholesalePrice, lang)}
-                </span>
-              </div>
+                {t.retailPrice}
+              </span>
+              <span dir="ltr" className="text-xl font-extrabold tabular-nums">
+                {formatPrice(product.price, lang)}
+              </span>
+            </div>
+            <div className="mb-4">
+              <WholesalePriceDisclosure product={product} lang={lang} theme={theme} />
             </div>
           </div>
 

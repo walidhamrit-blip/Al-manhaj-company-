@@ -11,6 +11,7 @@ import {
 } from "@/lib/i18n-themes";
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
 import { ProductCard } from "@/components/ProductCard";
+import { CategoryImage } from "@/components/CategoryImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
@@ -355,6 +356,17 @@ export default function StorefrontPage() {
       return Number(b.isFeatured) - Number(a.isFeatured);
     });
   }, [products, selectedCategory, maxPrice, onlyPromo, searchQuery, sortBy]);
+
+  // Keep every product under its parent category in the complete catalog.
+  const catalogGroups = useMemo(() => {
+    return [...categories]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((category) => ({
+        category,
+        items: filteredProducts.filter((product) => product.categorySlug === category.slug),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [categories, filteredProducts]);
 
   // Category selection handler that smoothly scrolls to the catalog section
   const handleSelectCategoryAndScroll = (slug: string) => {
@@ -891,7 +903,7 @@ export default function StorefrontPage() {
         <div className="mb-6 sm:mb-8 flex flex-col items-center text-center gap-3">
           <div className="text-center">
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-black border-b border-black pb-1 block mb-3">
-              {lang === "ar" ? "أقسام المتجر السبعة" : "SHOP BY CATEGORY"}
+              {lang === "ar" ? "أقسامنا الرئيسية" : "SHOP BY CATEGORY"}
             </span>
             <h2 style={{fontFamily: "'Cormorant Garamond',serif"}} className="text-2xl sm:text-3xl font-medium tracking-tight text-black">
               {t.categoriesTitle}
@@ -919,8 +931,8 @@ export default function StorefrontPage() {
           </button>
         </div>
 
-        {/* 7 Visual Category Bento Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
+        {/* Main Category Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => !p.isHidden && p.categorySlug === cat.slug
@@ -937,33 +949,45 @@ export default function StorefrontPage() {
                     ? currentTheme.colors.accentPrimary
                     : currentTheme.colors.border,
                 }}
-                className={`group relative flex flex-col justify-end h-48 sm:h-56 rounded-none border-2 overflow-hidden text-start shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-sm ${
+                className={`group relative flex h-64 sm:h-72 flex-col overflow-hidden rounded-none border-2 bg-white text-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
                   isSelected ? "ring-2 ring-offset-2" : ""
                 }`}
               >
-                <img
+                <CategoryImage
+                  slug={cat.slug}
                   src={cat.imageUrl}
                   alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="h-[78%] w-full scale-125 bg-white object-contain px-2 pt-2 transition-transform duration-300 group-hover:scale-150"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
-                {/* Top Badge */}
-                <div className="relative z-10 mb-auto p-3 flex justify-between items-center w-full">
-                  <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-900 shadow">
-                    {countInCat} {t.itemsLabel}
-                  </span>
-                </div>
-
-                {/* Bottom Title & Subtitle */}
-                <div className="relative z-10 p-3.5 text-white">
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-0.5">
+                <div
+                  style={{
+                    backgroundColor: currentTheme.colors.bgElevated,
+                    borderColor: currentTheme.colors.border,
+                  }}
+                  className="mt-auto min-h-0 border-t px-3 py-2.5"
+                >
+                  <span
+                    style={{ color: currentTheme.colors.accentPrimary }}
+                    className="mb-0.5 block truncate text-[9px] font-bold uppercase tracking-wider"
+                  >
                     {lang === "ar" ? cat.badgeAr : cat.badgeEn}
                   </span>
-                  <h3 className="text-sm sm:text-base font-extrabold leading-snug line-clamp-2">
+                  <h3 className="line-clamp-2 text-xs font-extrabold leading-snug text-neutral-900 sm:text-sm">
                     {lang === "ar" ? cat.nameAr : cat.nameEn}
                   </h3>
                 </div>
+
+                <span
+                  style={{
+                    backgroundColor: currentTheme.colors.bgElevated,
+                    color: currentTheme.colors.textPrimary,
+                    borderColor: currentTheme.colors.border,
+                  }}
+                  className="absolute start-2 top-2 rounded-full border px-2 py-0.5 text-[9px] font-bold shadow-sm"
+                >
+                  {countInCat} {t.itemsLabel}
+                </span>
               </button>
             );
           })}
@@ -1092,7 +1116,7 @@ export default function StorefrontPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
             {featuredProducts.map((product) => {
               const cat = categories.find(
                 (c) => c.slug === product.categorySlug
@@ -1263,51 +1287,63 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          {/* Horizontal Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
+          {/* Keep every category visible without a horizontal scrolling strip. */}
+          <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3 xl:grid-cols-4">
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
+              aria-pressed={selectedCategory === "all"}
               style={
                 selectedCategory === "all"
                   ? {
                       backgroundColor: currentTheme.colors.accentPrimary,
+                      borderColor: currentTheme.colors.accentPrimary,
                       color: "#FFFFFF",
                     }
                   : {
                       backgroundColor: currentTheme.colors.bgSecondary,
+                      borderColor: currentTheme.colors.border,
                       color: currentTheme.colors.textPrimary,
                     }
               }
-              className="shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition"
+              className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-bold transition hover:opacity-85"
             >
-              {t.allCategories} ({products.filter(p=>!p.isHidden).length})
+              <span className="min-w-0 flex-1 line-clamp-2">{t.allCategories}</span>
+              <span className="shrink-0 tabular-nums opacity-75">
+                ({products.filter((product) => !product.isHidden).length})
+              </span>
             </button>
 
             {categories.map((cat) => {
               const countInCat = products.filter(
-              (p) => !p.isHidden && p.categorySlug === cat.slug
-            ).length;
+                (product) => !product.isHidden && product.categorySlug === cat.slug
+              ).length;
               const active = selectedCategory === cat.slug;
               return (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategory(cat.slug)}
+                  aria-pressed={active}
                   style={
                     active
                       ? {
                           backgroundColor: currentTheme.colors.accentPrimary,
+                          borderColor: currentTheme.colors.accentPrimary,
                           color: "#FFFFFF",
                         }
                       : {
                           backgroundColor: currentTheme.colors.bgSecondary,
+                          borderColor: currentTheme.colors.border,
                           color: currentTheme.colors.textPrimary,
                         }
                   }
-                  className="shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition"
+                  className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-semibold transition hover:opacity-85"
                 >
-                  {lang === "ar" ? cat.nameAr : cat.nameEn} ({countInCat})
+                  <span className="min-w-0 flex-1 line-clamp-2">
+                    {lang === "ar" ? cat.nameAr : cat.nameEn}
+                  </span>
+                  <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
                 </button>
               );
             })}
@@ -1316,12 +1352,12 @@ export default function StorefrontPage() {
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
+          <div className="flex flex-col gap-3 sm:gap-4">
+            {[1, 2, 3, 4, 5].map((n) => (
               <div
                 key={n}
                 style={{ backgroundColor: currentTheme.colors.bgSecondary }}
-                className="h-96 rounded-none animate-pulse"
+                className="h-44 sm:h-52 rounded-2xl animate-pulse"
               />
             ))}
           </div>
@@ -1357,27 +1393,72 @@ export default function StorefrontPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
-            {filteredProducts.map((product) => {
-              const cat = categories.find(
-                (c) => c.slug === product.categorySlug
-              );
-              const inCart =
-                cart.find((c) => c.product.id === product.id)?.quantity || 0;
-              return (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  category={cat}
-                  lang={lang}
-                  theme={currentTheme}
-                  currencySymbol={currencySymbol}
-                  cartQty={inCart}
-                  onAddToCart={handleAddToCart}
-                  onQuickView={setQuickViewProduct}
-                />
-              );
-            })}
+          <div className="space-y-8">
+            {catalogGroups.map(({ category, items: categoryProducts }) => (
+              <section
+                key={category.id}
+                id={`catalog-category-${category.slug}`}
+                className="scroll-mt-28 space-y-3 sm:space-y-4"
+              >
+                <div
+                  style={{
+                    backgroundColor: currentTheme.colors.bgElevated,
+                    borderColor: currentTheme.colors.border,
+                  }}
+                  className="flex items-center justify-between gap-3 rounded-2xl border p-3 sm:p-4"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <CategoryImage
+                      slug={category.slug}
+                      src={category.imageUrl}
+                      alt={lang === "ar" ? category.nameAr : category.nameEn}
+                      className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain p-1"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-extrabold sm:text-base">
+                        {lang === "ar" ? category.nameAr : category.nameEn}
+                      </h3>
+                      <p
+                        style={{ color: currentTheme.colors.textSecondary }}
+                        className="line-clamp-1 text-xs"
+                      >
+                        {lang === "ar" ? category.descriptionAr : category.descriptionEn}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      backgroundColor: currentTheme.colors.badgeBg,
+                      color: currentTheme.colors.badgeText,
+                    }}
+                    className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:text-xs"
+                  >
+                    {categoryProducts.length} {t.itemsLabel}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:gap-4">
+                  {categoryProducts.map((product) => {
+                    const inCart =
+                      cart.find((item) => item.product.id === product.id)?.quantity || 0;
+                    return (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        category={category}
+                        lang={lang}
+                        theme={currentTheme}
+                        currencySymbol={currencySymbol}
+                        cartQty={inCart}
+                        onAddToCart={handleAddToCart}
+                        onQuickView={setQuickViewProduct}
+                        layout="list"
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         )}
       </section>
@@ -1908,6 +1989,7 @@ export default function StorefrontPage() {
       />
 
       <ProductQuickViewModal
+        key={quickViewProduct?.id ?? "closed"}
         product={quickViewProduct}
         category={categories.find(
           (c) => c.slug === quickViewProduct?.categorySlug

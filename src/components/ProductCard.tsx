@@ -3,6 +3,8 @@
 import React, { useRef, useState } from "react";
 import type { Product, Category } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
+import { ProductImage } from "@/components/ProductImage";
+import { WholesalePriceDisclosure } from "@/components/WholesalePriceDisclosure";
 import {
   ShoppingBag,
   Layers,
@@ -24,6 +26,7 @@ interface ProductCardProps {
   cartQty: number;
   onAddToCart: (product: Product, qty: number) => void;
   onQuickView: (product: Product) => void;
+  layout?: "card" | "list";
 }
 
 export function ProductCard({
@@ -35,11 +38,14 @@ export function ProductCard({
   cartQty,
   onAddToCart,
   onQuickView,
+  layout = "card",
 }: ProductCardProps) {
   const t = UI_TEXT[lang];
+  const isListLayout = layout === "list";
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const images =
     Array.isArray(product.images) && product.images.length > 0
@@ -96,10 +102,18 @@ export function ProductCard({
         borderColor: theme.colors.border,
         color: theme.colors.textPrimary,
       }}
-      className="group relative flex flex-col rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
+      className={`group relative flex ${
+        isListLayout ? "flex-col sm:flex-row sm:items-stretch" : "flex-col"
+      } rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden`}
     >
       {/* Image Gallery Container (Scrollable 1 or 2 photos) */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100">
+      <div
+        className={`relative w-full overflow-hidden bg-neutral-100 ${
+          isListLayout
+            ? "aspect-[16/9] sm:aspect-square sm:h-52 sm:w-52 sm:shrink-0 sm:self-center sm:ms-3 sm:rounded-xl"
+            : "aspect-[16/9]"
+        }`}
+      >
         <div
           ref={scrollRef}
           onScroll={handleScroll}
@@ -110,7 +124,8 @@ export function ProductCard({
               key={`${product.id}-img-${idx}`}
               className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden"
             >
-              <img
+              <ProductImage
+                product={product}
                 src={imgUrl}
                 alt={`${title} - ${idx + 1}`}
                 loading="lazy"
@@ -225,7 +240,7 @@ export function ProductCard({
       </div>
 
       {/* Card Body */}
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
         {/* Category & Stock Row */}
         <div className="mb-2 flex items-center justify-between gap-2 text-xs">
           <span
@@ -260,36 +275,45 @@ export function ProductCard({
           {title}
         </h3>
 
-        {/* Technical Specs Pill */}
-        {specs && (
+        {/* Short product summary with expandable reading details */}
+        <div className="mb-3 flex-1">
           <p
+            style={{ color: theme.colors.textSecondary }}
+            className={`text-xs sm:text-sm leading-relaxed ${detailsExpanded ? "" : "line-clamp-1"}`}
+          >
+            {description}
+          </p>
+          {detailsExpanded && specs && (
+            <p
+              style={{
+                backgroundColor: theme.colors.bgSecondary,
+                color: theme.colors.textSecondary,
+              }}
+              className="mt-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium"
+            >
+              {specs}
+            </p>
+          )}
+          <button
+            type="button"
+            aria-expanded={detailsExpanded}
+            onClick={() => setDetailsExpanded((expanded) => !expanded)}
+            style={{ color: theme.colors.accentPrimary }}
+            className="mt-1.5 text-xs font-bold underline underline-offset-2"
+          >
+            {detailsExpanded ? t.hideDetails : t.readDetails}
+          </button>
+        </div>
+
+        {/* Retail price stays visible; wholesale pricing is disclosed on request. */}
+        <div className="mb-3 space-y-1.5">
+          <div
             style={{
               backgroundColor: theme.colors.bgSecondary,
-              color: theme.colors.textSecondary,
+              borderColor: theme.colors.border,
             }}
-            className="mb-2.5 inline-block self-start rounded-lg px-2.5 py-1 text-[11px] font-medium"
+            className="rounded-xl border p-2.5"
           >
-            {specs}
-          </p>
-        )}
-
-        {/* Product Description */}
-        <p
-          style={{ color: theme.colors.textSecondary }}
-          className="text-xs sm:text-sm leading-relaxed line-clamp-2 mb-4 flex-1"
-        >
-          {description}
-        </p>
-
-        {/* Dual Pricing Box: Retail + Wholesale */}
-        <div
-          style={{
-            backgroundColor: theme.colors.bgSecondary,
-            borderColor: theme.colors.border,
-          }}
-          className="mb-4 rounded-xl border p-3 flex items-center justify-between gap-2"
-        >
-          <div>
             <span
               style={{ color: theme.colors.textSecondary }}
               className="block text-[11px] font-medium"
@@ -297,7 +321,7 @@ export function ProductCard({
               {t.retailPrice}
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span dir="ltr" className="text-lg sm:text-xl font-extrabold tabular-nums">
+              <span dir="ltr" className="text-base sm:text-lg font-extrabold tabular-nums">
                 {formatPrice(product.price, lang)}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
@@ -311,28 +335,7 @@ export function ProductCard({
               )}
             </div>
           </div>
-
-          <div
-            style={{
-              backgroundColor: theme.colors.badgeBg,
-              color: theme.colors.badgeText,
-            }}
-            className="rounded-lg px-2.5 py-1.5 text-right"
-          >
-            <div className="flex items-center justify-end gap-1 text-[11px] font-bold">
-              <Layers className="h-3 w-3" />
-              <span>
-                {t.wholesalePrice} ({product.wholesaleMinQty}+)
-              </span>
-            </div>
-            <div dir="ltr" className="text-sm sm:text-base font-extrabold tabular-nums">
-              {formatPrice(product.wholesalePrice, lang)}
-              <span className="text-[11px] font-normal opacity-80">
-                {" "}
-                / {lang === "ar" ? "قطعة" : "unit"}
-              </span>
-            </div>
-          </div>
+          <WholesalePriceDisclosure product={product} lang={lang} theme={theme} compact />
         </div>
 
         {/* Action Buttons: Add Retail (+1) & Add Wholesale Pack */}
@@ -347,7 +350,7 @@ export function ProductCard({
                 : theme.colors.accentPrimary,
               color: "#FFFFFF",
             }}
-            className="col-span-3 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold shadow-sm transition hover:opacity-95 active:scale-[0.98] disabled:opacity-40"
+            className="col-span-3 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold shadow-sm transition hover:opacity-95 active:scale-[0.98] disabled:opacity-40"
           >
             {justAdded ? (
               <>
@@ -375,7 +378,7 @@ export function ProductCard({
               color: theme.colors.textPrimary,
             }}
             title={`${t.addWholesaleMin} (+${product.wholesaleMinQty})`}
-            className="col-span-2 flex items-center justify-center gap-1 rounded-xl border py-2.5 px-2 text-xs font-semibold transition hover:opacity-80 active:scale-[0.98] disabled:opacity-40"
+            className="col-span-2 flex items-center justify-center gap-1 rounded-xl border py-2 px-2 text-xs font-semibold transition hover:opacity-80 active:scale-[0.98] disabled:opacity-40"
           >
             <Layers
               style={{ color: theme.colors.accentPrimary }}
