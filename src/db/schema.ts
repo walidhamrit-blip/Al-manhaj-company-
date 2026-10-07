@@ -114,6 +114,19 @@ export const storeSettings = pgTable("store_settings", {
   heroSlides: jsonb("hero_slides").$type<HeroSlide[]>().notNull(),
   landscapeBanner: jsonb("landscape_banner").$type<LandscapeBannerConfig>().notNull(),
   defaultTheme: text("default_theme").notNull().default("atelier"),
+  // ----- Pied de page : barre légale (السجل التجاري / موثوق / طرق الدفع) -----
+  complianceEnabled: boolean("compliance_enabled").notNull().default(true),
+  complianceStatusEn: text("compliance_status_en").notNull().default(""),
+  complianceStatusAr: text("compliance_status_ar").notNull().default(""),
+  commercialRegistry: text("commercial_registry").notNull().default(""),
+  mawthooqLicense: text("mawthooq_license").notNull().default(""),
+  paymentNoticeEn: text("payment_notice_en").notNull().default(""),
+  paymentNoticeAr: text("payment_notice_ar").notNull().default(""),
+  copyrightEn: text("copyright_en").notNull().default(""),
+  copyrightAr: text("copyright_ar").notNull().default(""),
+  paymentProvidersUrl: text("payment_providers_url")
+    .notNull()
+    .default("https://cbl.gov.ly/electronic-payment/"),
 });
 
 export type OrderStatus =
