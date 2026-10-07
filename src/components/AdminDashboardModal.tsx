@@ -675,6 +675,7 @@ export function AdminDashboardModal({
                   adminToken={adminToken}
                   lang={lang}
                   theme={theme}
+                  storeSettings={settings}
                 />
               )}
 
