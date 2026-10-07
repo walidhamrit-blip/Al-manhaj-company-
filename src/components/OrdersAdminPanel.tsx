@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Clock3,
   ExternalLink,
+  FileText,
   MessageCircle,
   Package,
   RefreshCw,
@@ -17,7 +18,8 @@ import {
   ShoppingBag,
   Truck,
 } from "lucide-react";
-import type { Order, OrderStatus } from "@/db/schema";
+import type { Order, OrderStatus, StoreSettings } from "@/db/schema";
+import { openOrderDocument } from "@/lib/order-documents";
 import {
   ORDER_STATUSES,
   getOrderStatusLabel,
@@ -33,6 +35,7 @@ interface OrdersAdminPanelProps {
   adminToken: string;
   lang: Language;
   theme: ThemeConfig;
+  storeSettings: StoreSettings | null;
 }
 
 type AdminOrder = Omit<Order, "createdAt" | "updatedAt"> & {
@@ -69,6 +72,7 @@ export function OrdersAdminPanel({
   adminToken,
   lang,
   theme,
+  storeSettings,
 }: OrdersAdminPanelProps) {
   const t = UI_TEXT[lang];
   const isAr = lang === "ar";
@@ -428,6 +432,7 @@ export function OrdersAdminPanel({
                       saving={savingOrderId === order.id}
                       lang={lang}
                       theme={theme}
+                      storeSettings={storeSettings}
                       onToggle={() =>
                         setExpandedOrderId(isExpanded ? null : order.id)
                       }
@@ -507,6 +512,7 @@ function FragmentOrderRow({
   saving,
   lang,
   theme,
+  storeSettings,
   onToggle,
   onStatusChange,
   onContactUrl,
@@ -517,6 +523,7 @@ function FragmentOrderRow({
   saving: boolean;
   lang: Language;
   theme: ThemeConfig;
+  storeSettings: StoreSettings | null;
   onToggle: () => void;
   onStatusChange: (status: OrderStatus) => void;
   onContactUrl?: string;
@@ -640,6 +647,62 @@ function FragmentOrderRow({
                   </a>
                 </div>
               </div>
+              {["preparing", "shipped", "delivered"].includes(order.status) && (
+                <div
+                  style={{
+                    backgroundColor: theme.colors.bgElevated,
+                    borderColor: theme.colors.border,
+                  }}
+                  className="mb-3 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex items-start gap-2">
+                    <FileText
+                      style={{ color: theme.colors.accentPrimary }}
+                      className="mt-0.5 h-4 w-4 shrink-0"
+                    />
+                    <div>
+                      <p className="text-[11px] font-extrabold">
+                        {isAr ? "مستندات الطلب" : "Order documents"}
+                      </p>
+                      <p
+                        style={{ color: theme.colors.textSecondary }}
+                        className="mt-0.5 text-[10px] leading-4"
+                      >
+                        {isAr
+                          ? "اطبع المستند أو اختر «حفظ بصيغة PDF» من نافذة الطباعة."
+                          : "Print the document or choose “Save as PDF” in the print dialog."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openOrderDocument(order, "purchase-order", storeSettings, lang)
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-extrabold text-white transition hover:opacity-90"
+                      style={{ backgroundColor: theme.colors.accentPrimary }}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      {isAr ? "أمر شراء · PDF" : "Purchase order · PDF"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openOrderDocument(order, "invoice", storeSettings, lang)
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[10px] font-extrabold transition hover:opacity-80"
+                      style={{
+                        borderColor: theme.colors.border,
+                        color: theme.colors.textPrimary,
+                      }}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      {isAr ? "فاتورة · PDF" : "Invoice · PDF"}
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {order.items.map((item, index) => (
                   <div
