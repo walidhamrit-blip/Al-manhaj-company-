@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import type { OrderLineItem, Product, StoreSettings } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
 import { WhatsAppOrderPanel } from "@/components/WhatsAppOrderPanel";
+import { ProductImage } from "@/components/ProductImage";
 import {
   X,
   Trash2,
@@ -409,7 +410,8 @@ export function CartDrawer({
                     className="rounded-2xl border p-3.5 shadow-sm transition"
                   >
                     <div className="flex gap-3">
-                      <img
+                      <ProductImage
+                        product={product}
                         src={img}
                         alt={product.titleEn}
                         className="h-16 w-16 rounded-xl object-cover shrink-0 border border-black/10"
@@ -493,8 +495,7 @@ export function CartDrawer({
                           {t.addMoreForWholesale.replace(
                             "{n}",
                             String(unitsNeededForWholesale)
-                          )}{" "}
-                          ({formatPrice(product.wholesalePrice, lang)})
+                          )}
                         </span>
                         <button
                           type="button"

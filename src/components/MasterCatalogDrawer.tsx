@@ -3,6 +3,9 @@
 import React, { useState, useMemo } from "react";
 import type { Category, Product } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
+import { ProductImage } from "@/components/ProductImage";
+import { CategoryImage } from "@/components/CategoryImage";
+import { WholesalePriceDisclosure } from "@/components/WholesalePriceDisclosure";
 import {
   X,
   Search,
@@ -43,6 +46,7 @@ export function MasterCatalogDrawer({
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDeptSlug, setActiveDeptSlug] = useState<string>("all");
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
+  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
 
   const groupedCatalog = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -242,10 +246,11 @@ export function MasterCatalogDrawer({
                   className="flex flex-wrap items-center justify-between gap-4 border-b p-4"
                 >
                   <div className="flex items-center gap-3.5">
-                    <img
+                    <CategoryImage
+                      slug={category.slug}
                       src={category.imageUrl}
                       alt={lang === "ar" ? category.nameAr : category.nameEn}
-                      className="h-14 w-14 rounded-xl object-cover shadow-sm"
+                      className="h-14 w-14 rounded-xl bg-white object-contain shadow-sm"
                     />
                     <div>
                       <div className="flex items-center gap-2">
@@ -320,13 +325,15 @@ export function MasterCatalogDrawer({
                             onClick={() => onQuickView(item)}
                             className="cursor-pointer flex gap-1.5 shrink-0"
                           >
-                            <img
+                            <ProductImage
+                              product={item}
                               src={img1}
                               alt={item.titleEn}
                               className="h-16 w-16 rounded-xl object-cover border border-black/10"
                             />
                             {img2 && (
-                              <img
+                              <ProductImage
+                                product={item}
                                 src={img2}
                                 alt={item.titleEn}
                                 className="hidden md:block h-16 w-16 rounded-xl object-cover border border-black/10 opacity-90"
@@ -359,14 +366,14 @@ export function MasterCatalogDrawer({
 
                             <p
                               style={{ color: theme.colors.textSecondary }}
-                              className="text-xs line-clamp-1 mt-0.5"
+                              className={`text-xs mt-0.5 ${expandedProductId === item.id ? "" : "line-clamp-1"}`}
                             >
                               {lang === "ar"
                                 ? item.descriptionAr
                                 : item.descriptionEn}
                             </p>
 
-                            {(item.specsEn || item.specsAr) && (
+                            {expandedProductId === item.id && (item.specsEn || item.specsAr) && (
                               <p
                                 style={{ color: theme.colors.accentPrimary }}
                                 className="text-[11px] font-medium mt-1"
@@ -374,22 +381,41 @@ export function MasterCatalogDrawer({
                                 {lang === "ar" ? item.specsAr : item.specsEn}
                               </p>
                             )}
+                            <button
+                              type="button"
+                              aria-expanded={expandedProductId === item.id}
+                              onClick={() =>
+                                setExpandedProductId((current) =>
+                                  current === item.id ? null : item.id
+                                )
+                              }
+                              style={{ color: theme.colors.accentPrimary }}
+                              className="mt-1 text-[11px] font-bold underline underline-offset-2"
+                            >
+                              {expandedProductId === item.id ? t.hideDetails : t.readDetails}
+                            </button>
                           </div>
                         </div>
 
                         {/* Pricing & Direct Actions */}
                         <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-dashed border-gray-200">
-                          <div className="text-start sm:text-end">
+                          <div className="w-full max-w-[210px] text-start sm:text-end">
+                            <span
+                              style={{ color: theme.colors.textSecondary }}
+                              className="text-[10px] font-semibold"
+                            >
+                              {t.retailPrice}
+                            </span>
                             <div dir="ltr" className="text-sm sm:text-base font-extrabold tabular-nums">
                               {formatPrice(item.price, lang)}
                             </div>
-                            <div
-                              style={{ color: theme.colors.accentPrimary }}
-                              dir="ltr"
-                              className="text-[11px] font-bold tabular-nums"
-                            >
-                              {t.wholesalePrice}: {formatPrice(item.wholesalePrice, lang)} (
-                              {item.wholesaleMinQty}+)
+                            <div className="mt-1 sm:ms-auto sm:max-w-[210px]">
+                              <WholesalePriceDisclosure
+                                product={item}
+                                lang={lang}
+                                theme={theme}
+                                compact
+                              />
                             </div>
                           </div>
 

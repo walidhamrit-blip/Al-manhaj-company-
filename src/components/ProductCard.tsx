@@ -3,6 +3,8 @@
 import React, { useRef, useState } from "react";
 import type { Product, Category } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
+import { ProductImage } from "@/components/ProductImage";
+import { WholesalePriceDisclosure } from "@/components/WholesalePriceDisclosure";
 import {
   ShoppingBag,
   Layers,
@@ -40,6 +42,7 @@ export function ProductCard({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const images =
     Array.isArray(product.images) && product.images.length > 0
@@ -110,7 +113,8 @@ export function ProductCard({
               key={`${product.id}-img-${idx}`}
               className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden"
             >
-              <img
+              <ProductImage
+                product={product}
                 src={imgUrl}
                 alt={`${title} - ${idx + 1}`}
                 loading="lazy"
@@ -260,36 +264,45 @@ export function ProductCard({
           {title}
         </h3>
 
-        {/* Technical Specs Pill */}
-        {specs && (
+        {/* Short product summary with expandable reading details */}
+        <div className="mb-3 flex-1">
           <p
+            style={{ color: theme.colors.textSecondary }}
+            className={`text-xs sm:text-sm leading-relaxed ${detailsExpanded ? "" : "line-clamp-2"}`}
+          >
+            {description}
+          </p>
+          {detailsExpanded && specs && (
+            <p
+              style={{
+                backgroundColor: theme.colors.bgSecondary,
+                color: theme.colors.textSecondary,
+              }}
+              className="mt-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium"
+            >
+              {specs}
+            </p>
+          )}
+          <button
+            type="button"
+            aria-expanded={detailsExpanded}
+            onClick={() => setDetailsExpanded((expanded) => !expanded)}
+            style={{ color: theme.colors.accentPrimary }}
+            className="mt-1.5 text-xs font-bold underline underline-offset-2"
+          >
+            {detailsExpanded ? t.hideDetails : t.readDetails}
+          </button>
+        </div>
+
+        {/* Retail price stays visible; wholesale pricing is disclosed on request. */}
+        <div className="mb-4 space-y-2">
+          <div
             style={{
               backgroundColor: theme.colors.bgSecondary,
-              color: theme.colors.textSecondary,
+              borderColor: theme.colors.border,
             }}
-            className="mb-2.5 inline-block self-start rounded-lg px-2.5 py-1 text-[11px] font-medium"
+            className="rounded-xl border p-3"
           >
-            {specs}
-          </p>
-        )}
-
-        {/* Product Description */}
-        <p
-          style={{ color: theme.colors.textSecondary }}
-          className="text-xs sm:text-sm leading-relaxed line-clamp-2 mb-4 flex-1"
-        >
-          {description}
-        </p>
-
-        {/* Dual Pricing Box: Retail + Wholesale */}
-        <div
-          style={{
-            backgroundColor: theme.colors.bgSecondary,
-            borderColor: theme.colors.border,
-          }}
-          className="mb-4 rounded-xl border p-3 flex items-center justify-between gap-2"
-        >
-          <div>
             <span
               style={{ color: theme.colors.textSecondary }}
               className="block text-[11px] font-medium"
@@ -311,28 +324,7 @@ export function ProductCard({
               )}
             </div>
           </div>
-
-          <div
-            style={{
-              backgroundColor: theme.colors.badgeBg,
-              color: theme.colors.badgeText,
-            }}
-            className="rounded-lg px-2.5 py-1.5 text-right"
-          >
-            <div className="flex items-center justify-end gap-1 text-[11px] font-bold">
-              <Layers className="h-3 w-3" />
-              <span>
-                {t.wholesalePrice} ({product.wholesaleMinQty}+)
-              </span>
-            </div>
-            <div dir="ltr" className="text-sm sm:text-base font-extrabold tabular-nums">
-              {formatPrice(product.wholesalePrice, lang)}
-              <span className="text-[11px] font-normal opacity-80">
-                {" "}
-                / {lang === "ar" ? "قطعة" : "unit"}
-              </span>
-            </div>
-          </div>
+          <WholesalePriceDisclosure product={product} lang={lang} theme={theme} compact />
         </div>
 
         {/* Action Buttons: Add Retail (+1) & Add Wholesale Pack */}

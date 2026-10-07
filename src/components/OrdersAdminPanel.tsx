@@ -253,7 +253,7 @@ export function OrdersAdminPanel({
           label={t.ordersFilterShipped}
           value={counts.shipped}
           icon={Truck}
-          color="#7C3AED"
+          color="#C62828"
           theme={theme}
         />
         <SummaryCard

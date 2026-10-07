@@ -11,6 +11,7 @@ import {
 } from "@/lib/i18n-themes";
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
 import { ProductCard } from "@/components/ProductCard";
+import { CategoryImage } from "@/components/CategoryImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
@@ -937,33 +938,45 @@ export default function StorefrontPage() {
                     ? currentTheme.colors.accentPrimary
                     : currentTheme.colors.border,
                 }}
-                className={`group relative flex flex-col justify-end h-48 sm:h-56 rounded-none border-2 overflow-hidden text-start shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-sm ${
+                className={`group relative flex h-48 sm:h-56 flex-col overflow-hidden rounded-none border-2 bg-white text-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
                   isSelected ? "ring-2 ring-offset-2" : ""
                 }`}
               >
-                <img
+                <CategoryImage
+                  slug={cat.slug}
                   src={cat.imageUrl}
                   alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="h-[68%] w-full bg-white object-contain px-3 pt-3 transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
-                {/* Top Badge */}
-                <div className="relative z-10 mb-auto p-3 flex justify-between items-center w-full">
-                  <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-900 shadow">
-                    {countInCat} {t.itemsLabel}
-                  </span>
-                </div>
-
-                {/* Bottom Title & Subtitle */}
-                <div className="relative z-10 p-3.5 text-white">
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-0.5">
+                <div
+                  style={{
+                    backgroundColor: currentTheme.colors.bgElevated,
+                    borderColor: currentTheme.colors.border,
+                  }}
+                  className="mt-auto min-h-0 border-t px-3 py-2.5"
+                >
+                  <span
+                    style={{ color: currentTheme.colors.accentPrimary }}
+                    className="mb-0.5 block truncate text-[9px] font-bold uppercase tracking-wider"
+                  >
                     {lang === "ar" ? cat.badgeAr : cat.badgeEn}
                   </span>
-                  <h3 className="text-sm sm:text-base font-extrabold leading-snug line-clamp-2">
+                  <h3 className="line-clamp-2 text-xs font-extrabold leading-snug text-neutral-900 sm:text-sm">
                     {lang === "ar" ? cat.nameAr : cat.nameEn}
                   </h3>
                 </div>
+
+                <span
+                  style={{
+                    backgroundColor: currentTheme.colors.bgElevated,
+                    color: currentTheme.colors.textPrimary,
+                    borderColor: currentTheme.colors.border,
+                  }}
+                  className="absolute start-2 top-2 rounded-full border px-2 py-0.5 text-[9px] font-bold shadow-sm"
+                >
+                  {countInCat} {t.itemsLabel}
+                </span>
               </button>
             );
           })}
@@ -1908,6 +1921,7 @@ export default function StorefrontPage() {
       />
 
       <ProductQuickViewModal
+        key={quickViewProduct?.id ?? "closed"}
         product={quickViewProduct}
         category={categories.find(
           (c) => c.slug === quickViewProduct?.categorySlug

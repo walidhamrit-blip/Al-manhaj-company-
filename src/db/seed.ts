@@ -27,7 +27,7 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     nameAr: "الدفاتر والمنتجات الورقية",
     descriptionEn: "100gsm fountain-pen friendly notebooks, dotted journals, academic pads & archival A4 paper.",
     descriptionAr: "دفاتر ملاحظات فاخرة بوزن 100 جرام، دفاتر منقطة، كراسات أكاديمية وورق A4 عالي الجودة.",
-    imageUrl: "/images/new/cat-notebooks-illust.jpg",
+    imageUrl: "/images/category-illustrations/notebooks.webp",
     badgeEn: "100–120 GSM Paper",
     badgeAr: "ورق فاخر 120 جرام",
     sortOrder: 1,
@@ -38,7 +38,7 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     nameAr: "أدوات الكتابة والأقلام الفاخرة",
     descriptionEn: "Precision fountain pens, Japanese gel rollers, architectural fineliners & pastel highlighters.",
     descriptionAr: "أقلام حبر سائلة دقيقة، أقلام جل يابانية، محددات هندسية وأقلام تظليل بألوان الباستيل.",
-    imageUrl: "/images/new/cat-writing-illust.jpg",
+    imageUrl: "/images/category-illustrations/writing.webp",
     badgeEn: "Precision Nib",
     badgeAr: "كتابة فائقة الدقة",
     sortOrder: 2,
@@ -49,7 +49,7 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     nameAr: "الحقائب المدرسية وحلول التنظيم",
     descriptionEn: "Ergonomic waterproof backpacks, padded laptop sleeves, canvas pen cases & modular desk trays.",
     descriptionAr: "حقائب ظهر مدرسية مريحة ومقاومة للماء، حافظات حاسوب مبطنة، مقلمات قماشية ومنظمات مكتبية.",
-    imageUrl: "/images/new/cat-bags-illust.jpg",
+    imageUrl: "/images/category-illustrations/bags.webp",
     badgeEn: "Ergonomic Series",
     badgeAr: "تصميم مريح للظهر",
     sortOrder: 3,
@@ -60,7 +60,7 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     nameAr: "ملحقات الحاسوب والتقنية",
     descriptionEn: "Wireless mechanical keyboards, ergonomic silent mice, USB-C 10-in-1 hubs & NVMe portable SSDs.",
     descriptionAr: "لوحات مفاتيح ميكانيكية لاسلكية، فئران مريحة صامتة، موزعات USB-C وأقراص تخزين SSD سريعة.",
-    imageUrl: "/images/new/cat-it-illust.jpg",
+    imageUrl: "/images/category-illustrations/it-accessories.webp",
     badgeEn: "Pro Studio Tech",
     badgeAr: "تقنيات احترافية",
     sortOrder: 4,
@@ -71,7 +71,7 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     nameAr: "الأحبار والتونر والمستهلكات",
     descriptionEn: "High-yield laser toner cartridges, pigment ink bottles, thermal labels & studio paper reams.",
     descriptionAr: "خراطيش تونر ليزر عالية الإنتاجية، عبوات حبر ملونة، ملصقات حرارية ورزم ورق للمكاتب.",
-    imageUrl: "/images/new/cat-ink-illust.jpg",
+    imageUrl: "/images/category-illustrations/ink-toner.webp",
     badgeEn: "High-Yield OEM",
     badgeAr: "إنتاجية طباعة عالية",
     sortOrder: 5,
@@ -82,7 +82,7 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     nameAr: "الفنون الجميلة والرسم الهندسي",
     descriptionEn: "Dual-tip alcohol markers, brass drafting compass sets, watercolor brush pens & heavy sketchbooks.",
     descriptionAr: "أقلام ماركر مزدوجة الرأس، أطقم فرجار هندسي نحاسي، أقلام ألوان مائية وكراسات رسم سميكة.",
-    imageUrl: "/images/new/cat-art-illust.jpg",
+    imageUrl: "/images/category-illustrations/art-drafting.webp",
     badgeEn: "Studio Grade",
     badgeAr: "درجة استوديو فنية",
     sortOrder: 6,
@@ -93,7 +93,7 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     nameAr: "الآلات الحاسبة وإلكترونيات المكتب",
     descriptionEn: "Scientific graphing calculators, solar financial calculators, LED desk lamps & Pomodoro timers.",
     descriptionAr: "آلات حاسبة علمية وبيانية، حاسبات مكتبية بالطاقة الشمسية، مصابيح LED ذكية ومؤقتات الدراسة.",
-    imageUrl: "/images/new/cat-calc-illust.jpg",
+    imageUrl: "/images/category-illustrations/calculators.webp",
     badgeEn: "Exam Approved",
     badgeAr: "معتمدة للامتحانات",
     sortOrder: 7,
@@ -767,13 +767,13 @@ export async function ensureDatabaseSeeded() {
     await db.insert(categories).values(INITIAL_CATEGORIES);
   } else {
     // Upgrade category illustrative images to new high-quality (migrate old Pexels/cat-*.jpg)
-    await pool.query(`UPDATE categories SET image_url='/images/new/cat-notebooks-illust.jpg' WHERE slug='notebooks'`);
-    await pool.query(`UPDATE categories SET image_url='/images/new/cat-writing-illust.jpg' WHERE slug='writing'`);
-    await pool.query(`UPDATE categories SET image_url='/images/new/cat-bags-illust.jpg' WHERE slug='bags'`);
-    await pool.query(`UPDATE categories SET image_url='/images/new/cat-it-illust.jpg' WHERE slug='it-peripherals'`);
-    await pool.query(`UPDATE categories SET image_url='/images/new/cat-ink-illust.jpg' WHERE slug='ink-consumables'`);
-    await pool.query(`UPDATE categories SET image_url='/images/new/cat-art-illust.jpg' WHERE slug='art-drafting'`);
-    await pool.query(`UPDATE categories SET image_url='/images/new/cat-calc-illust.jpg' WHERE slug='calculators-tech'`);
+    await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/notebooks.webp' WHERE slug='notebooks'`);
+    await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/writing.webp' WHERE slug='writing'`);
+    await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/bags.webp' WHERE slug='bags'`);
+    await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/it-accessories.webp' WHERE slug='it-peripherals'`);
+    await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/ink-toner.webp' WHERE slug='ink-consumables'`);
+    await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/art-drafting.webp' WHERE slug='art-drafting'`);
+    await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/calculators.webp' WHERE slug='calculators-tech'`);
   }
 
   const [{ value: prodCount }] = await db.select({ value: count() }).from(products);
