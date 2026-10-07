@@ -684,5 +684,22 @@ export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
     ctaEn: "Open Full Master Catalog",
     ctaAr: "افتح الكتالوج الشامل",
   },
+  // ----- Pied de page : barre légale (modifiable depuis لوحة الإدارة) -----
+  complianceEnabled: true,
+  complianceStatusEn:
+    "Store registration with the Mawthooq platform (Ministry of Economy) is in progress",
+  complianceStatusAr:
+    "متجر قيد التسجيل في منصة موثوق بوزارة الاقتصاد والتجارة",
+  commercialRegistry: "",
+  mawthooqLicense: "",
+  paymentNoticeEn:
+    "Cash on delivery and bank transfer are available today — electronic payment (LYPay / Moamalat / Tadawul / Masarat) will be enabled once the Mawthooq licence is issued, in line with the Central Bank of Libya instructions (Circular 7/2020).",
+  paymentNoticeAr:
+    "الدفع عند التسليم و عبر التحويل المصرفي حالياً — الدفع الإلكتروني (LYPay / معاملات / تداول / مسارات) يُفعّل بعد إصدار ترخيص موثوق حسب تعليمات مصرف ليبيا المركزي (منشور 7/2020).",
+  copyrightEn:
+    "© {year} Al Manhaj Company for Stationery — All rights reserved • Al Bivi, Tripoli — Libyan Dinar (LYD)",
+  copyrightAr:
+    "© {year} شركة المنهج للقرطاسية — جميع الحقوق محفوظة • البيفي، طرابلس — الدينار الليبي",
+  paymentProvidersUrl: "https://cbl.gov.ly/electronic-payment/",
 };
 

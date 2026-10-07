@@ -39,6 +39,7 @@ import {
   Images,
   ArrowUp,
   ArrowDown,
+  ShieldCheck,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------------------
@@ -185,6 +186,26 @@ function normalizeSearch(value: string): string {
     .replace(/ة/g, "ه")
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
+}
+
+/**
+ * Live-preview helper for the legal footer bar: shows the text that will be
+ * displayed on the storefront (Arabic first in AR, English first in EN).
+ */
+function pickPreviewText(
+  en: string | null | undefined,
+  ar: string | null | undefined,
+  isAr: boolean
+): string {
+  const value = isAr
+    ? (ar || "").trim() || (en || "").trim()
+    : (en || "").trim() || (ar || "").trim();
+  return (
+    value ||
+    (isAr
+      ? "— سيُستخدم النص الافتراضي المدمج في الموقع"
+      : "— the built-in default text will be used on the site")
+  );
 }
 
 interface AdminDashboardModalProps {
@@ -2175,6 +2196,144 @@ export function AdminDashboardModal({
                       onChangeAr={(v) => updateBanner({ ctaAr: v })}
                       theme={theme}
                     />
+                  </PanelSection>
+
+                  {/* --- 5. Legal & compliance footer bar (CBL / Mawthooq / registry) --- */}
+                  <PanelSection
+                    title={t.homepageCompliance}
+                    hint={t.homepageComplianceHint}
+                    icon={<ShieldCheck className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    <label className="flex items-center gap-2 text-xs font-bold">
+                      <input
+                        type="checkbox"
+                        checked={settingsForm.complianceEnabled ?? true}
+                        onChange={(e) =>
+                          patchSettings({ complianceEnabled: e.target.checked })
+                        }
+                        className="h-4 w-4"
+                      />
+                      <span>{t.homepageComplianceVisible}</span>
+                    </label>
+
+                    <BilingualField
+                      labelEn={`${t.homepageComplianceStatus} (EN)`}
+                      labelAr={`${t.homepageComplianceStatus} (AR)`}
+                      valueEn={settingsForm.complianceStatusEn ?? ""}
+                      valueAr={settingsForm.complianceStatusAr ?? ""}
+                      onChangeEn={(v) => patchSettings({ complianceStatusEn: v })}
+                      onChangeAr={(v) => patchSettings({ complianceStatusAr: v })}
+                      theme={theme}
+                      textarea
+                    />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <TextField
+                        label={t.homepageCommercialRegistry}
+                        value={settingsForm.commercialRegistry ?? ""}
+                        onChange={(v) =>
+                          patchSettings({ commercialRegistry: v })
+                        }
+                        theme={theme}
+                        placeholder="12345/2026"
+                      />
+                      <TextField
+                        label={t.homepageMawthooqLicense}
+                        value={settingsForm.mawthooqLicense ?? ""}
+                        onChange={(v) => patchSettings({ mawthooqLicense: v })}
+                        theme={theme}
+                        placeholder="MTQ-2026-00123"
+                      />
+                    </div>
+
+                    <BilingualField
+                      labelEn={`${t.homepagePaymentNotice} (EN)`}
+                      labelAr={`${t.homepagePaymentNotice} (AR)`}
+                      valueEn={settingsForm.paymentNoticeEn ?? ""}
+                      valueAr={settingsForm.paymentNoticeAr ?? ""}
+                      onChangeEn={(v) => patchSettings({ paymentNoticeEn: v })}
+                      onChangeAr={(v) => patchSettings({ paymentNoticeAr: v })}
+                      theme={theme}
+                      textarea
+                    />
+
+                    <BilingualField
+                      labelEn={`${t.homepageCopyright} (EN)`}
+                      labelAr={`${t.homepageCopyright} (AR)`}
+                      valueEn={settingsForm.copyrightEn ?? ""}
+                      valueAr={settingsForm.copyrightAr ?? ""}
+                      onChangeEn={(v) => patchSettings({ copyrightEn: v })}
+                      onChangeAr={(v) => patchSettings({ copyrightAr: v })}
+                      theme={theme}
+                      textarea
+                    />
+
+                    <TextField
+                      label={t.homepagePaymentProvidersUrl}
+                      value={settingsForm.paymentProvidersUrl ?? ""}
+                      onChange={(v) => patchSettings({ paymentProvidersUrl: v })}
+                      theme={theme}
+                      placeholder="https://cbl.gov.ly/electronic-payment/"
+                    />
+
+                    {/* Live preview of the footer legal bar */}
+                    <div
+                      style={{
+                        backgroundColor: theme.colors.bgElevated,
+                        borderColor: theme.colors.border,
+                        color: theme.colors.textSecondary,
+                      }}
+                      className="rounded-xl border p-3 space-y-2 text-[11px] leading-5"
+                    >
+                      <p className="font-extrabold" style={{ color: theme.colors.textPrimary }}>
+                        {t.homepagePreview}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          style={{ borderColor: theme.colors.border }}
+                          className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-bold"
+                        >
+                          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                          {(isAr
+                            ? settingsForm.complianceStatusAr
+                            : settingsForm.complianceStatusEn) ||
+                            (isAr
+                              ? "متجر قيد التسجيل في منصة موثوق بوزارة الاقتصاد والتجارة"
+                              : "Store registration with the Mawthooq platform is in progress")}
+                        </span>
+                        <span>
+                          {t.footerCommercialRegistry}:{" "}
+                          <span className="font-mono font-extrabold">
+                            {(settingsForm.commercialRegistry || "").trim() ||
+                              "[XXXXXX]"}
+                          </span>{" "}
+                          — {t.footerMawthooqLicense}:{" "}
+                          <span className="font-mono font-extrabold">
+                            {(settingsForm.mawthooqLicense || "").trim() ||
+                              "[MTQ-XXXX]"}
+                          </span>
+                        </span>
+                      </div>
+                      <p className="font-bold">
+                        {t.footerPrivacy} • {t.footerTerms} • {t.footerReturns} •{" "}
+                        {t.footerPaymentProviders}
+                      </p>
+                      <p>
+                        {pickPreviewText(
+                          settingsForm.paymentNoticeEn,
+                          settingsForm.paymentNoticeAr,
+                          isAr
+                        )}
+                      </p>
+                      <p>
+                        {pickPreviewText(
+                          settingsForm.copyrightEn,
+                          settingsForm.copyrightAr,
+                          isAr
+                        ).replaceAll("{year}", String(new Date().getFullYear()))}
+                      </p>
+                    </div>
                   </PanelSection>
 
                   <div className="flex justify-end pb-2">

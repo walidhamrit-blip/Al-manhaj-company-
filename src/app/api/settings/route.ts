@@ -115,6 +115,30 @@ export async function PUT(request: NextRequest) {
           : existing.heroSlides,
         landscapeBanner: body.landscapeBanner ?? existing.landscapeBanner,
         defaultTheme: String(body.defaultTheme ?? existing.defaultTheme),
+        // ----- Editable legal footer bar -----
+        complianceEnabled:
+          typeof body.complianceEnabled === "boolean"
+            ? body.complianceEnabled
+            : existing.complianceEnabled,
+        complianceStatusEn: String(
+          body.complianceStatusEn ?? existing.complianceStatusEn
+        ),
+        complianceStatusAr: String(
+          body.complianceStatusAr ?? existing.complianceStatusAr
+        ),
+        commercialRegistry: String(
+          body.commercialRegistry ?? existing.commercialRegistry
+        ),
+        mawthooqLicense: String(
+          body.mawthooqLicense ?? existing.mawthooqLicense
+        ),
+        paymentNoticeEn: String(body.paymentNoticeEn ?? existing.paymentNoticeEn),
+        paymentNoticeAr: String(body.paymentNoticeAr ?? existing.paymentNoticeAr),
+        copyrightEn: String(body.copyrightEn ?? existing.copyrightEn),
+        copyrightAr: String(body.copyrightAr ?? existing.copyrightAr),
+        paymentProvidersUrl: String(
+          body.paymentProvidersUrl ?? existing.paymentProvidersUrl
+        ),
       })
       .where(eq(storeSettings.id, existing.id))
       .returning();

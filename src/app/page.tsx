@@ -501,6 +501,36 @@ export default function StorefrontPage() {
     ),
   };
 
+  // Legal footer bar (Admin → Store & homepage → الشريط القانوني)
+  const complianceEnabled = settings?.complianceEnabled ?? true;
+  const complianceStatus = pickText(
+    settings?.complianceStatusEn,
+    settings?.complianceStatusAr,
+    lang === "ar"
+      ? "متجر قيد التسجيل في منصة موثوق بوزارة الاقتصاد والتجارة"
+      : "Store registration with the Mawthooq platform (Ministry of Economy) is in progress"
+  );
+  const commercialRegistry =
+    (settings?.commercialRegistry || "").trim() || "[XXXXXX]";
+  const mawthooqLicense = (settings?.mawthooqLicense || "").trim() || "[MTQ-XXXX]";
+  const paymentNotice = pickText(
+    settings?.paymentNoticeEn,
+    settings?.paymentNoticeAr,
+    lang === "ar"
+      ? "الدفع عند التسليم و عبر التحويل المصرفي حالياً — الدفع الإلكتروني (LYPay / معاملات / تداول / مسارات) يُفعّل بعد إصدار ترخيص موثوق حسب تعليمات مصرف ليبيا المركزي (منشور 7/2020)."
+      : "Cash on delivery and bank transfer are available today — electronic payment (LYPay / Moamalat / Tadawul / Masarat) will be enabled once the Mawthooq licence is issued, in line with the Central Bank of Libya instructions (Circular 7/2020)."
+  );
+  const copyrightLine = pickText(
+    settings?.copyrightEn,
+    settings?.copyrightAr,
+    lang === "ar"
+      ? "© {year} شركة المنهج للقرطاسية — جميع الحقوق محفوظة • البيفي، طرابلس — الدينار الليبي"
+      : "© {year} Al Manhaj Company for Stationery — All rights reserved • Al Bivi, Tripoli — Libyan Dinar (LYD)"
+  ).replaceAll("{year}", String(new Date().getFullYear()));
+  const paymentProvidersUrl =
+    (settings?.paymentProvidersUrl || "").trim() ||
+    "https://cbl.gov.ly/electronic-payment/";
+
   return (
     <div
       dir={isRtl ? "rtl" : "ltr"}
@@ -1915,31 +1945,35 @@ export default function StorefrontPage() {
             </div>
           </div>
         </div>
-        {/* ===== CBL / Mawthooq Compliance Bar ===== */}
-        <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t" style={{borderColor: currentTheme.colors.border}}>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> متجر قيد التسجيل في منصة موثوق بوزارة الاقتصاد
-              </span>
-              <span className="opacity-70">السجل التجاري: <span className="font-mono font-extrabold">[XXXXXX]</span> — ترخيص موثوق: <span className="font-mono font-extrabold">[MTQ-XXXX]</span></span>
+        {/* ===== CBL / Mawthooq Compliance Bar (editable from Admin) ===== */}
+        {complianceEnabled && (
+          <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t" style={{borderColor: currentTheme.colors.border}}>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> {complianceStatus}
+                </span>
+                <span className="opacity-70">
+                  {t.footerCommercialRegistry}: <span className="font-mono font-extrabold">{commercialRegistry}</span> — {t.footerMawthooqLicense}: <span className="font-mono font-extrabold">{mawthooqLicense}</span>
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 font-bold">
+                <a href="/privacy" className="hover:underline underline-offset-4">{t.footerPrivacy}</a>
+                <span className="opacity-30">•</span>
+                <a href="/terms" className="hover:underline underline-offset-4">{t.footerTerms}</a>
+                <span className="opacity-30">•</span>
+                <a href="/returns" className="hover:underline underline-offset-4">{t.footerReturns}</a>
+                <span className="opacity-30">•</span>
+                <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:underline underline-offset-4">{t.footerPaymentProviders}</a>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3 font-bold">
-              <a href="/privacy" className="hover:underline underline-offset-4">سياسة الخصوصية</a>
-              <span className="opacity-30">•</span>
-              <a href="/terms" className="hover:underline underline-offset-4">الشروط والأحكام</a>
-              <span className="opacity-30">•</span>
-              <a href="/returns" className="hover:underline underline-offset-4">الاسترجاع والشحن</a>
-              <span className="opacity-30">•</span>
-              <a href="https://cbl.gov.ly/electronic-payment/" target="_blank" rel="noopener" className="hover:underline underline-offset-4">مزودو الدفع المرخصون CBL</a>
+            <div style={{color: currentTheme.colors.textSecondary}} className="mt-3 flex flex-wrap gap-2 text-[11px] leading-5">
+              <span>{paymentNotice}</span>
+              <span className="hidden sm:inline opacity-30">—</span>
+              <span>{copyrightLine}</span>
             </div>
           </div>
-          <div style={{color: currentTheme.colors.textSecondary}} className="mt-3 flex flex-wrap gap-2 text-[11px] leading-5">
-            <span>الدفع عند التسليم و عبر التحويل المصرفي حالياً — الدفع الإلكتروني (LYPay / معاملات / تداول / مسارات) يُفعل بعد إصدار ترخيص موثوق حسب تعليمات مصرف ليبيا المركزي (منشور 7/2020).</span>
-            <span className="hidden sm:inline opacity-30">—</span>
-            <span>© {new Date().getFullYear()} شركة المنهج للقرطاسية — جميع الحقوق محفوظة • البيفي، طرابلس — LYD الدينار الليبي</span>
-          </div>
-        </div>
+        )}
       </footer>
 
       {/* =====================================================================
