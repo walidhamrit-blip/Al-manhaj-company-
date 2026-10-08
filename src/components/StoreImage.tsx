@@ -27,6 +27,7 @@ export function StoreImage({
     <img
       src={source}
       alt={alt}
+      loading="lazy"
       className={
         fill
           ? `absolute inset-0 h-full w-full ${className || "object-cover"}`
