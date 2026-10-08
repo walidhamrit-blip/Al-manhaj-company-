@@ -517,35 +517,6 @@ export default function StorefrontPage() {
     settings?.headerTaglineAr,
     "PAPER • STATIONERY • ATELIER • TRIPOLI"
   );
-  const storefront = {
-    image: settings?.storefrontImage || "/images/new/main-storefront-hq.jpg",
-    badge: pickText(
-      settings?.storefrontBadgeEn,
-      settings?.storefrontBadgeAr,
-      lang === "ar"
-        ? "البيفي، طرابلس، ليبيا"
-        : "Al Bivi, Tripoli, Libya"
-    ),
-    title: pickText(
-      settings?.storefrontTitleEn,
-      settings?.storefrontTitleAr,
-      lang === "ar"
-        ? "شركة المنهج للقرطاسية"
-        : "Al Manhaj Company for Stationery"
-    ),
-    subtitle: pickText(
-      settings?.storefrontSubtitleEn,
-      settings?.storefrontSubtitleAr,
-      "Almanhaj for Stationery and Computer Equipment"
-    ),
-    description: pickText(
-      settings?.storefrontDescriptionEn,
-      settings?.storefrontDescriptionAr,
-      lang === "ar"
-        ? "أدوات مكتبية • معدات هندسية • أدوات مدرسية • خزائن مختلفة • حبر طابعات ومعدات الحاسوب"
-        : "Office tools • Engineering equipment • School supplies • Cabinets • Printer ink & computer equipment"
-    ),
-  };
 
   // Legal footer bar (Admin → Store & homepage → الشريط القانوني)
   const complianceEnabled = settings?.complianceEnabled ?? true;
@@ -882,6 +853,13 @@ export default function StorefrontPage() {
                 </button>
               ))}
             </div>
+            <a
+              href="/magasin"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+            >
+              <MapPin className="h-4 w-4" />
+              {t.ourStore}
+            </a>
             <button
               type="button"
               onClick={() => setIsCatalogOpen(true)}
@@ -892,6 +870,9 @@ export default function StorefrontPage() {
             </button>
           </div>
           <div className="flex md:hidden overflow-x-auto no-scrollbar border-t border-white/20">
+            <a href="/magasin" className="shrink-0 px-3 py-2 text-[12px] font-semibold">
+              {t.ourStore}
+            </a>
             {categories.map((cat) => (
               <button
                 key={`mnav-${cat.slug}`}
@@ -1018,14 +999,21 @@ export default function StorefrontPage() {
             <div className="grid grid-cols-2 gap-3 lg:col-span-4 lg:grid-cols-1">
               <button
                 type="button"
-                onClick={() => handleSelectCategoryAndScroll("all")}
+                onClick={() => handleSelectCategoryAndScroll("it-peripherals")}
                 className="relative h-[120px] overflow-hidden sm:h-[155px] lg:h-[174px] text-start"
               >
-                <StoreImage src={storefront.image} alt={storefront.title} className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" />
+                <StoreImage
+                  src="/images/new/hero-it-tech-01.jpg"
+                  alt={t.dealsTitle}
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">{storefront.badge}</div>
-                  <div className="text-sm font-extrabold leading-snug line-clamp-2">{storefront.title}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                    {t.dealsTitle}
+                  </div>
+                  <div className="text-sm font-extrabold leading-snug line-clamp-2">{t.shopNow}</div>
                 </div>
               </button>
               <button
@@ -1911,6 +1899,7 @@ export default function StorefrontPage() {
               {lang === "ar" ? "معلومات قانونية" : "Legal"}
             </h4>
             <div className="flex flex-col gap-2 text-xs font-semibold text-neutral-300">
+              <a href="/magasin" className="hover:text-white hover:underline">{t.ourStore}</a>
               <a href="/privacy" className="hover:text-white hover:underline">{t.footerPrivacy}</a>
               <a href="/terms" className="hover:text-white hover:underline">{t.footerTerms}</a>
               <a href="/returns" className="hover:text-white hover:underline">{t.footerReturns}</a>

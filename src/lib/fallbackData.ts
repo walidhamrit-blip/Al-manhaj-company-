@@ -576,6 +576,174 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
     specsEn: "CRI >95 Eye-Care • 15W Qi Wireless Pad • Study Timer",
     specsAr: "حماية للعين CRI 95+ • شاحن لاسلكي 15 واط • مؤقت دراسة",
   },
+  {
+    sku: "NB-A4BOX-04",
+    categorySlug: "notebooks",
+    titleEn: "Office A4 80gsm Copy Paper Carton (5 Reams / 2500 sheets)",
+    titleAr: "كرتون ورق تصوير A4 وزن 80 جرام (5 رزم / 2500 ورقة)",
+    descriptionEn:
+      "Bright-white 80gsm A4 reams for copiers, laser and inkjet. Wrapped 5-ream carton for schools, copy centers and offices.",
+    descriptionAr:
+      "ورق A4 أبيض ناصع 80 جرام للطابعات والتصوير. كرتون 5 رزم مناسب للمدارس ومراكز النسخ والمكاتب.",
+    price: 89.0,
+    originalPrice: 105.0,
+    wholesalePrice: 72.0,
+    wholesaleMinQty: 8,
+    stock: 96,
+    images: [
+      "/images/new/paper-a4-01.jpg",
+      "https://images.pexels.com/photos/261763/pexels-photo-261763.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    ],
+    isFeatured: true,
+    isPromotion: true,
+    isHidden: false,
+    specsEn: "A4 210×297 mm • 80 GSM • 5×500 sheets",
+    specsAr: "مقاس A4 • 80 جرام • 5 رزم × 500 ورقة",
+  },
+  {
+    sku: "WR-HIGH-04",
+    categorySlug: "writing",
+    titleEn: "Pastel Highlighter Wallet (8 pastel + 4 neon)",
+    titleAr: "طقم أقلام تظليل باستيل ونيون (12 قلم)",
+    descriptionEn:
+      "Chisel-tip highlighters that do not bleed through 80gsm paper. Mix of pastel study colours and exam neons.",
+    descriptionAr:
+      "أقلام تظيل برأس إزميل دون تسرب عبر ورق 80 جرام. ألوان باستيل للدراسة ونيون للامتحانات.",
+    price: 14.9,
+    originalPrice: 19.5,
+    wholesalePrice: 9.8,
+    wholesaleMinQty: 24,
+    stock: 210,
+    images: [
+      "/images/new/gel-sakura-01.jpg",
+      "https://images.pexels.com/photos/636243/pexels-photo-636243.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    ],
+    isFeatured: true,
+    isPromotion: true,
+    isHidden: false,
+    specsEn: "12 pens • Chisel 1–5 mm • Quick-dry ink",
+    specsAr: "12 قلم • رأس 1–5 مم • حبر سريع الجفاف",
+  },
+  {
+    sku: "BG-TROLLEY-04",
+    categorySlug: "bags",
+    titleEn: "Rolling School Trolley Backpack 32L with Laptop Sleeve",
+    titleAr: "حقيبة مدرسية بعجلات 32 لتر مع جيب لابتوب",
+    descriptionEn:
+      "Converts from backpack to trolley. Padded 15.6\" sleeve, rain cover and reinforced base for daily school runs.",
+    descriptionAr:
+      "تتحول من حقيبة ظهر إلى عربة. جيب مبطن 15.6 بوصة وغطاء مطر وقاعدة مقوّاة.",
+    price: 129.0,
+    originalPrice: 159.0,
+    wholesalePrice: 98.0,
+    wholesaleMinQty: 8,
+    stock: 44,
+    images: [
+      "/images/new/bag-oslo-01.jpg",
+      "/images/cat-bags.jpg",
+    ],
+    isFeatured: true,
+    isPromotion: true,
+    isHidden: false,
+    specsEn: "32 L • 15.6\" sleeve • Trolley + backpack",
+    specsAr: "32 لتر • جيب 15.6 بوصة • عجلات وحقيبة ظهر",
+  },
+  {
+    sku: "IT-SSD-04",
+    categorySlug: "it-peripherals",
+    titleEn: "Portable NVMe SSD 1TB USB-C 10Gbps",
+    titleAr: "قرص SSD محمول 1 تيرابايت USB-C بسرعة 10 جيجابت",
+    descriptionEn:
+      "Aluminum enclosure, 1050MB/s sequential read, USB-C cable included. For backups, video and exam archives.",
+    descriptionAr:
+      "علبة ألمنيوم وقراءة حتى 1050 ميجابايت/ث مع كابل USB-C. للنسخ الاحتياطي وأرشيف الامتحانات.",
+    price: 245.0,
+    originalPrice: 289.0,
+    wholesalePrice: 198.0,
+    wholesaleMinQty: 6,
+    stock: 38,
+    images: [
+      "/images/new/hub-usbc-01.jpg",
+      "https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    ],
+    isFeatured: true,
+    isPromotion: true,
+    isHidden: false,
+    specsEn: "1 TB NVMe • USB-C 10Gbps • Bus-powered",
+    specsAr: "1 تيرابايت NVMe • USB-C 10 جيجابت • بدون محول",
+  },
+  {
+    sku: "INK-DRUM-04",
+    categorySlug: "ink-consumables",
+    titleEn: "Compatible Laser Drum Unit + Toner Bundle (High Yield)",
+    titleAr: "طقم درم ليزر مع تونر عالي الإنتاجية",
+    descriptionEn:
+      "12,000-page drum and 3,000-page toner for common A4 office lasers. Tested for dense Arabic text.",
+    descriptionAr:
+      "درم 12 ألف صفحة وتونر 3 آلاف صفحة لطابعات الليزر المكتبية. مختبر للنصوص العربية الكثيفة.",
+    price: 78.0,
+    originalPrice: 96.0,
+    wholesalePrice: 59.0,
+    wholesaleMinQty: 10,
+    stock: 70,
+    images: [
+      "/images/new/toner-01.jpg",
+      "/images/cat-ink-toner.jpg",
+    ],
+    isFeatured: false,
+    isPromotion: true,
+    isHidden: false,
+    specsEn: "Drum 12k • Toner 3k • A4 laser",
+    specsAr: "درم 12 ألف • تونر 3 آلاف • ليزر A4",
+  },
+  {
+    sku: "ART-SET-04",
+    categorySlug: "art-drafting",
+    titleEn: "Student Geometry & Drafting Kit in Metal Tin (13 pcs)",
+    titleAr: "طقم هندسة و رسم في علبة معدنية (13 قطعة)",
+    descriptionEn:
+      "Compass, 30/60/90 and 45 triangles, protractor, ruler 30cm, pencils and eraser — exam-ready.",
+    descriptionAr:
+      "فرجار، مثلثان 30/60 و45، منقلة، مسطرة 30 سم، أقلام رصاص وممحاة — جاهز للامتحانات.",
+    price: 18.5,
+    originalPrice: 24.0,
+    wholesalePrice: 12.9,
+    wholesaleMinQty: 20,
+    stock: 160,
+    images: [
+      "/images/new/compass-brass-01.jpg",
+      "/images/cat-art-drafting.jpg",
+    ],
+    isFeatured: true,
+    isPromotion: true,
+    isHidden: false,
+    specsEn: "13 pcs • Metal tin • Exam approved",
+    specsAr: "13 قطعة • علبة معدنية • معتمد للامتحانات",
+  },
+  {
+    sku: "CALC-PRINT-04",
+    categorySlug: "calculators-tech",
+    titleEn: "Printing Desktop Calculator 12-Digit with Paper Roll",
+    titleAr: "آلة حاسبة مكتبية طابعة 12 رقماً مع رول ورق",
+    descriptionEn:
+      "Two-color print (black/red), tax keys and extra paper roll. For cashiers, copy centers and school accounts.",
+    descriptionAr:
+      "طباعة بلونين أسود/أحمر ومفاتيح ضرائب ورول ورق إضافي. للصناديق ومراكز النسخ ومحاسبة المدارس.",
+    price: 54.0,
+    originalPrice: 69.0,
+    wholesalePrice: 41.0,
+    wholesaleMinQty: 8,
+    stock: 52,
+    images: [
+      "/images/new/calculator-desk-01.jpg",
+      "/images/cat-calculators.jpg",
+    ],
+    isFeatured: false,
+    isPromotion: true,
+    isHidden: false,
+    specsEn: "12-digit • 2-color print • AC + battery",
+    specsAr: "12 رقماً • طباعة بلونين • كهرباء وبطارية",
+  },
 ];
 
 export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
@@ -623,7 +791,7 @@ export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
     "Enjoy instant B2B & institutional pricing for schools, universities, copy centers, and companies across Libya. Orders of 10+ units per SKU unlock Wholesale Price automatically. Free delivery in Tripoli on orders over 1,900 LYD and dedicated pro-forma invoicing via WhatsApp +218 91-214-5050.",
   wholesaleConditionsAr:
     "استفد من أسعار الجملة الفورية للمدارس والجامعات ومراكز الطباعة والشركات في ليبيا. الطلبات ابتداءً من 10 قطع للصنف الواحد تفعّل سعر الجملة تلقائياً، مع توصيل مجاني داخل طرابلس للطلبيات فوق 1,900 د.ل وفوترة احترافية مباشرة عبر واتساب 0912145050.",
-  defaultTheme: "royal",
+  defaultTheme: "cyber",
   heroSlides: [
     {
       id: "slide-1",

@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #F2F2F2;
+  --bg-primary: #EEEEEE;
   --bg-secondary: #FFFFFF;
   --bg-elevated: #FFFFFF;
-  --text-primary: #222222;
-  --text-secondary: #666666;
+  --text-primary: #1A1A1A;
+  --text-secondary: #5A5A5A;
   --accent-primary: #E30613;
   --accent-primary-hover: #C10510;
   --accent-secondary: #222222;
-  --border-color: #E0E0E0;
-  --badge-bg: #FEE2E2;
-  --badge-text: #B91C1C;
+  --border-color: #DCDCDC;
+  --badge-bg: #E30613;
+  --badge-text: #FFFFFF;
 }
 
 html {

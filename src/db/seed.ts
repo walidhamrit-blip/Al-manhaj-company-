@@ -623,7 +623,7 @@ export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
     "Enjoy instant B2B & institutional pricing for schools, universities, copy centers, and companies across Libya. Orders of 10+ units per SKU unlock Wholesale Price automatically. Free delivery in Tripoli on orders over 1,900 LYD and dedicated pro-forma invoicing via WhatsApp +218 91-214-5050.",
   wholesaleConditionsAr:
     "استفد من أسعار الجملة الفورية للمدارس والجامعات ومراكز الطباعة والشركات في ليبيا. الطلبات ابتداءً من 10 قطع للصنف الواحد تفعّل سعر الجملة تلقائياً، مع توصيل مجاني داخل طرابلس للطلبيات فوق 1,900 د.ل وفوترة احترافية مباشرة عبر واتساب 0912145050.",
-  defaultTheme: "royal",
+  defaultTheme: "cyber",
   heroSlides: [
     {
       id: "slide-1",
