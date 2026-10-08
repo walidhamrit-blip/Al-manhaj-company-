@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #FAF8F5;
-  --bg-secondary: #F1ECE4;
+  --bg-primary: #F2F2F2;
+  --bg-secondary: #FFFFFF;
   --bg-elevated: #FFFFFF;
-  --text-primary: #18181B;
-  --text-secondary: #52525B;
-  --accent-primary: #D94E34;
-  --accent-primary-hover: #B83D26;
-  --accent-secondary: #1E3A8A;
-  --border-color: #E4DFD7;
-  --badge-bg: #FDECE8;
-  --badge-text: #B83D26;
+  --text-primary: #222222;
+  --text-secondary: #666666;
+  --accent-primary: #E30613;
+  --accent-primary-hover: #C10510;
+  --accent-secondary: #222222;
+  --border-color: #E0E0E0;
+  --badge-bg: #FEE2E2;
+  --badge-text: #B91C1C;
 }
 
 html {
@@ -21,11 +21,10 @@ html {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Arabic", sans-serif;
+  font-family: Inter, "IBM Plex Sans Arabic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Hide scrollbar for horizontal pill rails and image carousels while keeping scrollability */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -34,7 +33,6 @@ body {
   scrollbar-width: none;
 }
 
-/* Custom subtle scrollbar for drawers */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;

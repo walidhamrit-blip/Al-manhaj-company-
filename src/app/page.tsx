@@ -11,6 +11,7 @@ import {
 } from "@/lib/i18n-themes";
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductCarousel } from "@/components/ProductCarousel";
 import { CategoryImage } from "@/components/CategoryImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
@@ -28,7 +29,6 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Layers,
   SlidersHorizontal,
   MessageCircle,
@@ -39,8 +39,12 @@ import {
   MapPin,
   Clock,
   Building2,
-  Percent,
   RotateCcw,
+  Menu,
+  Truck,
+  Headphones,
+  CreditCard,
+  ChevronDown,
 } from "lucide-react";
 
 export default function StorefrontPage() {
@@ -50,8 +54,9 @@ export default function StorefrontPage() {
   const t = UI_TEXT[lang];
 
   // Visual Theme state (6 curated e-commerce themes)
-  const [themeId, setThemeId] = useState<ThemeId>("paperSource");
+  const [themeId, setThemeId] = useState<ThemeId>("cyber");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isCatNavOpen, setIsCatNavOpen] = useState(false);
   const currentTheme = useMemo(
     () => THEMES.find((th) => th.id === themeId) || THEMES[0],
     [themeId]
@@ -310,8 +315,24 @@ export default function StorefrontPage() {
 
   // Featured / Promotion products for the highlight section after Landscape Banner (hidden products excluded)
   const featuredProducts = useMemo(() => {
-    return products.filter((p) => !p.isHidden && (p.isFeatured || p.isPromotion)).slice(0, 6);
+    return products.filter((p) => !p.isHidden && (p.isFeatured || p.isPromotion)).slice(0, 10);
   }, [products]);
+
+  const promoProducts = useMemo(() => {
+    return products.filter((p) => !p.isHidden && p.isPromotion).slice(0, 10);
+  }, [products]);
+
+  const categorySelections = useMemo(() => {
+    return [...categories]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((category) => ({
+        category,
+        items: products
+          .filter((p) => !p.isHidden && p.categorySlug === category.slug)
+          .slice(0, 10),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [categories, products]);
 
   // Highest product price for filter slider max
   const highestCatalogPrice = useMemo(() => {
@@ -540,49 +561,50 @@ export default function StorefrontPage() {
       }}
       className="min-h-screen flex flex-col transition-colors duration-300 pb-20 lg:pb-0"
     >
-      {/* ===== PAPER SOURCE TOP BAR (editable from Admin → Store & homepage) ===== */}
       {announcementEnabled && (
-        <div className="w-full bg-black text-white text-center py-2 text-[11px] sm:text-xs font-semibold tracking-widest uppercase">
-          <span className="hidden sm:inline">{announcementText}</span>
-          <span className="sm:hidden">{announcementShort}</span>
-          {announcementNote ? (
-            <span className="opacity-60 font-normal normal-case tracking-normal hidden md:inline">
-              {" "}
-              &nbsp;•&nbsp; {announcementNote}
-            </span>
-          ) : null}
+        <div className="w-full bg-[#222] text-white">
+          <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-3 px-2 sm:px-3 lg:px-4 py-1.5 text-[11px] sm:text-xs">
+            <div className="flex min-w-0 items-center gap-3">
+              <a href={`tel:+${whatsappDigits}`} className="hidden sm:inline-flex items-center gap-1.5 font-semibold hover:opacity-80">
+                <Phone className="h-3.5 w-3.5" />
+                <span dir="ltr">{contactPhoneDisplay}</span>
+              </a>
+              <span className="truncate font-medium opacity-90">
+                <span className="hidden sm:inline">{announcementText}</span>
+                <span className="sm:hidden">{announcementShort}</span>
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              {announcementNote ? (
+                <span className="hidden md:inline opacity-70">{announcementNote}</span>
+              ) : null}
+              <button type="button" onClick={() => goToOrderTracking()} className="hidden sm:inline hover:underline">
+                {t.trackOrder}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang((prev) => (prev === "en" ? "ar" : "en"))}
+                className="inline-flex items-center gap-1 font-bold hover:underline"
+              >
+                <Globe className="h-3.5 w-3.5" />
+                {lang === "en" ? "العربية" : "English"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
-      {/* ===== PAPER SOURCE HEADER - Minimal White ===== */}
-      <header
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderColor: "#E8E6E1",
-        }}
-        className="sticky top-0 z-40 border-b bg-white"
-      >
-        <div className="mx-auto flex max-w-[1580px] items-center justify-between gap-2 sm:gap-4 px-2 sm:px-3 lg:px-4 py-3">
-          {/* Top-Corner Master Catalogue Button + Brand Identity */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5">
-            <button
-              type="button"
-              onClick={() => setIsCatalogOpen(true)}
-              style={{
-                backgroundColor: "#111111",
-                color: "#FFFFFF",
-              }}
-              className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold tracking-widest uppercase transition hover:bg-black active:scale-95"
-              title={t.masterCatalog}
-            >
-              <BookOpen className="h-3.5 w-3.5 shrink-0" />
-              <span>{t.masterCatalog}</span>
-            </button>
 
-            <a
-              href="#top"
-              className="flex flex-col leading-tight hover:opacity-80 transition"
+      <header className="sticky top-0 z-40 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-[1320px] items-center gap-3 sm:gap-5 px-2 sm:px-3 lg:px-4 py-3">
+          <a href="#top" className="flex min-w-0 shrink-0 items-center gap-2.5">
+            <span
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-sm text-white text-lg font-black"
+              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
             >
-              <span style={{fontFamily: "'Cormorant Garamond','Playfair Display',serif"}} className="text-base sm:text-xl font-semibold tracking-tight truncate max-w-[190px] sm:max-w-xs lg:max-w-none">
+              {lang === "ar" ? "م" : "A"}
+            </span>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-base sm:text-xl font-extrabold tracking-tight max-w-[150px] sm:max-w-xs">
                 {settings
                   ? lang === "ar"
                     ? settings.storeNameAr
@@ -591,41 +613,37 @@ export default function StorefrontPage() {
                     ? "شركة المنهج للقرطاسية"
                     : "AL-MANHAJ"}
               </span>
-              <span
-                style={{ color: "#6B6B6B" }}
-                className="hidden md:block text-[10px] font-medium tracking-[0.14em] uppercase truncate max-w-xs"
-              >
+              <span className="hidden md:block truncate text-[10px] font-medium uppercase tracking-wider text-neutral-500 max-w-xs">
                 {headerTagline}
               </span>
-            </a>
-          </div>
+            </span>
+          </a>
 
-          {/* Quick Search Bar in Header (Desktop) */}
-          <div className="hidden lg:flex relative flex-1 max-w-md mx-4">
-            <Search
-              style={{ color: currentTheme.colors.textSecondary }}
-              className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  document
-                    .getElementById("catalog-section")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              placeholder={t.searchPlaceholder}
-              style={{
-                backgroundColor: "#FAFAF8",
-                borderColor: "#E8E6E1",
-                color: "#111111",
-              }}
-              className="w-full rounded-full border py-2 ps-10 pe-4 text-xs font-medium outline-none focus:border-black focus:bg-white transition"
-            />
-          </div>
+          <form
+            className="hidden md:flex flex-1 max-w-2xl"
+            onSubmit={(e) => {
+              e.preventDefault();
+              document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            <div className="flex w-full overflow-hidden rounded-sm border-2" style={{ borderColor: currentTheme.colors.accentPrimary }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                className="w-full bg-white px-4 py-2.5 text-sm outline-none"
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 px-4 text-sm font-bold text-white"
+                style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+              >
+                <Search className="h-4 w-4" />
+                <span className="hidden lg:inline">{t.searchBtn}</span>
+              </button>
+            </div>
+          </form>
 
           {/* Right Utility Controls: 6 Themes, EN/AR Switcher, Admin, Cart */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
@@ -790,453 +808,380 @@ export default function StorefrontPage() {
               <span>{t.adminBtn}</span>
             </button>
 
-            {/* Cart Button with Live Badge */}
             <button
               type="button"
               onClick={() => setIsCartOpen(true)}
-              style={{
-                backgroundColor: currentTheme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="relative flex items-center gap-2 rounded-none px-3 sm:px-4 py-2 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95 active:scale-95"
+              className="relative flex items-center gap-2 px-1 py-1 text-xs sm:text-sm font-bold"
             >
-              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="tabular-nums">{totalCartUnits}</span>
+              <span className="relative">
+                <ShoppingBag className="h-6 w-6" />
+                <span
+                  className="absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold text-white"
+                  style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                >
+                  {totalCartUnits}
+                </span>
+              </span>
+              <span className="hidden sm:flex flex-col leading-tight">
+                <span className="text-[10px] font-medium text-neutral-500">{t.myCart}</span>
+                <span className="tabular-nums text-xs font-extrabold">{totalCartUnits}</span>
+              </span>
             </button>
           </div>
         </div>
+
+        <div className="md:hidden border-t px-2 py-2" style={{ borderColor: currentTheme.colors.border }}>
+          <form
+            className="flex overflow-hidden rounded-sm border-2"
+            style={{ borderColor: currentTheme.colors.accentPrimary }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t.searchPlaceholder}
+              className="w-full px-3 py-2 text-sm outline-none"
+            />
+            <button
+              type="submit"
+              className="px-3 text-white"
+              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          </form>
+        </div>
+
+        <nav
+          className="text-white"
+          style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+        >
+          <div className="mx-auto flex max-w-[1320px] items-stretch gap-0 px-1 sm:px-2">
+            <button
+              type="button"
+              onClick={() => setIsCatNavOpen((open) => !open)}
+              className="flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-extrabold uppercase tracking-wide hover:bg-black/15"
+            >
+              <Menu className="h-4 w-4" />
+              <span className="hidden sm:inline">{t.allDepartments}</span>
+              <ChevronDown className={`h-3.5 w-3.5 transition ${isCatNavOpen ? "rotate-180" : ""}`} />
+            </button>
+            <div className="hidden md:flex min-w-0 flex-1 items-center overflow-x-auto no-scrollbar">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                  className="shrink-0 px-3 py-2.5 text-[13px] font-semibold hover:bg-black/15"
+                >
+                  {lang === "ar" ? cat.nameAr : cat.nameEn}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsCatalogOpen(true)}
+              className="ms-auto hidden sm:flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+            >
+              <BookOpen className="h-4 w-4" />
+              {t.masterCatalog}
+            </button>
+          </div>
+          {isCatNavOpen && (
+            <div className="border-t border-white/20 bg-white text-neutral-900 shadow-lg">
+              <div className="mx-auto grid max-w-[1320px] grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1 p-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCatNavOpen(false);
+                    handleSelectCategoryAndScroll("all");
+                  }}
+                  className="px-3 py-2 text-start text-sm font-bold hover:bg-neutral-100"
+                >
+                  {t.allCategories}
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={`nav-${cat.id}`}
+                    type="button"
+                    onClick={() => {
+                      setIsCatNavOpen(false);
+                      handleSelectCategoryAndScroll(cat.slug);
+                    }}
+                    className="px-3 py-2 text-start text-sm font-medium hover:bg-neutral-100"
+                  >
+                    {lang === "ar" ? cat.nameAr : cat.nameEn}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </nav>
       </header>
 
-      {/* =====================================================================
-          0. COMPANY STOREFRONT BACKGROUND WITH KEN BURNS ZOOM
-      ===================================================================== */}
-      <section
-        id="top"
-        className="relative w-full overflow-hidden h-[64vh] min-h-[420px] sm:h-[78vh] sm:min-h-[560px] max-h-[860px]"
-      >
-        <img
-          src={storefront.image}
-          alt={storefront.title}
-          className="absolute inset-0 h-full w-full object-cover kenburns-bg"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-white/5" />
+      <main id="top" className="flex-1">
+        <section className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 pt-3 sm:pt-4">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+            <div className="relative h-[220px] overflow-hidden bg-black sm:h-[320px] lg:col-span-8 lg:h-[360px]">
+              <img
+                src={currentHero.imageUrl}
+                alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
+                className="h-full w-full object-cover transition-all duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/25 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8 text-white">
+                <span className="mb-2 inline-flex w-fit bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
+                  {lang === "ar" ? currentHero.badgeAr : currentHero.badgeEn}
+                </span>
+                <h1 className="max-w-xl text-2xl font-extrabold leading-tight sm:text-4xl">
+                  {lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
+                </h1>
+                <p className="mt-2 max-w-lg text-xs text-white/85 sm:text-sm">
+                  {lang === "ar" ? currentHero.subtitleAr : currentHero.subtitleEn}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSelectCategoryAndScroll(currentHero.targetCategory || "all")
+                    }
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-extrabold text-white"
+                    style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                  >
+                    <span>{lang === "ar" ? currentHero.ctaAr : currentHero.ctaEn}</span>
+                    <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCatalogOpen(true)}
+                    className="inline-flex items-center gap-2 border border-white/70 bg-white/10 px-4 py-2 text-xs font-bold text-white backdrop-blur-sm"
+                  >
+                    {t.masterCatalog}
+                  </button>
+                </div>
+              </div>
+              {heroSlides.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setHeroIndex((heroIndex - 1 + heroSlides.length) % heroSlides.length)
+                    }
+                    aria-label="Previous slide"
+                    className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroIndex((heroIndex + 1) % heroSlides.length)}
+                    aria-label="Next slide"
+                    className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <div className="absolute bottom-3 start-1/2 flex -translate-x-1/2 items-center gap-1.5">
+                    {heroSlides.map((slide, idx) => (
+                      <button
+                        key={slide.id || idx}
+                        type="button"
+                        onClick={() => setHeroIndex(idx)}
+                        aria-label={`Slide ${idx + 1}`}
+                        className={`h-2 rounded-full transition-all ${
+                          heroIndex === idx ? "w-6 bg-white" : "w-2 bg-white/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-[1580px] flex-col justify-end px-2 sm:px-4 lg:px-6 pb-6 sm:pb-10 text-white">
-          <div className="max-w-3xl space-y-3 sm:space-y-5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-black/35 px-3.5 py-1.5 text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.18em] text-amber-200 backdrop-blur-md">
-              <MapPin className="h-3.5 w-3.5" />
-              {storefront.badge}
-            </span>
-
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight drop-shadow-none">
-              {storefront.title}
-            </h1>
-            <p className="text-sm sm:text-xl font-bold tracking-[0.12em] text-amber-300/95 uppercase">
-              {storefront.subtitle}
-            </p>
-
-            <p className="text-sm sm:text-lg text-white/90 leading-relaxed max-w-2xl">
-              {storefront.description}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1">
+            <div className="grid grid-cols-2 gap-3 lg:col-span-4 lg:grid-cols-1">
               <button
                 type="button"
-                onClick={() => {
-                  setWaPanelMessage(
-                    lang === "ar"
-                      ? "مرحباً شركة المنهج للقرطاسية، أود الاستفسار عن منتجاتكم."
-                      : "Hello Al Manhaj Company for Stationery, I would like to ask about your products."
-                  );
-                  setWaPanelOpen(true);
-                }}
-                className="inline-flex items-center gap-2 rounded-none bg-[#25D366] px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-white shadow-none transition hover:bg-[#1EBE5D]"
+                onClick={() => handleSelectCategoryAndScroll("all")}
+                className="relative h-[120px] overflow-hidden sm:h-[155px] lg:h-[174px] text-start"
               >
-                <MessageCircle className="h-4 w-4 fill-current" />
-                <span dir="ltr">{contactPhoneDisplay}</span>
+                <img src={storefront.image} alt={storefront.title} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">{storefront.badge}</div>
+                  <div className="text-sm font-extrabold leading-snug line-clamp-2">{storefront.title}</div>
+                </div>
               </button>
-
-              <a
-                href={`tel:+${whatsappDigits}`}
-                className="inline-flex items-center gap-2 rounded-none bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white transition"
-              >
-                <Phone className="h-4 w-4" />
-                <span>{lang === "ar" ? "اتصل الآن" : "Call now"}</span>
-              </a>
-
               <button
                 type="button"
                 onClick={() => setIsCatalogOpen(true)}
-                className="inline-flex items-center gap-2 rounded-none bg-amber-500 hover:bg-amber-400 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-slate-950 shadow-none transition"
+                className="relative h-[120px] overflow-hidden sm:h-[155px] lg:h-[174px] text-start"
               >
-                <BookOpen className="h-4 w-4" />
-                <span>{t.masterCatalog}</span>
+                <img
+                  src={landscapeBanner.imageUrl}
+                  alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                    {lang === "ar" ? landscapeBanner.badgeAr : landscapeBanner.badgeEn}
+                  </div>
+                  <div className="text-sm font-extrabold leading-snug line-clamp-2">
+                    {lang === "ar" ? landscapeBanner.ctaAr : landscapeBanner.ctaEn}
+                  </div>
+                </div>
               </button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ===== PAPER SOURCE HERO - Editorial Minimal ===== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pt-6 sm:pt-8">
-        <div className="relative h-[420px] sm:h-[480px] lg:h-[520px] w-full overflow-hidden rounded-none border border-[#E8E6E1] bg-white">
-          {/* Slide Image */}
-          <img
-            src={currentHero.imageUrl}
-            alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-            className="h-full w-full object-cover transition-all duration-700"
-          />
-          {/* Soft Paper Source overlay - white bottom for text */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent opacity-95" />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-transparent hidden sm:block" />
-
-          {/* Slide Content - Paper Source editorial centered */}
-          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-12">
-            <div className="max-w-2xl space-y-3 sm:space-y-3">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-black border border-black px-3 py-1 bg-white/80 backdrop-blur">
-                {lang === "ar" ? currentHero.badgeAr : currentHero.badgeEn}
-              </span>
-
-              <h1 style={{fontFamily: "'Cormorant Garamond','Playfair Display',serif"}} className="text-3xl sm:text-4xl lg:text-[44px] font-medium leading-tight tracking-tight text-black">
-                {lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-              </h1>
-
-              <p className="text-xs sm:text-[13px] text-[#6B6B6B] leading-relaxed max-w-xl font-medium">
-                {lang === "ar"
-                  ? currentHero.subtitleAr
-                  : currentHero.subtitleEn}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleSelectCategoryAndScroll(
-                      currentHero.targetCategory || "all"
-                    )
-                  }
-                  className="inline-flex items-center gap-2 bg-black text-white px-6 py-2.5 text-xs font-semibold tracking-widest uppercase hover:bg-zinc-800 transition"
-                >
-                  <span>
-                    {lang === "ar" ? currentHero.ctaAr : currentHero.ctaEn}
-                  </span>
-                  <ArrowRight
-                    className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`}
+        <section className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 pt-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            {categories.slice(0, 6).map((cat) => (
+              <button
+                key={`tile-${cat.id}`}
+                type="button"
+                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                className="group overflow-hidden border bg-white text-start hover:shadow-md"
+                style={{ borderColor: currentTheme.colors.border }}
+              >
+                <div className="aspect-[16/9] overflow-hidden bg-white">
+                  <CategoryImage
+                    slug={cat.slug}
+                    src={cat.imageUrl}
+                    alt={lang === "ar" ? cat.nameAr : cat.nameEn}
+                    className="h-full w-full object-contain p-2 transition group-hover:scale-105"
                   />
-                </button>
+                </div>
+                <div className="border-t px-2 py-2 text-center text-[11px] font-bold leading-tight sm:text-xs" style={{ borderColor: currentTheme.colors.border }}>
+                  {lang === "ar" ? cat.nameAr : cat.nameEn}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
 
+        <ProductCarousel
+          title={t.dealsTitle}
+          products={promoProducts.length ? promoProducts : featuredProducts}
+          categories={categories}
+          lang={lang}
+          theme={currentTheme}
+          currencySymbol={currencySymbol}
+          cart={cart}
+          onAddToCart={handleAddToCart}
+          onQuickView={setQuickViewProduct}
+          onSeeMore={() => {
+            setOnlyPromo(true);
+            handleSelectCategoryAndScroll("all");
+          }}
+        />
+
+        {categorySelections.slice(0, 4).map((group, index) => (
+          <div key={`sel-${group.category.slug}`}>
+            {index === 1 && (
+              <section className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 py-2">
                 <button
                   type="button"
                   onClick={() => setIsCatalogOpen(true)}
-                  className="inline-flex items-center gap-2 bg-white border border-black text-black px-6 py-2.5 text-xs font-semibold tracking-widest uppercase hover:bg-black hover:text-white transition"
+                  className="relative block h-[140px] w-full overflow-hidden sm:h-[200px]"
                 >
-                  <span>{t.masterCatalog}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Carousel Prev/Next Controls & Dots */}
-          {heroSlides.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={() =>
-                  setHeroIndex(
-                    (heroIndex - 1 + heroSlides.length) % heroSlides.length
-                  )
-                }
-                aria-label="Previous slide"
-                className="absolute top-1/2 -translate-y-1/2 left-3 sm:left-5 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md hover:bg-black/70 transition"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setHeroIndex((heroIndex + 1) % heroSlides.length)
-                }
-                aria-label="Next slide"
-                className="absolute top-1/2 -translate-y-1/2 right-3 sm:right-5 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md hover:bg-black/70 transition"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-
-              <div className="absolute bottom-5 end-6 flex items-center gap-2">
-                {heroSlides.map((slide, idx) => (
-                  <button
-                    key={slide.id || idx}
-                    type="button"
-                    onClick={() => setHeroIndex(idx)}
-                    aria-label={`Slide ${idx + 1}`}
-                    className={`h-2.5 rounded-full transition-all ${
-                      heroIndex === idx
-                        ? "w-8 bg-white"
-                        : "w-2.5 bg-white/50 hover:bg-white/80"
-                    }`}
+                  <img
+                    src={landscapeBanner.imageUrl}
+                    alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
+                    className="h-full w-full object-cover"
                   />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* =====================================================================
-          2. SEVEN VISUAL CATEGORY CARDS ON HOME PAGE (CLICKABLE TO FILTER)
-      ===================================================================== */}
-      <section
-        id="departments-section"
-        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 py-10 sm:py-14 bg-white"
-      >
-        <div className="mb-6 sm:mb-8 flex flex-col items-center text-center gap-3">
-          <div className="text-center">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-black border-b border-black pb-1 block mb-3">
-              {lang === "ar" ? "أقسامنا الرئيسية" : "SHOP BY CATEGORY"}
-            </span>
-            <h2 style={{fontFamily: "'Cormorant Garamond',serif"}} className="text-2xl sm:text-3xl font-medium tracking-tight text-black">
-              {t.categoriesTitle}
-            </h2>
-            <p
-              style={{ color: currentTheme.colors.textSecondary }}
-              className="text-xs sm:text-sm mt-1"
-            >
-              {t.categoriesSubtitle}
-            </p>
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
+                  <div className="absolute inset-0 flex flex-col justify-center p-6 text-white sm:p-10">
+                    <span className="text-[11px] font-bold uppercase tracking-widest">
+                      {lang === "ar" ? landscapeBanner.badgeAr : landscapeBanner.badgeEn}
+                    </span>
+                    <h2 className="mt-1 max-w-xl text-xl font-extrabold sm:text-3xl">
+                      {lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
+                    </h2>
+                    <span
+                      className="mt-3 inline-flex w-fit items-center gap-2 px-4 py-2 text-xs font-extrabold text-white"
+                      style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                    >
+                      {lang === "ar" ? landscapeBanner.ctaAr : landscapeBanner.ctaEn}
+                      <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
+                    </span>
+                  </div>
+                </button>
+              </section>
+            )}
+            <ProductCarousel
+              title={`${t.selectionPrefix} ${lang === "ar" ? group.category.nameAr : group.category.nameEn}`}
+              products={group.items}
+              categories={categories}
+              lang={lang}
+              theme={currentTheme}
+              currencySymbol={currencySymbol}
+              cart={cart}
+              onAddToCart={handleAddToCart}
+              onQuickView={setQuickViewProduct}
+              onSeeMore={() => handleSelectCategoryAndScroll(group.category.slug)}
+            />
           </div>
+        ))}
 
-          <button
-            type="button"
-            onClick={() => handleSelectCategoryAndScroll("all")}
-            style={{
-              backgroundColor: currentTheme.colors.bgSecondary,
-              color: currentTheme.colors.textPrimary,
-            }}
-            className="self-start sm:self-auto inline-flex items-center gap-2 rounded-none px-4 py-2.5 text-xs font-bold transition hover:opacity-80"
-          >
-            <span>
-              {t.allCategories} ({products.filter(p=>!p.isHidden).length})
-            </span>
-          </button>
-        </div>
-
-        {/* Main Category Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {categories.map((cat) => {
-            const countInCat = products.filter(
-              (p) => !p.isHidden && p.categorySlug === cat.slug
-            ).length;
-            const isSelected = selectedCategory === cat.slug;
-
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                style={{
-                  borderColor: isSelected
-                    ? currentTheme.colors.accentPrimary
-                    : currentTheme.colors.border,
-                }}
-                className={`group relative flex h-64 sm:h-72 flex-col overflow-hidden rounded-none border-2 bg-white text-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
-                  isSelected ? "ring-2 ring-offset-2" : ""
-                }`}
-              >
-                <CategoryImage
-                  slug={cat.slug}
-                  src={cat.imageUrl}
-                  alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                  className="h-[78%] w-full scale-125 bg-white object-contain px-2 pt-2 transition-transform duration-300 group-hover:scale-150"
-                />
-
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="mt-auto min-h-0 border-t px-3 py-2.5"
-                >
-                  <span
-                    style={{ color: currentTheme.colors.accentPrimary }}
-                    className="mb-0.5 block truncate text-[9px] font-bold uppercase tracking-wider"
-                  >
-                    {lang === "ar" ? cat.badgeAr : cat.badgeEn}
-                  </span>
-                  <h3 className="line-clamp-2 text-xs font-extrabold leading-snug text-neutral-900 sm:text-sm">
-                    {lang === "ar" ? cat.nameAr : cat.nameEn}
-                  </h3>
-                </div>
-
-                <span
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    color: currentTheme.colors.textPrimary,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="absolute start-2 top-2 rounded-full border px-2 py-0.5 text-[9px] font-bold shadow-sm"
-                >
-                  {countInCat} {t.itemsLabel}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* =====================================================================
-          3. LARGE LANDSCAPE PANORAMIC BACKGROUND BANNER
-      ===================================================================== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14">
-        <div className="relative min-h-[300px] sm:min-h-[360px] w-full overflow-hidden rounded-none border border-[#E8E6E1] flex items-center">
-          <img
-            src={landscapeBanner.imageUrl}
-            alt={
-              lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn
-            }
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30" />
-
-          <div className="relative z-10 max-w-2xl p-6 sm:p-12 text-white space-y-4">
-            <span
-              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
-              className="inline-block rounded-full px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest"
-            >
-              {lang === "ar"
-                ? landscapeBanner.badgeAr
-                : landscapeBanner.badgeEn}
-            </span>
-
-            <h2 className="text-2xl sm:text-4xl font-black leading-tight">
-              {lang === "ar"
-                ? landscapeBanner.titleAr
-                : landscapeBanner.titleEn}
-            </h2>
-
-            <p className="text-xs sm:text-base text-white/90 leading-relaxed">
-              {lang === "ar"
-                ? landscapeBanner.subtitleAr
-                : landscapeBanner.subtitleEn}
-            </p>
-
-            <div className="flex flex-wrap gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsCatalogOpen(true)}
-                style={{
-                  backgroundColor: currentTheme.colors.accentPrimary,
-                  color: "#FFFFFF",
-                }}
-                className="inline-flex items-center gap-2 rounded-none px-5 py-3 text-xs sm:text-sm font-extrabold shadow-none transition hover:opacity-95"
-              >
-                <BookOpen className="h-4 w-4" />
-                <span>
-                  {lang === "ar"
-                    ? landscapeBanner.ctaAr
-                    : landscapeBanner.ctaEn}
-                </span>
-              </button>
-
-              <a
-                href="#wholesale-section"
-                className="inline-flex items-center gap-2 rounded-none bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-5 py-3 text-xs sm:text-sm font-bold text-white transition"
-              >
-                <Layers className="h-4 w-4" />
-                <span>
-                  {lang === "ar"
-                    ? "عروض البيع بالجملة"
-                    : "Wholesale B2B Pricing"}
-                </span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          4. FEATURED BESTSELLERS & PROMOTIONS SECTION (FOLLOWING LANDSCAPE BANNER)
-      ===================================================================== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-12 sm:pb-16">
-        <div
-          style={{
-            backgroundColor: currentTheme.colors.bgSecondary,
-            borderColor: currentTheme.colors.border,
-          }}
-          className="rounded-none border p-5 sm:p-8"
+        <section
+          id="departments-section"
+          className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 py-6"
         >
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider mb-1">
-                <Sparkles
-                  style={{ color: currentTheme.colors.accentPrimary }}
-                  className="h-4 w-4"
-                />
-                <span style={{ color: currentTheme.colors.accentPrimary }}>
-                  {lang === "ar"
-                    ? "اختياراتنا المميزة والتخفيضات"
-                    : "TOP PICKS & SPECIAL PROMOTIONS"}
-                </span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-                {t.featuredTitle}
-              </h2>
-              <p
-                style={{ color: currentTheme.colors.textSecondary }}
-                className="text-xs sm:text-sm mt-1"
-              >
-                {t.featuredSubtitle}
-              </p>
-            </div>
-
+          <div className="mb-3 flex items-center justify-between border-b pb-2" style={{ borderColor: currentTheme.colors.border }}>
+            <h2 className="text-lg font-bold sm:text-xl">{t.otherCategories}</h2>
             <button
               type="button"
-              onClick={() => {
-                setOnlyPromo(true);
-                handleSelectCategoryAndScroll("all");
-              }}
-              style={{
-                backgroundColor: currentTheme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="self-start sm:self-auto inline-flex items-center gap-2 rounded-none px-4 py-2.5 text-xs font-extrabold shadow-sm"
+              onClick={() => handleSelectCategoryAndScroll("all")}
+              className="text-xs font-semibold hover:underline sm:text-sm"
+              style={{ color: currentTheme.colors.accentPrimary }}
             >
-              <Percent className="h-3.5 w-3.5" />
-              <span>{t.onlyPromotions}</span>
+              {t.seeMore}
             </button>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-            {featuredProducts.map((product) => {
-              const cat = categories.find(
-                (c) => c.slug === product.categorySlug
-              );
-              const inCart =
-                cart.find((c) => c.product.id === product.id)?.quantity || 0;
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {categories.map((cat) => {
+              const countInCat = products.filter(
+                (p) => !p.isHidden && p.categorySlug === cat.slug
+              ).length;
               return (
-                <ProductCard
-                  key={`featured-${product.id}`}
-                  product={product}
-                  category={cat}
-                  lang={lang}
-                  theme={currentTheme}
-                  currencySymbol={currencySymbol}
-                  cartQty={inCart}
-                  onAddToCart={handleAddToCart}
-                  onQuickView={setQuickViewProduct}
-                />
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                  className="group flex items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
+                  style={{ borderColor: currentTheme.colors.border }}
+                >
+                  <CategoryImage
+                    slug={cat.slug}
+                    src={cat.imageUrl}
+                    alt={lang === "ar" ? cat.nameAr : cat.nameEn}
+                    className="h-16 w-16 shrink-0 object-contain bg-white"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold leading-snug line-clamp-2">
+                      {lang === "ar" ? cat.nameAr : cat.nameEn}
+                    </span>
+                    <span className="text-[11px] text-neutral-500">
+                      {countInCat} {t.itemsLabel}
+                    </span>
+                  </span>
+                </button>
               );
             })}
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* =====================================================================
           5. COMPLETE STORE CATALOG WITH SEARCH BAR & ADVANCED FILTERS
       ===================================================================== */}
       <section
         id="catalog-section"
-        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-14 sm:pb-20"
+        className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
         <div className="mb-6">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -1527,7 +1472,7 @@ export default function StorefrontPage() {
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-3">
                   {categoryProducts.map((product) => {
                     const inCart =
                       cart.find((item) => item.product.id === product.id)?.quantity || 0;
@@ -1542,7 +1487,7 @@ export default function StorefrontPage() {
                         cartQty={inCart}
                         onAddToCart={handleAddToCart}
                         onQuickView={setQuickViewProduct}
-                        layout="list"
+                        layout="compact"
                       />
                     );
                   })}
@@ -1558,7 +1503,7 @@ export default function StorefrontPage() {
       ===================================================================== */}
       <section
         id="wholesale-section"
-        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-16 sm:pb-24"
+        className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
         <div
           style={{
@@ -1815,18 +1760,29 @@ export default function StorefrontPage() {
         theme={currentTheme}
         trackingRequest={trackingRequest}
       />
+      </main>
 
-      {/* =====================================================================
-          7. FOOTER WITH LIVE CONTACT INFORMATION & WHATSAPP DIRECT LINK
-      ===================================================================== */}
-      <footer
-        style={{
-          backgroundColor: currentTheme.colors.bgSecondary,
-          borderColor: currentTheme.colors.border,
-        }}
-        className="mt-auto border-t py-10"
-      >
-        <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <section className="border-y bg-white" style={{ borderColor: currentTheme.colors.border }}>
+        <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-px bg-neutral-200 lg:grid-cols-4">
+          {[
+            { icon: Truck, title: t.servicesDelivery, sub: t.servicesDeliverySub },
+            { icon: CreditCard, title: t.servicesPayment, sub: t.servicesPaymentSub },
+            { icon: Headphones, title: t.servicesSupport, sub: t.servicesSupportSub },
+            { icon: Building2, title: t.servicesWholesale, sub: t.servicesWholesaleSub },
+          ].map((item) => (
+            <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-4">
+              <item.icon className="h-8 w-8 shrink-0" style={{ color: currentTheme.colors.accentPrimary }} />
+              <div>
+                <div className="text-sm font-extrabold">{item.title}</div>
+                <div className="text-xs text-neutral-500">{item.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="mt-auto bg-[#1a1a1a] py-10 text-white">
+        <div className="mx-auto max-w-[1320px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
             <h3 className="text-lg font-black">
               {settings
@@ -1837,10 +1793,7 @@ export default function StorefrontPage() {
                   ? "شركة المنهج للقرطاسية"
                   : "Al Manhaj Company for Stationery"}
             </h3>
-            <p
-              style={{ color: currentTheme.colors.textSecondary }}
-              className="text-xs sm:text-sm leading-relaxed"
-            >
+            <p className="text-xs sm:text-sm leading-relaxed text-neutral-400">
               {settings
                 ? lang === "ar"
                   ? settings.taglineAr
@@ -1851,11 +1804,7 @@ export default function StorefrontPage() {
               <button
                 type="button"
                 onClick={() => setIsAdminOpen(true)}
-                style={{
-                  backgroundColor: currentTheme.colors.bgElevated,
-                  borderColor: currentTheme.colors.border,
-                }}
-                className="inline-flex items-center gap-1.5 rounded-none border px-3.5 py-2 text-xs font-bold"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white"
               >
                 <ShieldCheck className="h-4 w-4" />
                 <span>{t.adminBtn}</span>
@@ -1863,11 +1812,7 @@ export default function StorefrontPage() {
               <button
                 type="button"
                 onClick={() => goToOrderTracking()}
-                style={{
-                  backgroundColor: currentTheme.colors.bgElevated,
-                  borderColor: currentTheme.colors.border,
-                }}
-                className="inline-flex items-center gap-1.5 rounded-none border px-3.5 py-2 text-xs font-bold"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white"
               >
                 <PackageSearch className="h-4 w-4" />
                 <span>{t.trackOrder}</span>
@@ -1947,7 +1892,7 @@ export default function StorefrontPage() {
         </div>
         {/* ===== CBL / Mawthooq Compliance Bar (editable from Admin) ===== */}
         {complianceEnabled && (
-          <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t" style={{borderColor: currentTheme.colors.border}}>
+          <div className="mx-auto max-w-[1320px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t border-white/15">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
               <div className="flex flex-wrap items-center gap-2">
                 <span style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold">

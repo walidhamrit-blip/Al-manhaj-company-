@@ -10,7 +10,6 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Check,
   Eye,
   PackageCheck,
@@ -26,7 +25,7 @@ interface ProductCardProps {
   cartQty: number;
   onAddToCart: (product: Product, qty: number) => void;
   onQuickView: (product: Product) => void;
-  layout?: "card" | "list";
+  layout?: "card" | "list" | "compact";
 }
 
 export function ProductCard({
@@ -42,6 +41,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const t = UI_TEXT[lang];
   const isListLayout = layout === "list";
+  const isCompact = layout === "compact";
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
@@ -102,16 +102,17 @@ export function ProductCard({
         borderColor: theme.colors.border,
         color: theme.colors.textPrimary,
       }}
-      className={`group relative flex ${
+      className={`group relative flex h-full overflow-hidden border bg-white transition-shadow duration-200 hover:shadow-md ${
         isListLayout ? "flex-col sm:flex-row sm:items-stretch" : "flex-col"
-      } rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden`}
+      }`}
     >
-      {/* Image Gallery Container (Scrollable 1 or 2 photos) */}
       <div
-        className={`relative w-full overflow-hidden bg-neutral-100 ${
+        className={`relative w-full overflow-hidden bg-white ${
           isListLayout
-            ? "aspect-[16/9] sm:aspect-square sm:h-52 sm:w-52 sm:shrink-0 sm:self-center sm:ms-3 sm:rounded-xl"
-            : "aspect-[16/9]"
+            ? "aspect-square sm:h-44 sm:w-44 sm:shrink-0 sm:self-center"
+            : isCompact
+              ? "aspect-square"
+              : "aspect-square"
         }`}
       >
         <div
@@ -122,57 +123,41 @@ export function ProductCard({
           {images.map((imgUrl, idx) => (
             <div
               key={`${product.id}-img-${idx}`}
-              className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden"
+              className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden bg-white"
             >
               <ProductImage
                 product={product}
                 src={imgUrl}
                 alt={`${title} - ${idx + 1}`}
                 loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
               />
             </div>
           ))}
         </div>
 
-        {/* Top Badges */}
-        <div className="pointer-events-none absolute top-3 inset-x-3 flex items-start justify-between gap-2">
-          <div className="flex flex-wrap gap-1.5">
+        <div className="pointer-events-none absolute top-2 inset-x-2 flex items-start justify-between gap-2">
+          <div className="flex flex-wrap gap-1">
             {discountPct > 0 && (
               <span
                 style={{
                   backgroundColor: theme.colors.accentPrimary,
                   color: "#FFFFFF",
                 }}
-                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm"
+                className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-extrabold shadow-sm"
               >
                 -{discountPct}%
               </span>
             )}
-            {product.isFeatured && (
-              <span
-                style={{
-                  backgroundColor: theme.colors.badgeBg,
-                  color: theme.colors.badgeText,
-                }}
-                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm backdrop-blur-md"
-              >
-                <Sparkles className="h-3 w-3" />
-                {lang === "ar" ? "الأكثر مبيعاً" : "Bestseller"}
+            {product.isFeatured && !isCompact && (
+              <span className="inline-flex items-center rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                {lang === "ar" ? "الأكثر مبيعاً" : "Top"}
               </span>
             )}
           </div>
-
-          {/* Photo counter badge */}
-          {images.length > 1 && (
-            <span className="rounded-full bg-black/65 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-              {activeImageIdx + 1} / {images.length} {t.photoCount}
-            </span>
-          )}
         </div>
 
-        {/* Navigation Arrows for Multi-Image Scroll */}
-        {images.length > 1 && (
+        {images.length > 1 && !isCompact && (
           <>
             <button
               type="button"
@@ -181,7 +166,7 @@ export function ProductCard({
                 scrollToImage(activeImageIdx - 1);
               }}
               aria-label="Previous image"
-              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition hover:bg-white active:scale-95"
+              className="absolute left-1 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow opacity-0 transition group-hover:opacity-100"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -192,200 +177,193 @@ export function ProductCard({
                 scrollToImage(activeImageIdx + 1);
               }}
               aria-label="Next image"
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition hover:bg-white active:scale-95"
+              className="absolute right-1 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow opacity-0 transition group-hover:opacity-100"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
-
-            {/* Bottom Dots + Quick View Trigger */}
-            <div className="absolute bottom-2.5 inset-x-3 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 backdrop-blur-sm">
-                {images.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => scrollToImage(i)}
-                    aria-label={`View image ${i + 1}`}
-                    className={`h-2 rounded-full transition-all ${
-                      activeImageIdx === i
-                        ? "w-5 bg-white"
-                        : "w-2 bg-white/50 hover:bg-white/80"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onQuickView(product)}
-                className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm transition hover:bg-white"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                <span>{t.viewDetails}</span>
-              </button>
-            </div>
           </>
         )}
 
-        {images.length === 1 && (
-          <button
-            type="button"
-            onClick={() => onQuickView(product)}
-            className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm transition hover:bg-white"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            <span>{t.viewDetails}</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => onQuickView(product)}
+          className="absolute bottom-2 end-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-neutral-800 shadow opacity-0 transition group-hover:opacity-100"
+          aria-label={t.viewDetails}
+        >
+          <Eye className="h-4 w-4" />
+        </button>
       </div>
 
-      {/* Card Body */}
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
-        {/* Category & Stock Row */}
-        <div className="mb-2 flex items-center justify-between gap-2 text-xs">
-          <span
-            style={{ color: theme.colors.accentPrimary }}
-            className="font-semibold uppercase tracking-wider truncate"
-          >
-            {categoryName}
-          </span>
+      <div className={`flex flex-1 flex-col ${isCompact ? "p-2.5" : "p-3"}`}>
+        <span
+          style={{ color: theme.colors.textSecondary }}
+          className="mb-1 block truncate text-[10px] font-semibold uppercase tracking-wide"
+        >
+          {categoryName}
+        </span>
 
-          {product.stock > 15 ? (
-            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-              <PackageCheck className="h-3.5 w-3.5" />
-              {t.inStock} ({product.stock})
-            </span>
-          ) : product.stock > 0 ? (
-            <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {t.lowStock} ({product.stock})
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 text-rose-600 font-semibold">
-              {t.outOfStock}
-            </span>
-          )}
-        </div>
-
-        {/* Product Title */}
         <h3
           onClick={() => onQuickView(product)}
-          className="cursor-pointer text-base sm:text-lg font-bold leading-snug line-clamp-2 mb-1.5 hover:opacity-80 transition-opacity"
+          className={`cursor-pointer font-semibold leading-snug hover:underline ${
+            isCompact ? "mb-1 line-clamp-2 min-h-[2.4em] text-[13px]" : "mb-1.5 line-clamp-2 text-sm"
+          }`}
         >
           {title}
         </h3>
 
-        {/* Short product summary with expandable reading details */}
-        <div className="mb-3 flex-1">
-          <p
-            style={{ color: theme.colors.textSecondary }}
-            className={`text-xs sm:text-sm leading-relaxed ${detailsExpanded ? "" : "line-clamp-1"}`}
-          >
-            {description}
-          </p>
-          {detailsExpanded && specs && (
+        {!isCompact && (
+          <div className="mb-2 flex-1">
             <p
-              style={{
-                backgroundColor: theme.colors.bgSecondary,
-                color: theme.colors.textSecondary,
-              }}
-              className="mt-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium"
-            >
-              {specs}
-            </p>
-          )}
-          <button
-            type="button"
-            aria-expanded={detailsExpanded}
-            onClick={() => setDetailsExpanded((expanded) => !expanded)}
-            style={{ color: theme.colors.accentPrimary }}
-            className="mt-1.5 text-xs font-bold underline underline-offset-2"
-          >
-            {detailsExpanded ? t.hideDetails : t.readDetails}
-          </button>
-        </div>
-
-        {/* Retail price stays visible; wholesale pricing is disclosed on request. */}
-        <div className="mb-3 space-y-1.5">
-          <div
-            style={{
-              backgroundColor: theme.colors.bgSecondary,
-              borderColor: theme.colors.border,
-            }}
-            className="rounded-xl border p-2.5"
-          >
-            <span
               style={{ color: theme.colors.textSecondary }}
-              className="block text-[11px] font-medium"
+              className={`text-xs leading-relaxed ${detailsExpanded ? "" : "line-clamp-1"}`}
             >
-              {t.retailPrice}
+              {description}
+            </p>
+            {detailsExpanded && specs && (
+              <p
+                style={{
+                  backgroundColor: theme.colors.bgSecondary,
+                  color: theme.colors.textSecondary,
+                }}
+                className="mt-2 rounded px-2 py-1 text-[11px] font-medium"
+              >
+                {specs}
+              </p>
+            )}
+            <button
+              type="button"
+              aria-expanded={detailsExpanded}
+              onClick={() => setDetailsExpanded((expanded) => !expanded)}
+              style={{ color: theme.colors.accentPrimary }}
+              className="mt-1 text-[11px] font-bold hover:underline"
+            >
+              {detailsExpanded ? t.hideDetails : t.readDetails}
+            </button>
+          </div>
+        )}
+
+        <div className="mt-auto">
+          <div className="mb-1.5 flex items-baseline gap-1.5">
+            <span
+              dir="ltr"
+              className={`font-extrabold tabular-nums ${isCompact ? "text-sm" : "text-base"}`}
+              style={{ color: theme.colors.accentPrimary }}
+            >
+              {formatPrice(product.price, lang)}
             </span>
-            <div className="flex items-baseline gap-1.5">
-              <span dir="ltr" className="text-base sm:text-lg font-extrabold tabular-nums">
-                {formatPrice(product.price, lang)}
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span
+                style={{ color: theme.colors.textSecondary }}
+                dir="ltr"
+                className="text-[11px] line-through opacity-75 tabular-nums"
+              >
+                {formatPrice(product.originalPrice, lang)}
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
-                <span
-                  style={{ color: theme.colors.textSecondary }}
-                  dir="ltr"
-                  className="text-xs line-through opacity-75 tabular-nums"
-                >
-                  {formatPrice(product.originalPrice, lang)}
+            )}
+          </div>
+
+          {!isCompact && (
+            <div className="mb-2 text-[11px]">
+              {product.stock > 15 ? (
+                <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                  <PackageCheck className="h-3.5 w-3.5" />
+                  {t.inStock}
+                </span>
+              ) : product.stock > 0 ? (
+                <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  {t.lowStock}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-rose-600 font-semibold">
+                  {t.outOfStock}
                 </span>
               )}
             </div>
-          </div>
-          <WholesalePriceDisclosure product={product} lang={lang} theme={theme} compact />
-        </div>
+          )}
 
-        {/* Action Buttons: Add Retail (+1) & Add Wholesale Pack */}
-        <div className="grid grid-cols-5 gap-2">
-          <button
-            type="button"
-            disabled={product.stock <= 0}
-            onClick={() => triggerAdd(1)}
-            style={{
-              backgroundColor: justAdded
-                ? "#059669"
-                : theme.colors.accentPrimary,
-              color: "#FFFFFF",
-            }}
-            className="col-span-3 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold shadow-sm transition hover:opacity-95 active:scale-[0.98] disabled:opacity-40"
-          >
-            {justAdded ? (
-              <>
-                <Check className="h-4 w-4" />
-                <span>{lang === "ar" ? "تمت الإضافة!" : "Added!"}</span>
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="h-4 w-4 shrink-0" />
+          {!isCompact && (
+            <div className="mb-2">
+              <WholesalePriceDisclosure product={product} lang={lang} theme={theme} compact />
+            </div>
+          )}
+
+          {isCompact ? (
+            <button
+              type="button"
+              disabled={product.stock <= 0}
+              onClick={() => triggerAdd(1)}
+              style={{
+                backgroundColor: justAdded ? "#059669" : theme.colors.accentPrimary,
+                color: "#FFFFFF",
+              }}
+              className="mt-1 flex w-full items-center justify-center gap-1 rounded-sm py-1.5 text-[11px] font-bold transition hover:opacity-95 disabled:opacity-40"
+            >
+              {justAdded ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  <span>{lang === "ar" ? "تمت" : "Added"}</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">
+                    {t.addToCart}
+                    {cartQty > 0 ? ` (${cartQty})` : ""}
+                  </span>
+                </>
+              )}
+            </button>
+          ) : (
+            <div className="grid grid-cols-5 gap-2">
+              <button
+                type="button"
+                disabled={product.stock <= 0}
+                onClick={() => triggerAdd(1)}
+                style={{
+                  backgroundColor: justAdded ? "#059669" : theme.colors.accentPrimary,
+                  color: "#FFFFFF",
+                }}
+                className="col-span-3 flex items-center justify-center gap-1.5 rounded-sm py-2 px-2 text-xs font-bold transition hover:opacity-95 disabled:opacity-40"
+              >
+                {justAdded ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>{lang === "ar" ? "تمت الإضافة!" : "Added!"}</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="h-4 w-4 shrink-0" />
+                    <span className="truncate">
+                      {t.addToCart}
+                      {cartQty > 0 ? ` (${cartQty})` : ""}
+                    </span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                disabled={product.stock <= 0}
+                onClick={() => triggerAdd(product.wholesaleMinQty)}
+                style={{
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bgElevated,
+                  color: theme.colors.textPrimary,
+                }}
+                title={`${t.addWholesaleMin} (+${product.wholesaleMinQty})`}
+                className="col-span-2 flex items-center justify-center gap-1 rounded-sm border py-2 px-2 text-xs font-semibold transition hover:opacity-80 disabled:opacity-40"
+              >
+                <Layers
+                  style={{ color: theme.colors.accentPrimary }}
+                  className="h-3.5 w-3.5 shrink-0"
+                />
                 <span className="truncate">
-                  {t.addToCart}
-                  {cartQty > 0 ? ` (${cartQty})` : ""}
+                  +{product.wholesaleMinQty} {lang === "ar" ? "جملة" : "Bulk"}
                 </span>
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            disabled={product.stock <= 0}
-            onClick={() => triggerAdd(product.wholesaleMinQty)}
-            style={{
-              borderColor: theme.colors.border,
-              backgroundColor: theme.colors.bgElevated,
-              color: theme.colors.textPrimary,
-            }}
-            title={`${t.addWholesaleMin} (+${product.wholesaleMinQty})`}
-            className="col-span-2 flex items-center justify-center gap-1 rounded-xl border py-2 px-2 text-xs font-semibold transition hover:opacity-80 active:scale-[0.98] disabled:opacity-40"
-          >
-            <Layers
-              style={{ color: theme.colors.accentPrimary }}
-              className="h-3.5 w-3.5 shrink-0"
-            />
-            <span className="truncate">+{product.wholesaleMinQty} {lang === "ar" ? "جملة" : "Bulk"}</span>
-          </button>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
