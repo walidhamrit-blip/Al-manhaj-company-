@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { getCategoryIllustration } from "@/lib/category-image-fallbacks";
-import { StoreImage } from "@/components/StoreImage";
+import { CatalogPhoto } from "@/components/CatalogPhoto";
 
 interface CategoryImageProps {
   slug: string;
@@ -24,7 +24,7 @@ export function CategoryImage({
 
   return (
     <span className={`relative block overflow-hidden ${className || "h-full w-full"}`}>
-      <StoreImage
+      <CatalogPhoto
         src={displayedSrc}
         alt={alt}
         className="object-contain"

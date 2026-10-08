@@ -14,7 +14,7 @@ import { CATALOG_DEPARTMENTS } from "@/lib/catalog-tree";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CategoryImage } from "@/components/CategoryImage";
-import { StoreImage } from "@/components/StoreImage";
+import { CatalogPhoto } from "@/components/CatalogPhoto";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
@@ -938,7 +938,7 @@ export default function StorefrontPage() {
       <main id="top" className="flex-1">
         <section className="relative w-full overflow-hidden bg-black">
             <div className="relative h-[340px] w-full sm:h-[480px] lg:h-[560px] xl:h-[620px]">
-              <StoreImage
+              <CatalogPhoto
                 src={currentHero.imageUrl}
                 alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
                 className="object-cover transition-all duration-700"
@@ -1024,7 +1024,7 @@ export default function StorefrontPage() {
                 onClick={() => handleSelectCategoryAndScroll("it-peripherals")}
                 className="relative h-[140px] overflow-hidden sm:h-[180px] lg:h-[200px] text-start"
               >
-                <StoreImage
+                <CatalogPhoto
                   src="/images/new/hero-it-tech-01.jpg"
                   alt={t.dealsTitle}
                   className="object-cover"
@@ -1043,7 +1043,7 @@ export default function StorefrontPage() {
                 onClick={() => setIsCatalogOpen(true)}
                 className="relative h-[140px] overflow-hidden sm:h-[180px] lg:h-[200px] text-start"
               >
-                <StoreImage
+                <CatalogPhoto
                   src={landscapeBanner.imageUrl}
                   alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
                   className="object-cover"
@@ -1113,7 +1113,7 @@ export default function StorefrontPage() {
                   onClick={() => setIsCatalogOpen(true)}
                   className="relative block h-[140px] w-full overflow-hidden sm:h-[200px]"
                 >
-                  <StoreImage
+                  <CatalogPhoto
                     src={landscapeBanner.imageUrl}
                     alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
                     className="object-cover"

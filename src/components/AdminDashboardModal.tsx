@@ -15,7 +15,7 @@ import {
   type ThemeConfig,
 } from "@/lib/i18n-themes";
 import { ImageUploadField } from "@/components/ImageUploadField";
-import { StoreImage } from "@/components/StoreImage";
+import { CatalogPhoto } from "@/components/CatalogPhoto";
 import { OrdersAdminPanel } from "@/components/OrdersAdminPanel";
 import {
   X,
@@ -1451,7 +1451,7 @@ export function AdminDashboardModal({
                           >
                             <div className="flex items-center gap-3.5 min-w-0 flex-1">
                               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-black/10">
-                                <StoreImage
+                                <CatalogPhoto
                                   src={
                                     Array.isArray(prod.images) && prod.images[0]
                                       ? prod.images[0]
@@ -1791,7 +1791,7 @@ export function AdminDashboardModal({
                         >
                           <div className="flex items-center gap-3.5">
                             <div className="relative h-16 w-16 overflow-hidden rounded-xl">
-                              <StoreImage
+                              <CatalogPhoto
                                 src={cat.imageUrl}
                                 alt={cat.nameEn}
                                 className="object-cover"

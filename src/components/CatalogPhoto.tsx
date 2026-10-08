@@ -1,6 +1,6 @@
 "use client";
 
-type StoreImageProps = {
+type CatalogPhotoProps = {
   src: string;
   alt: string;
   className?: string;
@@ -13,14 +13,13 @@ type StoreImageProps = {
   onError?: () => void;
 };
 
-/** Native img avoids next/image fill collapsing when a parent has no computed height. */
-export function StoreImage({
+export function CatalogPhoto({
   src,
   alt,
   className,
   fill = true,
   onError,
-}: StoreImageProps) {
+}: CatalogPhotoProps) {
   const source = src?.trim() || "/images/hero-stationery.jpg";
   return (
     // eslint-disable-next-line @next/next/no-img-element

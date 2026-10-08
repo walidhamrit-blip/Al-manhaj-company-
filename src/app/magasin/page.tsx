@@ -12,7 +12,7 @@ import {
   Phone,
   Store,
 } from "lucide-react";
-import { StoreImage } from "@/components/StoreImage";
+import { CatalogPhoto } from "@/components/CatalogPhoto";
 import { UI_TEXT, type Language } from "@/lib/i18n-themes";
 
 const GALLERY = [
@@ -95,7 +95,7 @@ export default function MagasinPage() {
 
       <main className="mx-auto max-w-[1760px] px-3 py-6 sm:py-10">
         <section className="relative h-[280px] overflow-hidden bg-black sm:h-[420px] lg:h-[520px]">
-          <StoreImage
+          <CatalogPhoto
             src="/images/new/main-storefront-hq.jpg"
             alt={lang === "ar" ? "واجهة مغاز المنهج" : "Al Manhaj storefront"}
             className="object-cover"
@@ -144,7 +144,7 @@ export default function MagasinPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {GALLERY.map((photo) => (
               <div key={photo.src} className="relative h-56 overflow-hidden border bg-white sm:h-72">
-                <StoreImage
+                <CatalogPhoto
                   src={photo.src}
                   alt={lang === "ar" ? photo.altAr : photo.altEn}
                   className="h-full w-full object-cover"
