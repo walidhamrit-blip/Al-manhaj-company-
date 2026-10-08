@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import type { Language, ThemeConfig } from "@/lib/i18n-themes";
+import { StoreImage } from "@/components/StoreImage";
 import {
   UploadCloud,
   ImagePlus,
@@ -287,8 +288,7 @@ export function ImageUploadField({
           className="flex items-center gap-3 rounded-xl border p-2.5"
         >
           <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-lg border border-black/10 bg-white">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={value} alt={label} className="h-full w-full object-cover" />
+            <StoreImage src={value} alt={label} className="object-cover" sizes="96px" />
             {isUploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                 <Loader2 className="h-5 w-5 animate-spin text-white" />

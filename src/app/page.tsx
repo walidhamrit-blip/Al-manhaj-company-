@@ -13,6 +13,7 @@ import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } from "@/
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CategoryImage } from "@/components/CategoryImage";
+import { StoreImage } from "@/components/StoreImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
@@ -53,7 +54,7 @@ export default function StorefrontPage() {
   const isRtl = lang === "ar";
   const t = UI_TEXT[lang];
 
-  // Visual Theme state (6 curated e-commerce themes)
+  // Visual Theme state (7 curated e-commerce themes)
   const [themeId, setThemeId] = useState<ThemeId>("cyber");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isCatNavOpen, setIsCatNavOpen] = useState(false);
@@ -144,11 +145,21 @@ export default function StorefrontPage() {
       console.error("Failed to fetch store data, using seed fallback:", err);
       // Fallback pour Cloudflare Pages sans base de données - affiche les données de démo
       try {
-        setCategories(INITIAL_CATEGORIES as any);
-        setProducts(INITIAL_PRODUCTS as any);
-        setSettings(INITIAL_STORE_SETTINGS as any);
+        setCategories(
+          INITIAL_CATEGORIES.map((category, index) => ({
+            ...category,
+            id: index + 1,
+          })) as Category[]
+        );
+        setProducts(
+          INITIAL_PRODUCTS.map((product, index) => ({
+            ...product,
+            id: index + 1,
+          })) as Product[]
+        );
+        setSettings(INITIAL_STORE_SETTINGS as StoreSettings);
         if (INITIAL_PRODUCTS.length > 0) {
-          setWholesaleProductId((prev) => prev || (INITIAL_PRODUCTS[0] as any).id || 1);
+          setWholesaleProductId((prev) => prev || 1);
         }
       } catch {}
     } finally {
@@ -164,8 +175,9 @@ export default function StorefrontPage() {
         if (savedCart) {
           setCart(JSON.parse(savedCart));
         }
-        const savedTheme = localStorage.getItem("atelier_theme_v1") as ThemeId;
-        if (savedTheme && THEMES.some((th) => th.id === savedTheme)) {
+        const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
+          localStorage.getItem("atelier_theme_v1")) as ThemeId;
+        if (savedTheme && THEMES.some((th) => th.id === savedTheme) && savedTheme !== "paperSource") {
           setThemeId(savedTheme);
         }
       } catch {
@@ -246,7 +258,7 @@ export default function StorefrontPage() {
     setThemeId(id);
     setIsThemeMenuOpen(false);
     try {
-      localStorage.setItem("atelier_theme_v1", id);
+      localStorage.setItem("atelier_theme_v2", id);
     } catch {
       // ignore
     }
@@ -396,6 +408,12 @@ export default function StorefrontPage() {
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const handleSearchSubmit = (event?: React.FormEvent) => {
+    event?.preventDefault();
+    setSelectedCategory("all");
+    document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" });
   };
 
   // Wholesale Calculator Logic
@@ -621,10 +639,7 @@ export default function StorefrontPage() {
 
           <form
             className="hidden md:flex flex-1 max-w-2xl"
-            onSubmit={(e) => {
-              e.preventDefault();
-              document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" });
-            }}
+            onSubmit={handleSearchSubmit}
           >
             <div className="flex w-full overflow-hidden rounded-sm border-2" style={{ borderColor: currentTheme.colors.accentPrimary }}>
               <input
@@ -684,7 +699,7 @@ export default function StorefrontPage() {
                     className="absolute end-0 mt-2 z-40 w-72 rounded-none border p-3 shadow-2xl space-y-1.5"
                   >
                     <div className="px-2 py-1 text-xs font-extrabold uppercase tracking-wider opacity-70">
-                      {t.themeSelectorTitle} (6 Themes)
+                      {t.themeSelectorTitle} ({THEMES.length})
                     </div>
                     {THEMES.map((th) => {
                       const active = th.id === themeId;
@@ -753,25 +768,6 @@ export default function StorefrontPage() {
               )}
             </div>
 
-            {/* Bilingual Language Toggle (EN <-> AR with auto RTL) */}
-            <button
-              type="button"
-              onClick={() => setLang((prev) => (prev === "en" ? "ar" : "en"))}
-              style={{
-                backgroundColor: currentTheme.colors.bgSecondary,
-                borderColor: currentTheme.colors.border,
-                color: currentTheme.colors.textPrimary,
-              }}
-              className="flex items-center gap-1.5 rounded-none border px-2.5 sm:px-3 py-2 text-xs font-extrabold transition hover:opacity-85"
-              title="Switch Language (English / العربية)"
-            >
-              <Globe
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4"
-              />
-              <span>{lang === "en" ? "العربية" : "English"}</span>
-            </button>
-
             {/* Order Tracking Shortcut */}
             <button
               type="button"
@@ -834,10 +830,7 @@ export default function StorefrontPage() {
           <form
             className="flex overflow-hidden rounded-sm border-2"
             style={{ borderColor: currentTheme.colors.accentPrimary }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" });
-            }}
+            onSubmit={handleSearchSubmit}
           >
             <input
               type="text"
@@ -891,6 +884,18 @@ export default function StorefrontPage() {
               {t.masterCatalog}
             </button>
           </div>
+          <div className="flex md:hidden overflow-x-auto no-scrollbar border-t border-white/20">
+            {categories.map((cat) => (
+              <button
+                key={`mnav-${cat.id}`}
+                type="button"
+                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                className="shrink-0 px-3 py-2 text-[12px] font-semibold"
+              >
+                {lang === "ar" ? cat.nameAr : cat.nameEn}
+              </button>
+            ))}
+          </div>
           {isCatNavOpen && (
             <div className="border-t border-white/20 bg-white text-neutral-900 shadow-lg">
               <div className="mx-auto grid max-w-[1320px] grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1 p-3">
@@ -927,10 +932,12 @@ export default function StorefrontPage() {
         <section className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 pt-3 sm:pt-4">
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
             <div className="relative h-[220px] overflow-hidden bg-black sm:h-[320px] lg:col-span-8 lg:h-[360px]">
-              <img
+              <StoreImage
                 src={currentHero.imageUrl}
                 alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-                className="h-full w-full object-cover transition-all duration-700"
+                className="object-cover transition-all duration-700"
+                priority
+                sizes="(max-width: 1024px) 100vw, 70vw"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/25 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8 text-white">
@@ -1007,7 +1014,7 @@ export default function StorefrontPage() {
                 onClick={() => handleSelectCategoryAndScroll("all")}
                 className="relative h-[120px] overflow-hidden sm:h-[155px] lg:h-[174px] text-start"
               >
-                <img src={storefront.image} alt={storefront.title} className="h-full w-full object-cover" />
+                <StoreImage src={storefront.image} alt={storefront.title} className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">
                   <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">{storefront.badge}</div>
@@ -1019,10 +1026,11 @@ export default function StorefrontPage() {
                 onClick={() => setIsCatalogOpen(true)}
                 className="relative h-[120px] overflow-hidden sm:h-[155px] lg:h-[174px] text-start"
               >
-                <img
+                <StoreImage
                   src={landscapeBanner.imageUrl}
                   alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
-                  className="h-full w-full object-cover"
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">
@@ -1089,10 +1097,11 @@ export default function StorefrontPage() {
                   onClick={() => setIsCatalogOpen(true)}
                   className="relative block h-[140px] w-full overflow-hidden sm:h-[200px]"
                 >
-                  <img
+                  <StoreImage
                     src={landscapeBanner.imageUrl}
                     alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
-                    className="h-full w-full object-cover"
+                    className="object-cover"
+                    sizes="100vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
                   <div className="absolute inset-0 flex flex-col justify-center p-6 text-white sm:p-10">
@@ -1181,7 +1190,7 @@ export default function StorefrontPage() {
       ===================================================================== */}
       <section
         id="catalog-section"
-        className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
+        className="mx-auto w-full max-w-[1320px] scroll-mt-36 px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
         <div className="mb-6">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -1433,7 +1442,7 @@ export default function StorefrontPage() {
               <section
                 key={category.id}
                 id={`catalog-category-${category.slug}`}
-                className="scroll-mt-28 space-y-3 sm:space-y-4"
+                className="scroll-mt-36 space-y-3 sm:space-y-4"
               >
                 <div
                   style={{
@@ -1889,13 +1898,25 @@ export default function StorefrontPage() {
               </span>
             </div>
           </div>
+
+          <div>
+            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
+              {lang === "ar" ? "معلومات قانونية" : "Legal"}
+            </h4>
+            <div className="flex flex-col gap-2 text-xs font-semibold text-neutral-300">
+              <a href="/privacy" className="hover:text-white hover:underline">{t.footerPrivacy}</a>
+              <a href="/terms" className="hover:text-white hover:underline">{t.footerTerms}</a>
+              <a href="/returns" className="hover:text-white hover:underline">{t.footerReturns}</a>
+              <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:text-white hover:underline">{t.footerPaymentProviders}</a>
+            </div>
+          </div>
         </div>
         {/* ===== CBL / Mawthooq Compliance Bar (editable from Admin) ===== */}
         {complianceEnabled && (
           <div className="mx-auto max-w-[1320px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t border-white/15">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
               <div className="flex flex-wrap items-center gap-2">
-                <span style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white px-3 py-1.5 font-bold text-neutral-900">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> {complianceStatus}
                 </span>
                 <span className="opacity-70">
@@ -1912,7 +1933,7 @@ export default function StorefrontPage() {
                 <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:underline underline-offset-4">{t.footerPaymentProviders}</a>
               </div>
             </div>
-            <div style={{color: currentTheme.colors.textSecondary}} className="mt-3 flex flex-wrap gap-2 text-[11px] leading-5">
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px] leading-5 text-neutral-400">
               <span>{paymentNotice}</span>
               <span className="hidden sm:inline opacity-30">—</span>
               <span>{copyrightLine}</span>
@@ -1970,7 +1991,7 @@ export default function StorefrontPage() {
           type="button"
           onClick={() => setIsCartOpen(true)}
           style={{
-            backgroundColor: "#25D366",
+            backgroundColor: currentTheme.colors.accentPrimary,
             color: "#FFFFFF",
           }}
           className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-extrabold shadow-md"
@@ -2062,7 +2083,7 @@ export default function StorefrontPage() {
       />
 
       {/* Cookie Consent - CBL Privacy requirement */}
-      <div id="cookie-banner" className="fixed bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60] hidden">
+      <div id="cookie-banner" className="fixed bottom-20 lg:bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60]" style={{ display: "none" }}>
         <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-none border shadow-2xl p-4 flex flex-col gap-3">
           <p className="text-xs leading-5 font-semibold">نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></p>
           <div className="flex gap-2">

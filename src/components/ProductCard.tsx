@@ -33,7 +33,7 @@ export function ProductCard({
   category,
   lang,
   theme,
-  currencySymbol,
+  currencySymbol: _currencySymbol,
   cartQty,
   onAddToCart,
   onQuickView,

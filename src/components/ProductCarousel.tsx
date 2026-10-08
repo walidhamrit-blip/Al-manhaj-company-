@@ -90,7 +90,7 @@ export function ProductCarousel({
           const inCart = cart.find((c) => c.product.id === product.id)?.quantity || 0;
           return (
             <div
-              key={`carousel-${product.id}`}
+              key={`carousel-${product.id ?? product.sku}`}
               className="w-[180px] sm:w-[210px] lg:w-[220px] shrink-0 snap-start"
             >
               <ProductCard
