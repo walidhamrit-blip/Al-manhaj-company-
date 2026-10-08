@@ -194,7 +194,7 @@ export function MasterCatalogDrawer({
               const isSelected = activeDeptSlug === cat.slug;
               return (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   type="button"
                   onClick={() => setActiveDeptSlug(cat.slug)}
                   aria-pressed={isSelected}
@@ -240,7 +240,7 @@ export function MasterCatalogDrawer({
           ) : (
             groupedCatalog.map(({ category, items }) => (
               <div
-                key={category.id}
+                key={category.slug}
                 style={{
                   backgroundColor: theme.colors.bgElevated,
                   borderColor: theme.colors.border,
@@ -325,7 +325,7 @@ export function MasterCatalogDrawer({
 
                     return (
                       <div
-                        key={item.id}
+                        key={item.sku}
                         style={{ borderColor: theme.colors.border }}
                         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 transition hover:bg-black/[0.02]"
                       >

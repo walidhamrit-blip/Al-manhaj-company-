@@ -17,8 +17,8 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/products error, seed fallback:", error);
     try {
-      const { INITIAL_PRODUCTS } = await import("@/lib/fallbackData");
-      return NextResponse.json({ products: INITIAL_PRODUCTS });
+      const { hydrateFallbackStore } = await import("@/lib/fallbackData");
+      return NextResponse.json({ products: hydrateFallbackStore().products });
     } catch {
       return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
     }

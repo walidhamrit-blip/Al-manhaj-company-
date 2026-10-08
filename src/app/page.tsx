@@ -9,7 +9,7 @@ import {
   type Language,
   type ThemeId,
 } from "@/lib/i18n-themes";
-import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
+import { hydrateFallbackStore } from "@/lib/fallbackData";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CategoryImage } from "@/components/CategoryImage";
@@ -128,38 +128,45 @@ export default function StorefrontPage() {
       const res = await fetch("/api/store", { cache: "no-store" });
       if (!res.ok) throw new Error("API not available - using seed");
       const data = await res.json();
-      setCategories(data.categories || []);
-      setProducts(data.products || []);
+      const fallback = hydrateFallbackStore();
+      const nextCategories = (data.categories?.length
+        ? data.categories
+        : fallback.categories
+      ).map((category: Category, index: number) => ({
+        ...category,
+        id: Number(category.id) || index + 1,
+      }));
+      const nextProducts = (data.products?.length
+        ? data.products
+        : fallback.products
+      ).map((product: Product, index: number) => ({
+        ...product,
+        id: Number(product.id) || index + 1,
+      }));
+      setCategories(nextCategories);
+      setProducts(nextProducts);
       if (data.settings) {
-        setSettings(data.settings);
+        setSettings({ ...data.settings, id: Number(data.settings.id) || 1 });
+      } else {
+        setSettings(fallback.settings as StoreSettings);
       }
-      if (data.products && data.products.length > 0) {
-        setWholesaleProductId((prev) => prev || data.products[0].id);
+      if (nextProducts.length > 0) {
+        setWholesaleProductId((prev) => prev || nextProducts[0].id);
         const highest = Math.max(
-          ...data.products.map((p: Product) => Number(p.price) || 100),
+          ...nextProducts.map((p: Product) => Number(p.price) || 100),
           120
         );
         setMaxPrice(Math.ceil(highest + 20));
       }
     } catch (err) {
       console.error("Failed to fetch store data, using seed fallback:", err);
-      // Fallback pour Cloudflare Pages sans base de données - affiche les données de démo
       try {
-        setCategories(
-          INITIAL_CATEGORIES.map((category, index) => ({
-            ...category,
-            id: index + 1,
-          })) as Category[]
-        );
-        setProducts(
-          INITIAL_PRODUCTS.map((product, index) => ({
-            ...product,
-            id: index + 1,
-          })) as Product[]
-        );
-        setSettings(INITIAL_STORE_SETTINGS as StoreSettings);
-        if (INITIAL_PRODUCTS.length > 0) {
-          setWholesaleProductId((prev) => prev || 1);
+        const fallback = hydrateFallbackStore();
+        setCategories(fallback.categories as Category[]);
+        setProducts(fallback.products as Product[]);
+        setSettings(fallback.settings as StoreSettings);
+        if (fallback.products.length > 0) {
+          setWholesaleProductId((prev) => prev || fallback.products[0].id);
         }
       } catch {}
     } finally {
@@ -866,7 +873,7 @@ export default function StorefrontPage() {
             <div className="hidden md:flex min-w-0 flex-1 items-center overflow-x-auto no-scrollbar">
               {categories.map((cat) => (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   type="button"
                   onClick={() => handleSelectCategoryAndScroll(cat.slug)}
                   className="shrink-0 px-3 py-2.5 text-[13px] font-semibold hover:bg-black/15"
@@ -887,7 +894,7 @@ export default function StorefrontPage() {
           <div className="flex md:hidden overflow-x-auto no-scrollbar border-t border-white/20">
             {categories.map((cat) => (
               <button
-                key={`mnav-${cat.id}`}
+                key={`mnav-${cat.slug}`}
                 type="button"
                 onClick={() => handleSelectCategoryAndScroll(cat.slug)}
                 className="shrink-0 px-3 py-2 text-[12px] font-semibold"
@@ -911,7 +918,7 @@ export default function StorefrontPage() {
                 </button>
                 {categories.map((cat) => (
                   <button
-                    key={`nav-${cat.id}`}
+                    key={`nav-${cat.slug}`}
                     type="button"
                     onClick={() => {
                       setIsCatNavOpen(false);
@@ -1050,7 +1057,7 @@ export default function StorefrontPage() {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {categories.slice(0, 6).map((cat) => (
               <button
-                key={`tile-${cat.id}`}
+                key={`tile-${cat.slug}`}
                 type="button"
                 onClick={() => handleSelectCategoryAndScroll(cat.slug)}
                 className="group overflow-hidden border bg-white text-start hover:shadow-md"
@@ -1159,7 +1166,7 @@ export default function StorefrontPage() {
               ).length;
               return (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   type="button"
                   onClick={() => handleSelectCategoryAndScroll(cat.slug)}
                   className="group flex items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
@@ -1365,7 +1372,7 @@ export default function StorefrontPage() {
               const active = selectedCategory === cat.slug;
               return (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   type="button"
                   onClick={() => setSelectedCategory(cat.slug)}
                   aria-pressed={active}
@@ -1440,7 +1447,7 @@ export default function StorefrontPage() {
           <div className="space-y-8">
             {catalogGroups.map(({ category, items: categoryProducts }) => (
               <section
-                key={category.id}
+                key={category.slug}
                 id={`catalog-category-${category.slug}`}
                 className="scroll-mt-36 space-y-3 sm:space-y-4"
               >
@@ -1487,7 +1494,7 @@ export default function StorefrontPage() {
                       cart.find((item) => item.product.id === product.id)?.quantity || 0;
                     return (
                       <ProductCard
-                        key={product.id}
+                        key={product.sku}
                         product={product}
                         category={category}
                         lang={lang}
@@ -1653,7 +1660,7 @@ export default function StorefrontPage() {
                   className="w-full rounded-none border px-3 py-2.5 text-xs sm:text-sm font-bold outline-none"
                 >
                   {products.map((prod) => (
-                    <option key={prod.id} value={prod.id}>
+                    <option key={prod.sku} value={prod.id}>
                       {lang === "ar" ? prod.titleAr : prod.titleEn} (
                       {formatPrice(prod.wholesalePrice, lang)})
                     </option>
@@ -1837,7 +1844,7 @@ export default function StorefrontPage() {
             <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
               {categories.map((cat) => (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   type="button"
                   onClick={() => handleSelectCategoryAndScroll(cat.slug)}
                   className="text-start hover:underline truncate"

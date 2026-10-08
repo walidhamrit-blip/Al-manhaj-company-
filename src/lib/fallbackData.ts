@@ -703,3 +703,18 @@ export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
   paymentProvidersUrl: "https://cbl.gov.ly/electronic-payment/",
 };
 
+/** Seed rows have no serial ids — attach stable ones for React keys and cart ops. */
+export function hydrateFallbackStore() {
+  return {
+    categories: INITIAL_CATEGORIES.map((category, index) => ({
+      ...category,
+      id: index + 1,
+    })),
+    products: INITIAL_PRODUCTS.map((product, index) => ({
+      ...product,
+      id: index + 1,
+    })),
+    settings: { ...INITIAL_STORE_SETTINGS, id: 1 },
+  };
+}
+

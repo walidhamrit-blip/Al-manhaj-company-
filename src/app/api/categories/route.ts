@@ -16,7 +16,12 @@ export async function GET() {
     return NextResponse.json({ categories: allCategories });
   } catch (error) {
     console.error("GET /api/categories error:", error);
-    try { const { INITIAL_CATEGORIES } = await import("@/lib/fallbackData"); return NextResponse.json({ categories: INITIAL_CATEGORIES }); } catch { return NextResponse.json({ error: "Failed" }, { status: 500 }); }
+    try {
+      const { hydrateFallbackStore } = await import("@/lib/fallbackData");
+      return NextResponse.json({ categories: hydrateFallbackStore().categories });
+    } catch {
+      return NextResponse.json({ error: "Failed" }, { status: 500 });
+    }
   }
 }
 

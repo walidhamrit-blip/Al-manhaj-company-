@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { categories, products, storeSettings } from "@/db/schema";
 import { ensureDatabaseSeeded } from "@/db/seed";
+import { hydrateFallbackStore } from "@/lib/fallbackData";
 import { asc, desc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -24,12 +25,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error loading store data, returning seed fallback:", error);
     try {
-      const { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } = await import("@/lib/fallbackData");
-      return NextResponse.json({
-        categories: INITIAL_CATEGORIES,
-        products: INITIAL_PRODUCTS,
-        settings: INITIAL_STORE_SETTINGS,
-      });
+      return NextResponse.json(hydrateFallbackStore());
     } catch {
       return NextResponse.json(
         { error: "Failed to load store data" },
