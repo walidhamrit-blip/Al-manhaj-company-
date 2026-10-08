@@ -47,7 +47,7 @@ export function ProductCarousel({
   if (products.length === 0) return null;
 
   return (
-    <section className="mx-auto w-full max-w-[1320px] px-2 sm:px-3 lg:px-4 py-5 sm:py-6">
+    <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 py-5 sm:py-6">
       <div className="mb-3 flex items-center justify-between gap-3 border-b pb-2" style={{ borderColor: theme.colors.border }}>
         <h2 className="text-lg sm:text-xl font-bold tracking-tight">{title}</h2>
         <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export function ProductCarousel({
           return (
             <div
               key={`carousel-${product.id ?? product.sku}`}
-              className="w-[180px] sm:w-[210px] lg:w-[220px] shrink-0 snap-start"
+              className="w-[200px] sm:w-[230px] lg:w-[250px] shrink-0 snap-start"
             >
               <ProductCard
                 product={product}

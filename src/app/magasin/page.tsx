@@ -46,7 +46,7 @@ export default function MagasinPage() {
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-[#EEEEEE] text-[#1A1A1A]">
       <div className="bg-[#222] text-white">
-        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-3 px-3 py-1.5 text-xs">
+        <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-3 px-3 py-1.5 text-xs">
           <span className="inline-flex items-center gap-1.5 font-semibold">
             <Phone className="h-3.5 w-3.5" />
             <span dir="ltr">+218 91-214-5050</span>
@@ -63,7 +63,7 @@ export default function MagasinPage() {
       </div>
 
       <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-4 px-3 py-3">
+        <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-4 px-3 py-3">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-[#E30613] text-lg font-black text-white">
               {lang === "ar" ? "م" : "A"}
@@ -86,14 +86,14 @@ export default function MagasinPage() {
           </Link>
         </div>
         <div className="bg-[#E30613] text-white">
-          <div className="mx-auto flex max-w-[1320px] items-center gap-4 px-3 py-2 text-xs font-semibold sm:text-sm">
+          <div className="mx-auto flex max-w-[1760px] items-center gap-4 px-3 py-2 text-xs font-semibold sm:text-sm">
             <Store className="h-4 w-4" />
             <span>{t.ourStoreTitle}</span>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1320px] px-3 py-6 sm:py-10">
+      <main className="mx-auto max-w-[1760px] px-3 py-6 sm:py-10">
         <section className="relative h-[280px] overflow-hidden bg-black sm:h-[420px] lg:h-[520px]">
           <StoreImage
             src="/images/new/main-storefront-hq.jpg"

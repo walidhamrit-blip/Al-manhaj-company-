@@ -1,8 +1,5 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
-
 type StoreImageProps = {
   src: string;
   alt: string;
@@ -16,47 +13,25 @@ type StoreImageProps = {
   onError?: () => void;
 };
 
-/** next/image wrapper that still works with remote catalog URLs and CSS object-fit classes. */
+/** Native img avoids next/image fill collapsing when a parent has no computed height. */
 export function StoreImage({
   src,
   alt,
   className,
   fill = true,
-  width,
-  height,
-  sizes = "100vw",
-  priority,
-  loading,
   onError,
 }: StoreImageProps) {
   const source = src?.trim() || "/images/hero-stationery.jpg";
-  if (fill) {
-    return (
-      <span className="absolute inset-0 block overflow-hidden">
-        <Image
-          src={source}
-          alt={alt}
-          fill
-          sizes={sizes}
-          priority={priority}
-          className={className}
-          unoptimized
-          onError={onError}
-        />
-      </span>
-    );
-  }
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={source}
       alt={alt}
-      width={width || 800}
-      height={height || 600}
-      sizes={sizes}
-      priority={priority}
-      loading={loading}
-      className={className}
-      unoptimized
+      className={
+        fill
+          ? `absolute inset-0 h-full w-full ${className || "object-cover"}`
+          : className
+      }
       onError={onError}
     />
   );
