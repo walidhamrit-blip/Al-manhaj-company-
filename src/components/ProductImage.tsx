@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import type { Product } from "@/db/schema";
 import { getProductImageFallback } from "@/lib/product-image-fallbacks";
-import { CatalogPhoto } from "@/components/CatalogPhoto";
+import { StoreImage } from "@/components/StoreImage";
 
 interface ProductImageProps {
   product: Pick<Product, "sku" | "categorySlug">;
@@ -27,7 +27,7 @@ export function ProductImage({
 
   return (
     <span className="absolute inset-0 block overflow-hidden">
-      <CatalogPhoto
+      <StoreImage
         src={displayedSrc}
         alt={alt}
         className={className}

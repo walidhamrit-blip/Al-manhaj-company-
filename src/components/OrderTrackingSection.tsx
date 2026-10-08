@@ -21,7 +21,7 @@ import {
   ORDER_STATUS_DESCRIPTIONS,
   getOrderStatusLabel,
 } from "@/lib/orders";
-import { CatalogPhoto } from "@/components/CatalogPhoto";
+import { StoreImage } from "@/components/StoreImage";
 import {
   UI_TEXT,
   formatPrice,
@@ -504,7 +504,7 @@ export function OrderTrackingSection({
                         className="flex items-center gap-3 py-2.5 first:pt-1 last:pb-1"
                       >
                         <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-black/10">
-                          <CatalogPhoto
+                          <StoreImage
                             src={item.imageUrl || "/images/new/main-storefront-hq.jpg"}
                             alt=""
                             className="object-cover"
