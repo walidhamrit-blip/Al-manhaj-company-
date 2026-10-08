@@ -99,6 +99,7 @@ export default function MagasinPage() {
             src="/images/new/main-storefront-hq.jpg"
             alt={lang === "ar" ? "واجهة مغاز المنهج" : "Al Manhaj storefront"}
             className="object-cover"
+            fill
             priority
             sizes="100vw"
           />
@@ -142,11 +143,14 @@ export default function MagasinPage() {
           <h2 className="mb-3 border-b border-neutral-300 pb-2 text-xl font-bold">{t.ourStoreGallery}</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {GALLERY.map((photo) => (
-              <div key={photo.src} className="relative min-h-[14rem] h-56 overflow-hidden border bg-white sm:h-72 sm:min-h-[18rem]">
+              <div key={photo.src} className="relative h-56 overflow-hidden border bg-white sm:h-72">
                 <StoreImage
                   src={photo.src}
                   alt={lang === "ar" ? photo.altAr : photo.altEn}
-                  className="object-cover"
+                  className="h-full w-full object-cover"
+                  fill={false}
+                  width={960}
+                  height={640}
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>

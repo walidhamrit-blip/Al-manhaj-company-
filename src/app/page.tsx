@@ -184,7 +184,13 @@ export default function StorefrontPage() {
         }
         const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
           localStorage.getItem("atelier_theme_v1")) as ThemeId;
-        if (savedTheme && THEMES.some((th) => th.id === savedTheme) && savedTheme !== "paperSource") {
+        // Keep SSR and the first client paint on the principal market theme.
+        if (
+          savedTheme &&
+          savedTheme !== "cyber" &&
+          savedTheme !== "paperSource" &&
+          THEMES.some((th) => th.id === savedTheme)
+        ) {
           setThemeId(savedTheme);
         }
       } catch {
@@ -1051,7 +1057,7 @@ export default function StorefrontPage() {
                 className="group overflow-hidden border bg-white text-start hover:shadow-md"
                 style={{ borderColor: currentTheme.colors.border }}
               >
-                <div className="aspect-[16/9] overflow-hidden bg-white">
+                <div className="relative aspect-[16/9] overflow-hidden bg-white">
                   <CategoryImage
                     slug={cat.slug}
                     src={cat.imageUrl}

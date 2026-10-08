@@ -23,12 +23,14 @@ export function CategoryImage({
   const displayedSrc = failedSrc === source ? fallbackSrc : source;
 
   return (
-    <StoreImage
-      src={displayedSrc}
-      alt={alt}
-      className={className}
-      sizes="(max-width: 768px) 50vw, 240px"
-      onError={() => setFailedSrc(source)}
-    />
+    <span className={`relative block overflow-hidden ${className || "h-full w-full"}`}>
+      <StoreImage
+        src={displayedSrc}
+        alt={alt}
+        className="object-contain"
+        sizes="(max-width: 768px) 50vw, 240px"
+        onError={() => setFailedSrc(source)}
+      />
+    </span>
   );
 }

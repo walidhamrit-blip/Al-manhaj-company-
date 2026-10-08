@@ -32,7 +32,7 @@ export function StoreImage({
   const source = src?.trim() || "/images/hero-stationery.jpg";
   if (fill) {
     return (
-      <span className="relative block h-full w-full overflow-hidden">
+      <span className="absolute inset-0 block overflow-hidden">
         <Image
           src={source}
           alt={alt}
