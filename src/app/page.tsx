@@ -10,6 +10,10 @@ import {
   type ThemeId,
 } from "@/lib/i18n-themes";
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
+import {
+  getProductParentSlug,
+  getProductSubcategorySlug,
+} from "@/lib/category-hierarchy";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryImage } from "@/components/CategoryImage";
 import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
@@ -61,6 +65,13 @@ export default function StorefrontPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<StoreSettings | null>(null);
+  const categoriesBySlug = useMemo(
+    () =>
+      new Map<string, Category>(
+        categories.map((category) => [category.slug, category])
+      ),
+    [categories]
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   // Hero Carousel state
@@ -323,16 +334,10 @@ export default function StorefrontPage() {
 
   // Filtered & Sorted Products for the main catalog (hidden products excluded from storefront)
   // Determine if the selected category is a subcategory
-  const selectedIsSubcategory = useMemo(() => {
-    if (selectedCategory === "all") return false;
-    return categories.some((c) => c.slug === selectedCategory && c.parentSlug);
-  }, [selectedCategory, categories]);
-
-  const selectedParentSlug = useMemo(() => {
-    if (!selectedIsSubcategory) return null;
-    const sub = categories.find((c) => c.slug === selectedCategory);
-    return sub?.parentSlug || null;
-  }, [selectedIsSubcategory, selectedCategory, categories]);
+  const selectedIsSubcategory = useMemo(
+    () => Boolean(categoriesBySlug.get(selectedCategory)?.parentSlug),
+    [selectedCategory, categoriesBySlug]
+  );
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -340,11 +345,16 @@ export default function StorefrontPage() {
       if (p.isHidden) return false;
       if (selectedCategory !== "all") {
         if (selectedIsSubcategory) {
-          // Filter by subcategory
-          if (p.subcategorySlug !== selectedCategory) return false;
-        } else {
-          // Filter by top-level category (includes all subcategories)
-          if (p.categorySlug !== selectedCategory) return false;
+          // Support both the normalized parent+subcategory fields and older
+          // records where the child slug is stored directly as categorySlug.
+          if (getProductSubcategorySlug(p, categoriesBySlug) !== selectedCategory) {
+            return false;
+          }
+        } else if (
+          getProductParentSlug(p, categoriesBySlug) !== selectedCategory
+        ) {
+          // Selecting a parent includes products assigned to all its children.
+          return false;
         }
       }
       if (Number(p.price) > maxPrice) {
@@ -373,20 +383,74 @@ export default function StorefrontPage() {
       if (sortBy === "stock") return b.stock - a.stock;
       return Number(b.isFeatured) - Number(a.isFeatured);
     });
-  }, [products, selectedCategory, selectedIsSubcategory, maxPrice, onlyPromo, searchQuery, sortBy]);
+  }, [
+    products,
+    categoriesBySlug,
+    selectedCategory,
+    selectedIsSubcategory,
+    maxPrice,
+    onlyPromo,
+    searchQuery,
+    sortBy,
+  ]);
 
-  // Keep every product under its parent category in the complete catalog.
-  // Only show top-level categories (not subcategories) as groups.
+  const hasActiveCatalogFilter =
+    selectedCategory !== "all" ||
+    Boolean(searchQuery.trim()) ||
+    onlyPromo ||
+    maxPrice < highestCatalogPrice;
+
+  // Build a real parent → subcategory hierarchy for the catalog. Products with
+  // a subcategory are rendered under that subcategory instead of being mixed
+  // into one undifferentiated parent-category grid. Empty categories remain
+  // visible in the unfiltered catalog so the catalog structure is complete.
   const catalogGroups = useMemo(() => {
-    return [...categories]
-      .filter((c) => !c.parentSlug)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((category) => ({
-        category,
-        items: filteredProducts.filter((product) => product.categorySlug === category.slug),
-      }))
-      .filter((group) => group.items.length > 0);
-  }, [categories, filteredProducts]);
+    const orderedCategories = [...categories].sort(
+      (a, b) => a.sortOrder - b.sortOrder
+    );
+    const parentCategories = orderedCategories.filter(
+      (category) => !category.parentSlug
+    );
+
+    return parentCategories
+      .map((category) => {
+        const childCategories = orderedCategories.filter(
+          (child) => child.parentSlug === category.slug
+        );
+        const items = filteredProducts.filter(
+          (product) => getProductParentSlug(product, categoriesBySlug) === category.slug
+        );
+        const childSlugs = new Set(childCategories.map((child) => child.slug));
+        const subcategories = childCategories
+          .map((subcategory) => ({
+            category: subcategory,
+            items: items.filter(
+              (product) =>
+                getProductSubcategorySlug(product, categoriesBySlug) ===
+                subcategory.slug
+            ),
+          }))
+          .filter(
+            (subcategory) =>
+              !hasActiveCatalogFilter || subcategory.items.length > 0
+          );
+        const unassignedItems = items.filter((product) => {
+          const subcategorySlug = getProductSubcategorySlug(
+            product,
+            categoriesBySlug
+          );
+          return !subcategorySlug || !childSlugs.has(subcategorySlug);
+        });
+
+        return { category, items, subcategories, unassignedItems };
+      })
+      .filter((group) => !hasActiveCatalogFilter || group.items.length > 0);
+  }, [
+    categories,
+    categoriesBySlug,
+    filteredProducts,
+    hasActiveCatalogFilter,
+  ]);
 
   // Category selection handler that smoothly scrolls to the catalog section
   const handleSelectCategoryAndScroll = (slug: string) => {
@@ -905,7 +969,7 @@ export default function StorefrontPage() {
               const active = selectedCategory === cat.slug;
               return (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   type="button"
                   onClick={() => handleSelectCategoryAndScroll(cat.slug)}
                   className="shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] sm:text-[11px] font-bold transition hover:shadow-sm"
@@ -1063,13 +1127,15 @@ export default function StorefrontPage() {
         <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:grid-cols-7">
           {categories.filter(c => !c.parentSlug).map((cat) => {
             const countInCat = products.filter(
-              (p) => !p.isHidden && p.categorySlug === cat.slug
+              (product) =>
+                !product.isHidden &&
+                getProductParentSlug(product, categoriesBySlug) === cat.slug
             ).length;
             const isSelected = selectedCategory === cat.slug;
 
             return (
               <button
-                key={cat.id}
+                key={cat.slug}
                 type="button"
                 onClick={() => handleSelectCategoryAndScroll(cat.slug)}
                 aria-pressed={isSelected}
@@ -1372,67 +1438,140 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          {/* Keep every category visible without a horizontal scrolling strip:
-              compact chips that wrap onto new lines instead of tall grid cells. */}
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("all")}
-              aria-pressed={selectedCategory === "all"}
-              style={
-                selectedCategory === "all"
-                  ? {
-                      backgroundColor: currentTheme.colors.accentPrimary,
-                      borderColor: currentTheme.colors.accentPrimary,
-                      color: "#FFFFFF",
-                    }
-                  : {
-                      backgroundColor: currentTheme.colors.bgSecondary,
-                      borderColor: currentTheme.colors.border,
-                      color: currentTheme.colors.textPrimary,
-                    }
-              }
-              className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-bold transition hover:opacity-85"
-            >
-              <span className="min-w-0 truncate">{t.allCategories}</span>
-              <span className="shrink-0 tabular-nums opacity-75">
-                ({products.filter((product) => !product.isHidden).length})
-              </span>
-            </button>
+          {/* Parent categories and their children are deliberately shown in
+              separate levels, matching the hierarchy used by the catalog below. */}
+          <div className="space-y-2 pt-1">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("all")}
+                aria-pressed={selectedCategory === "all"}
+                style={
+                  selectedCategory === "all"
+                    ? {
+                        backgroundColor: currentTheme.colors.accentPrimary,
+                        borderColor: currentTheme.colors.accentPrimary,
+                        color: "#FFFFFF",
+                      }
+                    : {
+                        backgroundColor: currentTheme.colors.bgSecondary,
+                        borderColor: currentTheme.colors.border,
+                        color: currentTheme.colors.textPrimary,
+                      }
+                }
+                className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-bold transition hover:opacity-85"
+              >
+                <span className="min-w-0 truncate">{t.allCategories}</span>
+                <span className="shrink-0 tabular-nums opacity-75">
+                  ({products.filter((product) => !product.isHidden).length})
+                </span>
+              </button>
 
-            {categories.filter(c => !c.parentSlug).map((cat) => {
-              const countInCat = products.filter(
-                (product) => !product.isHidden && product.categorySlug === cat.slug
-              ).length;
-              const active = selectedCategory === cat.slug;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  aria-pressed={active}
-                  style={
-                    active
-                      ? {
-                          backgroundColor: currentTheme.colors.accentPrimary,
-                          borderColor: currentTheme.colors.accentPrimary,
-                          color: "#FFFFFF",
-                        }
-                      : {
-                          backgroundColor: currentTheme.colors.bgSecondary,
-                          borderColor: currentTheme.colors.border,
-                          color: currentTheme.colors.textPrimary,
-                        }
-                  }
-                  className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-semibold transition hover:opacity-85"
-                >
-                  <span className="min-w-0 truncate">
-                    {lang === "ar" ? cat.nameAr : cat.nameEn}
-                  </span>
-                  <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
-                </button>
-              );
-            })}
+              {categories
+                .filter((category) => !category.parentSlug)
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map((category) => {
+                  const countInCategory = products.filter(
+                    (product) =>
+                      !product.isHidden &&
+                      getProductParentSlug(product, categoriesBySlug) ===
+                        category.slug
+                  ).length;
+                  const active = selectedCategory === category.slug;
+                  return (
+                    <button
+                      key={category.slug}
+                      type="button"
+                      onClick={() => setSelectedCategory(category.slug)}
+                      aria-pressed={active}
+                      style={
+                        active
+                          ? {
+                              backgroundColor: currentTheme.colors.accentPrimary,
+                              borderColor: currentTheme.colors.accentPrimary,
+                              color: "#FFFFFF",
+                            }
+                          : {
+                              backgroundColor: currentTheme.colors.bgSecondary,
+                              borderColor: currentTheme.colors.border,
+                              color: currentTheme.colors.textPrimary,
+                            }
+                      }
+                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-semibold transition hover:opacity-85"
+                    >
+                      <span className="min-w-0 truncate">
+                        {lang === "ar" ? category.nameAr : category.nameEn}
+                      </span>
+                      <span className="shrink-0 tabular-nums opacity-75">
+                        ({countInCategory})
+                      </span>
+                    </button>
+                  );
+                })}
+            </div>
+
+            {categories
+              .filter((category) => !category.parentSlug)
+              .sort((a, b) => a.sortOrder - b.sortOrder)
+              .map((parent) => {
+                const children = categories
+                  .filter((category) => category.parentSlug === parent.slug)
+                  .sort((a, b) => a.sortOrder - b.sortOrder);
+                if (children.length === 0) return null;
+
+                return (
+                  <div
+                    key={`subcategories-${parent.slug}`}
+                    className="flex flex-wrap items-center gap-1.5 border-s border-gray-200 ps-2 sm:ps-3"
+                  >
+                    <span className="text-[10px] font-bold text-gray-500">
+                      {lang === "ar" ? parent.nameAr : parent.nameEn}:
+                    </span>
+                    {children.map((subcategory) => {
+                      const countInSubcategory = products.filter(
+                        (product) =>
+                          !product.isHidden &&
+                          getProductSubcategorySlug(
+                            product,
+                            categoriesBySlug
+                          ) === subcategory.slug
+                      ).length;
+                      const active = selectedCategory === subcategory.slug;
+                      return (
+                        <button
+                          key={subcategory.slug}
+                          type="button"
+                          onClick={() => setSelectedCategory(subcategory.slug)}
+                          aria-pressed={active}
+                          style={
+                            active
+                              ? {
+                                  backgroundColor: currentTheme.colors.accentPrimary,
+                                  borderColor: currentTheme.colors.accentPrimary,
+                                  color: "#FFFFFF",
+                                }
+                              : {
+                                  backgroundColor: currentTheme.colors.bgSecondary,
+                                  borderColor: currentTheme.colors.border,
+                                  color: currentTheme.colors.textSecondary,
+                                }
+                          }
+                          className="inline-flex max-w-full items-center gap-1 rounded-full border px-2.5 py-1 text-start text-[10px] font-medium transition hover:opacity-85"
+                        >
+                          <span className="min-w-0 truncate">
+                            {lang === "ar"
+                              ? subcategory.nameAr
+                              : subcategory.nameEn}
+                          </span>
+                          <span className="shrink-0 tabular-nums opacity-75">
+                            ({countInSubcategory})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
           </div>
         </div>
 
@@ -1480,70 +1619,165 @@ export default function StorefrontPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {catalogGroups.map(({ category, items: categoryProducts }) => (
-              <section
-                key={category.id}
-                id={`catalog-category-${category.slug}`}
-                className="scroll-mt-28 space-y-3 sm:space-y-4"
-              >
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="flex items-center justify-between gap-3 rounded-2xl border p-3 sm:p-4"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <CategoryImage
-                      slug={category.slug}
-                      src={category.imageUrl}
-                      alt={lang === "ar" ? category.nameAr : category.nameEn}
-                      className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain p-1"
-                    />
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-extrabold sm:text-base">
-                        {lang === "ar" ? category.nameAr : category.nameEn}
-                      </h3>
-                      <p
-                        style={{ color: currentTheme.colors.textSecondary }}
-                        className="line-clamp-1 text-xs"
-                      >
-                        {lang === "ar" ? category.descriptionAr : category.descriptionEn}
-                      </p>
-                    </div>
+            {catalogGroups.map(
+              ({ category, items: categoryProducts, subcategories, unassignedItems }) => {
+                const renderProductGrid = (
+                  gridProducts: Product[],
+                  productCategory: Category
+                ) => (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {gridProducts.map((product) => {
+                      const inCart =
+                        cart.find((item) => item.product.id === product.id)?.quantity || 0;
+                      return (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          category={productCategory}
+                          lang={lang}
+                          theme={currentTheme}
+                          currencySymbol={currencySymbol}
+                          cartQty={inCart}
+                          onAddToCart={handleAddToCart}
+                          onQuickView={setQuickViewProduct}
+                        />
+                      );
+                    })}
                   </div>
-                  <span
-                    style={{
-                      backgroundColor: currentTheme.colors.badgeBg,
-                      color: currentTheme.colors.badgeText,
-                    }}
-                    className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:text-xs"
-                  >
-                    {categoryProducts.length} {t.itemsLabel}
-                  </span>
-                </div>
+                );
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
-                  {categoryProducts.map((product) => {
-                    const inCart =
-                      cart.find((item) => item.product.id === product.id)?.quantity || 0;
-                    return (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        category={category}
-                        lang={lang}
-                        theme={currentTheme}
-                        currencySymbol={currencySymbol}
-                        cartQty={inCart}
-                        onAddToCart={handleAddToCart}
-                        onQuickView={setQuickViewProduct}
-                      />
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
+                return (
+                  <section
+                    key={category.slug}
+                    id={`catalog-category-${category.slug}`}
+                    className="scroll-mt-28 space-y-3 sm:space-y-4"
+                  >
+                    <div
+                      style={{
+                        backgroundColor: currentTheme.colors.bgElevated,
+                        borderColor: currentTheme.colors.border,
+                      }}
+                      className="flex items-center justify-between gap-3 rounded-2xl border p-3 sm:p-4"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <CategoryImage
+                          slug={category.slug}
+                          src={category.imageUrl}
+                          alt={lang === "ar" ? category.nameAr : category.nameEn}
+                          className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain p-1"
+                        />
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-extrabold sm:text-base">
+                            {lang === "ar" ? category.nameAr : category.nameEn}
+                          </h3>
+                          <p
+                            style={{ color: currentTheme.colors.textSecondary }}
+                            className="line-clamp-1 text-xs"
+                          >
+                            {lang === "ar" ? category.descriptionAr : category.descriptionEn}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          backgroundColor: currentTheme.colors.badgeBg,
+                          color: currentTheme.colors.badgeText,
+                        }}
+                        className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:text-xs"
+                      >
+                        {categoryProducts.length} {t.itemsLabel}
+                      </span>
+                    </div>
+
+                    {subcategories.length > 0 ? (
+                      <div className="space-y-5 sm:space-y-6">
+                        {subcategories.map((subcategory) => (
+                          <section
+                            key={subcategory.category.slug}
+                            id={`catalog-subcategory-${subcategory.category.slug}`}
+                            className="scroll-mt-28 space-y-2.5"
+                          >
+                            <div
+                              style={{ borderColor: currentTheme.colors.border }}
+                              className="flex items-center justify-between gap-3 border-b pb-2"
+                            >
+                              <div className="flex min-w-0 items-center gap-2.5">
+                                <CategoryImage
+                                  slug={subcategory.category.slug}
+                                  src={subcategory.category.imageUrl}
+                                  alt={
+                                    lang === "ar"
+                                      ? subcategory.category.nameAr
+                                      : subcategory.category.nameEn
+                                  }
+                                  className="h-9 w-9 shrink-0 rounded-lg border border-gray-100 bg-white object-contain p-1"
+                                />
+                                <div className="min-w-0">
+                                  <h4 className="truncate text-xs font-extrabold sm:text-sm">
+                                    {lang === "ar"
+                                      ? subcategory.category.nameAr
+                                      : subcategory.category.nameEn}
+                                  </h4>
+                                  <p
+                                    style={{ color: currentTheme.colors.textSecondary }}
+                                    className="line-clamp-1 text-[10px] sm:text-xs"
+                                  >
+                                    {lang === "ar"
+                                      ? subcategory.category.descriptionAr
+                                      : subcategory.category.descriptionEn}
+                                  </p>
+                                </div>
+                              </div>
+                              <span
+                                style={{
+                                  backgroundColor: currentTheme.colors.badgeBg,
+                                  color: currentTheme.colors.badgeText,
+                                }}
+                                className="shrink-0 rounded-full px-2 py-1 text-[10px] font-bold"
+                              >
+                                {subcategory.items.length} {t.itemsLabel}
+                              </span>
+                            </div>
+                            {subcategory.items.length > 0 ? (
+                              renderProductGrid(
+                                subcategory.items,
+                                subcategory.category
+                              )
+                            ) : (
+                              <p className="rounded-lg border border-dashed border-gray-200 px-3 py-4 text-center text-xs text-gray-500">
+                                {lang === "ar"
+                                  ? "لا توجد منتجات في هذا القسم حالياً"
+                                  : "No products in this category yet"}
+                              </p>
+                            )}
+                          </section>
+                        ))}
+
+                        {unassignedItems.length > 0 && (
+                          <section className="space-y-2.5">
+                            <h4 className="border-b border-gray-200 pb-2 text-xs font-extrabold sm:text-sm">
+                              {lang === "ar" ? "منتجات أخرى" : "Other products"}
+                              <span className="ms-2 text-[10px] font-semibold text-gray-500">
+                                ({unassignedItems.length})
+                              </span>
+                            </h4>
+                            {renderProductGrid(unassignedItems, category)}
+                          </section>
+                        )}
+                      </div>
+                    ) : categoryProducts.length > 0 ? (
+                      renderProductGrid(categoryProducts, category)
+                    ) : (
+                      <p className="rounded-lg border border-dashed border-gray-200 px-3 py-4 text-center text-xs text-gray-500">
+                        {lang === "ar"
+                          ? "لا توجد منتجات في هذا القسم حالياً"
+                          : "No products in this category yet"}
+                      </p>
+                    )}
+                  </section>
+                );
+              }
+            )}
           </div>
         )}
       </section>
@@ -1851,22 +2085,36 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          {/* Quick Departments */}
+          {/* Keep the footer focused on store-wide shortcuts. Category hierarchy
+              and category-specific links live in the catalog above. */}
           <div>
             <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3 text-white">
-              {t.categoriesTitle}
+              {lang === "ar" ? "تصفح المتجر" : "Browse the store"}
             </h4>
-            <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                  className="text-start hover:text-red-400 transition truncate text-gray-400"
-                >
-                  • {lang === "ar" ? cat.nameAr : cat.nameEn}
-                </button>
-              ))}
+            <div className="flex flex-col items-start gap-2 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => handleSelectCategoryAndScroll("all")}
+                className="text-start text-gray-400 transition hover:text-red-400"
+              >
+                • {t.catalogMenuAllProducts}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOnlyPromo(true);
+                  handleSelectCategoryAndScroll("all");
+                }}
+                className="text-start text-gray-400 transition hover:text-red-400"
+              >
+                • {t.navPromotions}
+              </button>
+              <a
+                href="#wholesale-section"
+                className="text-start text-gray-400 transition hover:text-red-400"
+              >
+                • {t.navWholesale}
+              </a>
             </div>
           </div>
 
