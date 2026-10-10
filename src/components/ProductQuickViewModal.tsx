@@ -61,20 +61,15 @@ export function ProductQuickViewModal({
       />
 
       <div
-        style={{
-          backgroundColor: theme.colors.bgElevated,
-          color: theme.colors.textPrimary,
-          borderColor: theme.colors.border,
-        }}
-        className="relative z-10 grid w-full max-w-3xl grid-cols-1 md:grid-cols-2 rounded-3xl border shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+        className="relative z-10 grid w-full max-w-3xl grid-cols-1 md:grid-cols-2 rounded-lg border border-gray-200 bg-white shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
       >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3.5 end-3.5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition"
+          className="absolute top-3 end-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4.5 w-4.5" />
         </button>
 
         {/* Image Gallery Column */}

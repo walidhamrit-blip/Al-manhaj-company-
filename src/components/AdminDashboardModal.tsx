@@ -641,32 +641,23 @@ export function AdminDashboardModal({
         }}
         className="relative z-10 flex h-[92vh] w-full max-w-6xl flex-col rounded-3xl border shadow-2xl overflow-hidden"
       >
-        {/* Top Bar */}
+        {/* Top Bar - Mytek dark style */}
         <div
-          style={{
-            backgroundColor: theme.colors.bgElevated,
-            borderColor: theme.colors.border,
-          }}
-          className="flex items-center justify-between border-b px-5 py-4"
+          className="flex items-center justify-between px-5 py-3"
+          style={{backgroundColor: '#1A1A2E', borderBottom: '3px solid #E31837'}}
         >
           <div className="flex items-center gap-3">
             <div
-              style={{
-                backgroundColor: theme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="flex h-10 w-10 items-center justify-center rounded-xl shadow"
+              className="flex h-9 w-9 items-center justify-center rounded-md shadow-sm"
+              style={{backgroundColor: '#E31837', color: '#FFFFFF'}}
             >
-              <Lock className="h-5 w-5" />
+              <Lock className="h-4.5 w-4.5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-extrabold">
+              <h2 className="text-sm sm:text-base font-extrabold text-white">
                 {t.adminLoginTitle}
               </h2>
-              <p
-                style={{ color: theme.colors.textSecondary }}
-                className="text-xs hidden sm:block"
-              >
+              <p className="text-[10px] hidden sm:block text-gray-400">
                 PostgreSQL Live Database • Drizzle ORM
               </p>
             </div>
@@ -675,14 +666,14 @@ export function AdminDashboardModal({
           <div className="flex items-center gap-3">
             {toastMsg && (
               <div
-                className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white shadow-md ${
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-bold text-white shadow-md ${
                   toastIsError ? "bg-rose-600" : "bg-emerald-600"
                 }`}
               >
                 {toastIsError ? (
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 ) : (
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CheckCircle2 className="h-3.5 w-3.5" />
                 )}
                 <span>{toastMsg}</span>
               </div>
@@ -690,13 +681,9 @@ export function AdminDashboardModal({
             <button
               type="button"
               onClick={onClose}
-              style={{
-                backgroundColor: theme.colors.bgSecondary,
-                color: theme.colors.textPrimary,
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl hover:opacity-80"
+              className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20 transition"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4.5 w-4.5" />
             </button>
           </div>
         </div>

@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #FAF8F5;
-  --bg-secondary: #F1ECE4;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F5F5;
   --bg-elevated: #FFFFFF;
-  --text-primary: #18181B;
-  --text-secondary: #52525B;
-  --accent-primary: #D94E34;
-  --accent-primary-hover: #B83D26;
-  --accent-secondary: #1E3A8A;
-  --border-color: #E4DFD7;
-  --badge-bg: #FDECE8;
-  --badge-text: #B83D26;
+  --text-primary: #1A1A1A;
+  --text-secondary: #666666;
+  --accent-primary: #E31837;
+  --accent-primary-hover: #C41230;
+  --accent-secondary: #1A1A2E;
+  --border-color: #E0E0E0;
+  --badge-bg: #FFF0F0;
+  --badge-text: #E31837;
 }
 
 html {
@@ -21,7 +21,7 @@ html {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Arabic", sans-serif;
+  font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Arabic", sans-serif;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
@@ -70,4 +70,32 @@ body {
     animation: none;
     transform: scale(1.06);
   }
+}
+
+/* Mytek-style product card hover */
+.product-card-mytek {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.product-card-mytek:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+/* Mytek-style promotional badge pulse */
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+.badge-promo-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* Mytek-style category card hover effect */
+.category-card-mytek {
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.category-card-mytek:hover {
+  box-shadow: 0 6px 24px rgba(227, 24, 55, 0.15);
+  transform: translateY(-3px);
+  border-color: #E31837;
 }

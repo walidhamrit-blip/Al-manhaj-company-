@@ -311,32 +311,23 @@ export function CartDrawer({
         }}
         className="relative z-10 flex h-full w-full max-w-md flex-col border-s shadow-2xl"
       >
-        {/* Header */}
+        {/* Header - Mytek dark style */}
         <div
-          style={{
-            backgroundColor: theme.colors.bgElevated,
-            borderColor: theme.colors.border,
-          }}
-          className="flex items-center justify-between border-b p-4 sm:p-5"
+          className="flex items-center justify-between p-4 sm:p-5"
+          style={{backgroundColor: '#1A1A2E', borderBottom: '3px solid #E31837'}}
         >
           <div className="flex items-center gap-3">
             <div
-              style={{
-                backgroundColor: theme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="flex h-10 w-10 items-center justify-center rounded-xl shadow-sm"
+              className="flex h-9 w-9 items-center justify-center rounded-md shadow-sm"
+              style={{backgroundColor: '#E31837', color: '#FFFFFF'}}
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-4.5 w-4.5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-extrabold">
+              <h2 className="text-sm sm:text-base font-extrabold text-white">
                 {t.cartTitle}
               </h2>
-              <p
-                style={{ color: theme.colors.textSecondary }}
-                className="text-xs"
-              >
+              <p className="text-[11px] text-gray-400">
                 {totalUnits} {t.units}
               </p>
             </div>
@@ -347,7 +338,7 @@ export function CartDrawer({
               <button
                 type="button"
                 onClick={onClearCart}
-                className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-500/10 transition"
+                className="rounded-md px-2.5 py-1 text-[11px] font-semibold text-red-400 hover:bg-white/10 transition"
               >
                 {t.clearCartBtn}
               </button>
@@ -355,14 +346,10 @@ export function CartDrawer({
             <button
               type="button"
               onClick={onClose}
-              style={{
-                backgroundColor: theme.colors.bgSecondary,
-                color: theme.colors.textPrimary,
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl transition hover:opacity-80"
+              className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-white transition hover:bg-white/20"
               aria-label={t.closeBtn}
             >
-              <X className="h-5 w-5" />
+              <X className="h-4.5 w-4.5" />
             </button>
           </div>
         </div>
