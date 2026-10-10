@@ -241,34 +241,33 @@ export default function StorefrontPage() {
     return () => window.clearTimeout(timer);
   }, [products]);
 
-  const saveCart = (nextCart: CartItem[]) => {
-    setCart(nextCart);
-    try {
-      localStorage.setItem("atelier_cart_v1", JSON.stringify(nextCart));
-    } catch {
-      // ignore
-    }
+  // Apply a cart update and persist it. Every mutation goes through the
+  // functional updater, so rapid updates (fast clicks on the quantity stepper)
+  // always build on the latest cart instead of a stale snapshot, and the stored
+  // copy stays in sync with the state.
+  const updateCart = (updater: (prev: CartItem[]) => CartItem[]) => {
+    setCart((prev) => {
+      const nextCart = updater(prev);
+      try {
+        localStorage.setItem("atelier_cart_v1", JSON.stringify(nextCart));
+      } catch {
+        // ignore
+      }
+      return nextCart;
+    });
   };
 
   const handleAddToCart = (product: Product, qtyToAdd: number) => {
-    setCart((prev) => {
+    updateCart((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
-      let updated: CartItem[];
       if (existing) {
-        updated = prev.map((i) =>
+        return prev.map((i) =>
           i.product.id === product.id
             ? { ...i, product, quantity: i.quantity + qtyToAdd }
             : i
         );
-      } else {
-        updated = [...prev, { product, quantity: qtyToAdd }];
       }
-      try {
-        localStorage.setItem("atelier_cart_v1", JSON.stringify(updated));
-      } catch {
-        // ignore
-      }
-      return updated;
+      return [...prev, { product, quantity: qtyToAdd }];
     });
   };
 
@@ -277,19 +276,19 @@ export default function StorefrontPage() {
       handleRemoveCartItem(productId);
       return;
     }
-    saveCart(
-      cart.map((item) =>
+    updateCart((prev) =>
+      prev.map((item) =>
         item.product.id === productId ? { ...item, quantity: newQty } : item
       )
     );
   };
 
   const handleRemoveCartItem = (productId: number) => {
-    saveCart(cart.filter((item) => item.product.id !== productId));
+    updateCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
   const handleClearCart = () => {
-    saveCart([]);
+    updateCart(() => []);
   };
 
   const handleSelectTheme = (id: ThemeId) => {

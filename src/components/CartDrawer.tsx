@@ -42,7 +42,6 @@ interface CartDrawerProps {
 interface CreatedOrder {
   orderNumber: string;
   phone: string;
-  cartKey: string;
 }
 
 export function CartDrawer({
@@ -59,7 +58,11 @@ export function CartDrawer({
   onTrackOrder,
 }: CartDrawerProps) {
   const t = UI_TEXT[lang];
-  const cartKey = cart.map((item) => `${item.product.id}:${item.quantity}`).join("|");
+  // Signature of the current basket. It changes as soon as an item, a quantity
+  // or the basket itself changes, which signals a brand-new shopping round.
+  const cartSignature = cart
+    .map((item) => `${item.product.id}:${item.quantity}`)
+    .join("|");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerNotes, setCustomerNotes] = useState("");
@@ -67,16 +70,21 @@ export function CartDrawer({
   const [showWaPanel, setShowWaPanel] = useState(false);
   const [waPanelMessage, setWaPanelMessage] = useState("");
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
-  const [orderErrorState, setOrderErrorState] = useState<{
-    cartKey: string;
-    message: string;
-  } | null>(null);
-  const orderError =
-    orderErrorState?.cartKey === cartKey ? orderErrorState.message : "";
-  const setOrderError = (message: string) =>
-    setOrderErrorState(message ? { cartKey, message } : null);
+  const [orderError, setOrderError] = useState("");
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
-  const activeOrder = createdOrder?.cartKey === cartKey ? createdOrder : null;
+  const [signatureAtLastOrder, setSignatureAtLastOrder] =
+    useState(cartSignature);
+
+  // Any cart change starts a new order: drop the previous confirmation and the
+  // previous error, otherwise an old confirmation could resurface (and block a
+  // new order) when the cart is emptied and then filled again with the same
+  // items. Adjusting the state while rendering is the pattern recommended by
+  // React for resetting state on a change instead of a cascading effect.
+  if (signatureAtLastOrder !== cartSignature) {
+    setSignatureAtLastOrder(cartSignature);
+    setCreatedOrder(null);
+    setOrderError("");
+  }
 
   if (!isOpen) return null;
 
@@ -222,7 +230,7 @@ export function CartDrawer({
   };
 
   const handleSendWhatsApp = async () => {
-    if (cart.length === 0 || activeOrder || isSubmittingOrder) return;
+    if (cart.length === 0 || createdOrder || isSubmittingOrder) return;
     if (customerName.trim().length < 2) {
       setOrderError(
         lang === "ar"
@@ -264,7 +272,7 @@ export function CartDrawer({
       }
 
       const orderNumber = String(data.order.orderNumber);
-      setCreatedOrder({ orderNumber, phone: customerPhone.trim(), cartKey });
+      setCreatedOrder({ orderNumber, phone: customerPhone.trim() });
       const message = buildWhatsAppMessage(orderNumber, data.order);
       setWaPanelMessage(message);
       const waUrl = `https://wa.me/${formattedStorePhone}?text=${encodeURIComponent(message)}`;
@@ -285,7 +293,7 @@ export function CartDrawer({
   const handleCopyMessage = async () => {
     try {
       await navigator.clipboard?.writeText(
-        buildWhatsAppMessage(activeOrder?.orderNumber || "")
+        buildWhatsAppMessage(createdOrder?.orderNumber || "")
       );
     } catch {
       /* ignore */
@@ -587,7 +595,7 @@ export function CartDrawer({
               </div>
             )}
 
-            {activeOrder && (
+            {createdOrder && (
               <div
                 style={{
                   backgroundColor: "#ECFDF5",
@@ -605,12 +613,12 @@ export function CartDrawer({
                       {t.orderPlacedSub}
                     </p>
                     <p dir="ltr" className="mt-2 font-mono text-sm font-black tracking-wide text-emerald-950">
-                      {activeOrder.orderNumber}
+                      {createdOrder.orderNumber}
                     </p>
                     <button
                       type="button"
                       onClick={() =>
-                        onTrackOrder?.(activeOrder.orderNumber, activeOrder.phone)
+                        onTrackOrder?.(createdOrder.orderNumber, createdOrder.phone)
                       }
                       style={{ color: theme.colors.accentPrimary }}
                       className="mt-2 inline-flex items-center gap-1 text-xs font-extrabold underline underline-offset-2"
@@ -642,7 +650,7 @@ export function CartDrawer({
             </div>
 
             {/* Create a trackable order, then continue the conversation on WhatsApp */}
-            {!activeOrder && (
+            {!createdOrder && (
               <>
                 <div className="flex gap-2">
                   <button
@@ -695,7 +703,7 @@ export function CartDrawer({
         isOpen={showWaPanel}
         onClose={() => setShowWaPanel(false)}
         phoneNumber={rawPhone}
-        message={waPanelMessage || buildWhatsAppMessage(activeOrder?.orderNumber || "")}
+        message={waPanelMessage || buildWhatsAppMessage(createdOrder?.orderNumber || "")}
         lang={lang}
         theme={theme}
       />
