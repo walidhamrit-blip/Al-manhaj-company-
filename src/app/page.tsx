@@ -123,6 +123,8 @@ export default function StorefrontPage() {
   // WhatsApp in-app panel state
   const [waPanelOpen, setWaPanelOpen] = useState(false);
   const [waPanelMessage, setWaPanelMessage] = useState("");
+  // Cookie notice: shown only when the visitor has not accepted it yet.
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
 
   // Shopping Cart state (persisted in localStorage)
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -208,6 +210,9 @@ export default function StorefrontPage() {
         const savedCart = localStorage.getItem("atelier_cart_v1");
         if (savedCart) {
           setCart(JSON.parse(savedCart));
+        }
+        if (!localStorage.getItem("almanhaj_cookie")) {
+          setShowCookieBanner(true);
         }
         const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
           localStorage.getItem("atelier_theme_v1")) as ThemeId;
@@ -307,6 +312,15 @@ export default function StorefrontPage() {
 
   const handleClearCart = () => {
     updateCart(() => []);
+  };
+
+  const handleAcceptCookies = () => {
+    setShowCookieBanner(false);
+    try {
+      localStorage.setItem("almanhaj_cookie", "1");
+    } catch {
+      // ignore storage errors
+    }
   };
 
   const handleSelectTheme = (id: ThemeId) => {
@@ -2161,16 +2175,26 @@ export default function StorefrontPage() {
         theme={currentTheme}
       />
 
-      {/* Cookie Consent - CBL Privacy requirement */}
-      <div id="cookie-banner" className="fixed bottom-20 lg:bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60]" style={{ display: "none" }}>
-        <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-none border shadow-2xl p-4 flex flex-col gap-3">
-          <p className="text-xs leading-5 font-semibold">نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></p>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => { const el=document.getElementById('cookie-banner'); if(el) el.style.display='none'; try{localStorage.setItem('almanhaj_cookie','1')}catch{} }} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-none py-2 text-xs font-extrabold">موافق</button>
-            <a href="/privacy" className="flex-1 text-center rounded-none border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>سياسة الخصوصية</a>
+      {/* Cookie Consent - CBL Privacy requirement. Rendered by React: an inline
+          <script> inside a client component never runs, so the notice used to
+          stay hidden (and React logged a script-tag warning in the console). */}
+      {showCookieBanner && (
+        <div className="fixed bottom-20 lg:bottom-4 inset-x-4 lg:inset-x-auto lg:end-4 lg:max-w-md z-[60]">
+          <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-none border shadow-2xl p-4 flex flex-col gap-3">
+            <p className="text-xs leading-5 font-semibold">
+              {lang === "ar" ? (
+                <>نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></>
+              ) : (
+                <>We only use the cookies required to remember your cart and your language. By continuing you agree to the privacy policy. <a href="/privacy" className="underline text-amber-700">Read more</a></>
+              )}
+            </p>
+            <div className="flex gap-2">
+              <button type="button" onClick={handleAcceptCookies} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-none py-2 text-xs font-extrabold">{lang === "ar" ? "موافق" : "Accept"}</button>
+              <a href="/privacy" className="flex-1 text-center rounded-none border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>{lang === "ar" ? "سياسة الخصوصية" : "Privacy policy"}</a>
+            </div>
           </div>
         </div>
-      </div>
-      <script dangerouslySetInnerHTML={{__html: `(function(){try{if(!localStorage.getItem('almanhaj_cookie')){var b=document.getElementById('cookie-banner'); if(b) b.style.display='block';}}catch(e){}})()`}} />    </div>
+      )}
+    </div>
   );
 }
