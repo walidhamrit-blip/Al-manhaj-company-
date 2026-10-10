@@ -5,6 +5,8 @@ import type { Category, Product, StoreSettings } from "@/db/schema";
 import {
   THEMES,
   UI_TEXT,
+  bannerImageClass,
+  bannerScrimClass,
   formatPrice,
   type Language,
   type ThemeId,
@@ -121,6 +123,8 @@ export default function StorefrontPage() {
   // WhatsApp in-app panel state
   const [waPanelOpen, setWaPanelOpen] = useState(false);
   const [waPanelMessage, setWaPanelMessage] = useState("");
+  // Cookie notice: shown only when the visitor has not accepted it yet.
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
 
   // Shopping Cart state (persisted in localStorage)
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -207,6 +211,9 @@ export default function StorefrontPage() {
         if (savedCart) {
           setCart(JSON.parse(savedCart));
         }
+        if (!localStorage.getItem("almanhaj_cookie")) {
+          setShowCookieBanner(true);
+        }
         const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
           localStorage.getItem("atelier_theme_v1")) as ThemeId;
         // Keep SSR and the first client paint on the principal market theme.
@@ -225,27 +232,11 @@ export default function StorefrontPage() {
     return () => window.clearTimeout(timer);
   }, [fetchStoreData]);
 
-  // Keep cart synced with latest product prices/stocks from DB
-  useEffect(() => {
-    if (products.length === 0) return;
-    const timer = window.setTimeout(() => {
-      setCart((prev) =>
-        prev
-          .map((item) => {
-            const fresh = products.find((p) => p.id === item.product.id);
-            return fresh ? { ...item, product: fresh } : item;
-          })
-          .filter((item) => products.some((p) => p.id === item.product.id))
-      );
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [products]);
-
   // Apply a cart update and persist it. Every mutation goes through the
   // functional updater, so rapid updates (fast clicks on the quantity stepper)
   // always build on the latest cart instead of a stale snapshot, and the stored
   // copy stays in sync with the state.
-  const updateCart = (updater: (prev: CartItem[]) => CartItem[]) => {
+  const updateCart = useCallback((updater: (prev: CartItem[]) => CartItem[]) => {
     setCart((prev) => {
       const nextCart = updater(prev);
       try {
@@ -255,7 +246,25 @@ export default function StorefrontPage() {
       }
       return nextCart;
     });
-  };
+  }, []);
+
+  // Keep cart synced with latest product prices/stocks from DB. The refreshed
+  // cart also goes through updateCart so the stored copy can never drift from
+  // the state (an item dropped here used to come back on the next reload).
+  useEffect(() => {
+    if (products.length === 0) return;
+    const timer = window.setTimeout(() => {
+      updateCart((prev) =>
+        prev
+          .map((item) => {
+            const fresh = products.find((p) => p.id === item.product.id);
+            return fresh ? { ...item, product: fresh } : item;
+          })
+          .filter((item) => products.some((p) => p.id === item.product.id))
+      );
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [products, updateCart]);
 
   const handleAddToCart = (product: Product, qtyToAdd: number) => {
     updateCart((prev) => {
@@ -283,12 +292,35 @@ export default function StorefrontPage() {
     );
   };
 
+  // Quantities are applied as a delta on the freshest cart, so N clicks on the
+  // stepper always mean N units even when React batches them into one render
+  // (fast clicking, slow devices) — the "+"/"−" buttons used to send an absolute
+  // value computed from the render they were drawn in, losing all but one click.
+  const handleAdjustCartQty = (productId: number, delta: number) => {
+    updateCart((prev) =>
+      prev.flatMap((item) => {
+        if (item.product.id !== productId) return [item];
+        const nextQty = item.quantity + delta;
+        return nextQty > 0 ? [{ ...item, quantity: nextQty }] : [];
+      })
+    );
+  };
+
   const handleRemoveCartItem = (productId: number) => {
     updateCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
   const handleClearCart = () => {
     updateCart(() => []);
+  };
+
+  const handleAcceptCookies = () => {
+    setShowCookieBanner(false);
+    try {
+      localStorage.setItem("almanhaj_cookie", "1");
+    } catch {
+      // ignore storage errors
+    }
   };
 
   const handleSelectTheme = (id: ThemeId) => {
@@ -980,11 +1012,11 @@ export default function StorefrontPage() {
               <StoreImage
                 src={currentHero.imageUrl}
                 alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-                className="object-cover transition-all duration-700"
+                className={bannerImageClass(lang, "object-cover transition-all duration-700")}
                 priority
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/25 to-transparent" />
+              <div className={bannerScrimClass(lang, "from-black/70 via-black/25 to-transparent")} />
               <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-10 lg:p-14 text-white">
               <div className="mx-auto w-full max-w-[1760px]">
                 <span className="mb-2 inline-flex w-fit bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
@@ -1155,10 +1187,10 @@ export default function StorefrontPage() {
                   <StoreImage
                     src={landscapeBanner.imageUrl}
                     alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
-                    className="object-cover"
+                    className={bannerImageClass(lang, "object-cover")}
                     sizes="100vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
+                  <div className={bannerScrimClass(lang, "from-black/70 via-black/35 to-transparent")} />
                   <div className="absolute inset-0 flex flex-col justify-center p-6 text-white sm:p-10">
                     <span className="text-[11px] font-bold uppercase tracking-widest">
                       {lang === "ar" ? landscapeBanner.badgeAr : landscapeBanner.badgeEn}
@@ -2099,6 +2131,7 @@ export default function StorefrontPage() {
         onClose={() => setIsCartOpen(false)}
         cart={cart}
         onUpdateQty={handleUpdateCartQty}
+        onAdjustQty={handleAdjustCartQty}
         onRemoveItem={handleRemoveCartItem}
         onClearCart={handleClearCart}
         settings={settings}
@@ -2142,17 +2175,26 @@ export default function StorefrontPage() {
         theme={currentTheme}
       />
 
-      {/* Cookie Consent - CBL Privacy requirement */}
-      <div id="cookie-banner" className="fixed bottom-20 lg:bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60]" style={{ display: "none" }}>
-        <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-none border shadow-2xl p-4 flex flex-col gap-3">
-          <p className="text-xs leading-5 font-semibold">نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></p>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => { const el=document.getElementById('cookie-banner'); if(el) el.style.display='none'; try{localStorage.setItem('almanhaj_cookie','1')}catch{} }} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-none py-2 text-xs font-extrabold">موافق</button>
-            <a href="/privacy" className="flex-1 text-center rounded-none border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>سياسة الخصوصية</a>
+      {/* Cookie Consent - CBL Privacy requirement. Rendered by React: an inline
+          <script> inside a client component never runs, so the notice used to
+          stay hidden (and React logged a script-tag warning in the console). */}
+      {showCookieBanner && (
+        <div className="fixed bottom-20 lg:bottom-4 inset-x-4 lg:inset-x-auto lg:end-4 lg:max-w-md z-[60]">
+          <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-none border shadow-2xl p-4 flex flex-col gap-3">
+            <p className="text-xs leading-5 font-semibold">
+              {lang === "ar" ? (
+                <>نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></>
+              ) : (
+                <>We only use the cookies required to remember your cart and your language. By continuing you agree to the privacy policy. <a href="/privacy" className="underline text-amber-700">Read more</a></>
+              )}
+            </p>
+            <div className="flex gap-2">
+              <button type="button" onClick={handleAcceptCookies} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-none py-2 text-xs font-extrabold">{lang === "ar" ? "موافق" : "Accept"}</button>
+              <a href="/privacy" className="flex-1 text-center rounded-none border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>{lang === "ar" ? "سياسة الخصوصية" : "Privacy policy"}</a>
+            </div>
           </div>
         </div>
-      </div>
-      <script dangerouslySetInnerHTML={{__html: `(function(){try{if(!localStorage.getItem('almanhaj_cookie')){var b=document.getElementById('cookie-banner'); if(b) b.style.display='block';}}catch(e){}})()`}} />
+      )}
     </div>
   );
 }

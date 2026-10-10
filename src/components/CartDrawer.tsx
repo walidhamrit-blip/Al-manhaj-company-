@@ -30,6 +30,8 @@ interface CartDrawerProps {
   onClose: () => void;
   cart: CartItem[];
   onUpdateQty: (productId: number, newQty: number) => void;
+  /** Applies "+1"/"−1" on the freshest cart (never loses a fast click). */
+  onAdjustQty?: (productId: number, delta: number) => void;
   onRemoveItem: (productId: number) => void;
   onClearCart: () => void;
   settings: StoreSettings | null;
@@ -49,6 +51,7 @@ export function CartDrawer({
   onClose,
   cart,
   onUpdateQty,
+  onAdjustQty,
   onRemoveItem,
   onClearCart,
   settings,
@@ -394,6 +397,12 @@ export function CartDrawer({
                   0,
                   product.wholesaleMinQty - quantity
                 );
+                // Steps go through the delta handler when available so a burst of
+                // clicks counts every click instead of the render's stale value.
+                const stepQty = (delta: number) => {
+                  if (onAdjustQty) onAdjustQty(product.id, delta);
+                  else onUpdateQty(product.id, quantity + delta);
+                };
 
                 return (
                   <div
@@ -405,12 +414,18 @@ export function CartDrawer({
                     className="rounded-2xl border p-3.5 shadow-sm transition"
                   >
                     <div className="flex gap-3">
-                      <ProductImage
-                        product={product}
-                        src={img}
-                        alt={product.titleEn}
-                        className="h-16 w-16 rounded-xl object-cover shrink-0 border border-black/10"
-                      />
+                      {/* ProductImage renders an absolutely positioned image:
+                          it needs a positioned, sized box here, otherwise the
+                          thumbnail escapes the row and every line ends up
+                          showing the same (last rendered) picture. */}
+                      <span className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-black/10">
+                        <ProductImage
+                          product={product}
+                          src={img}
+                          alt={product.titleEn}
+                          className="h-full w-full object-cover"
+                        />
+                      </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <h4 className="text-xs sm:text-sm font-bold leading-snug line-clamp-2">
@@ -449,9 +464,7 @@ export function CartDrawer({
                           >
                             <button
                               type="button"
-                              onClick={() =>
-                                onUpdateQty(product.id, quantity - 1)
-                              }
+                              onClick={() => stepQty(-1)}
                               className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-black/5"
                             >
                               <Minus className="h-3.5 w-3.5" />
@@ -461,9 +474,7 @@ export function CartDrawer({
                             </span>
                             <button
                               type="button"
-                              onClick={() =>
-                                onUpdateQty(product.id, quantity + 1)
-                              }
+                              onClick={() => stepQty(1)}
                               className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-black/5"
                             >
                               <Plus className="h-3.5 w-3.5" />
