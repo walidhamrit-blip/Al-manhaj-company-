@@ -26,17 +26,52 @@ function sanitize(message: string): string {
     .slice(0, 300);
 }
 
+/**
+ * The pool in `@/db` is configured with `connectionTimeoutMillis: 1000` so that
+ * a build never hangs. That is too tight for a cold serverless start against a
+ * pooled Neon endpoint: measured in production, the first probe of a cold
+ * instance took 1012 ms and 1002 ms and failed, while the very next one took
+ * 707 ms and succeeded. Two attempts with a roomier budget keep the probe
+ * honest — it still reports a genuinely unreachable database — without crying
+ * wolf on every cold start.
+ */
+const ATTEMPTS = 2;
+const ATTEMPT_TIMEOUT_MS = 8000;
+
+function runProbeOnce(): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`probe timed out after ${ATTEMPT_TIMEOUT_MS}ms`)),
+      ATTEMPT_TIMEOUT_MS
+    );
+    db.execute(sql`select 1`).then(
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      (cause: unknown) => {
+        clearTimeout(timer);
+        reject(cause instanceof Error ? cause : new Error(String(cause)));
+      }
+    );
+  });
+}
+
 /** Run the `select 1` probe and describe the outcome. Never throws. */
 export async function probeDatabase(): Promise<{ report: HealthReport; status: number }> {
   const configured = Boolean(process.env.DATABASE_URL);
   const startedAt = Date.now();
 
   let failure: string | null = null;
-  try {
-    await db.execute(sql`select 1`);
-  } catch (cause) {
-    failure = cause instanceof Error ? cause.message : String(cause);
-    console.error("Database health probe failed:", cause);
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt += 1) {
+    try {
+      await runProbeOnce();
+      failure = null;
+      break;
+    } catch (cause) {
+      failure = cause instanceof Error ? cause.message : String(cause);
+      console.error(`Database health probe failed (attempt ${attempt}/${ATTEMPTS}):`, cause);
+    }
   }
   const latencyMs = Date.now() - startedAt;
 
