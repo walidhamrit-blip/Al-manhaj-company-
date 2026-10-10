@@ -21,6 +21,7 @@ import {
   ORDER_STATUS_DESCRIPTIONS,
   getOrderStatusLabel,
 } from "@/lib/orders";
+import { StoreImage } from "@/components/StoreImage";
 import {
   UI_TEXT,
   formatPrice,
@@ -481,11 +482,14 @@ export function OrderTrackingSection({
                         style={{ borderColor: theme.colors.border }}
                         className="flex items-center gap-3 py-2.5 first:pt-1 last:pb-1"
                       >
-                        <img
-                          src={item.imageUrl || "/images/new/main-storefront-hq.jpg"}
-                          alt=""
-                          className="h-11 w-11 shrink-0 rounded-lg border border-black/10 object-cover"
-                        />
+                        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-black/10">
+                          <StoreImage
+                            src={item.imageUrl || "/images/new/main-storefront-hq.jpg"}
+                            alt=""
+                            className="object-cover"
+                            sizes="44px"
+                          />
+                        </div>
                         <div className="min-w-0 flex-1">
                           <p className="line-clamp-2 text-xs font-bold">
                             {isAr ? item.titleAr : item.titleEn}

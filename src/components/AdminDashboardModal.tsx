@@ -15,6 +15,7 @@ import {
   type ThemeConfig,
 } from "@/lib/i18n-themes";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { StoreImage } from "@/components/StoreImage";
 import { OrdersAdminPanel } from "@/components/OrdersAdminPanel";
 import {
   X,
@@ -1436,15 +1437,18 @@ export function AdminDashboardModal({
                             className={`flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm ${prod.isHidden ? 'opacity-85' : ''}`}
                           >
                             <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                              <img
-                                src={
-                                  Array.isArray(prod.images) && prod.images[0]
-                                    ? prod.images[0]
-                                    : "/images/hero-stationery.jpg"
-                                }
-                                alt={prod.titleEn}
-                                className="h-14 w-14 rounded-xl object-cover shrink-0 border border-black/10"
-                              />
+                              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-black/10">
+                                <StoreImage
+                                  src={
+                                    Array.isArray(prod.images) && prod.images[0]
+                                      ? prod.images[0]
+                                      : "/images/hero-stationery.jpg"
+                                  }
+                                  alt={prod.titleEn}
+                                  className="object-cover"
+                                  sizes="56px"
+                                />
+                              </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
                                   <span className="font-mono text-[11px] font-bold opacity-70">
@@ -1773,11 +1777,14 @@ export function AdminDashboardModal({
                           className="flex items-center justify-between gap-4 rounded-2xl border p-4"
                         >
                           <div className="flex items-center gap-3.5">
-                            <img
-                              src={cat.imageUrl}
-                              alt={cat.nameEn}
-                              className="h-16 w-16 rounded-xl object-cover"
-                            />
+                            <div className="relative h-16 w-16 overflow-hidden rounded-xl">
+                              <StoreImage
+                                src={cat.imageUrl}
+                                alt={cat.nameEn}
+                                className="object-cover"
+                                sizes="64px"
+                              />
+                            </div>
                             <div>
                               <h4 className="font-bold text-sm">
                                 {cat.nameEn}
