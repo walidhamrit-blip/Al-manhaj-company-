@@ -40,7 +40,8 @@ export async function PUT(request: NextRequest) {
         badgeEn: String(body.badgeEn ?? "Collection"),
         badgeAr: String(body.badgeAr ?? "مجموعة"),
         sortOrder: Number(body.sortOrder ?? 1),
-      })
+        parentSlug: body.parentSlug !== undefined ? (body.parentSlug || null) : undefined,
+      } as any)
       .where(eq(categories.id, catId))
       .returning();
 
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
       .insert(categories)
       .values({
         slug: slug,
+        parentSlug: body.parentSlug || null,
         nameEn: String(body.nameEn || "New Category"),
         nameAr: String(body.nameAr || "قسم جديد"),
         descriptionEn: String(body.descriptionEn || ""),

@@ -322,12 +322,30 @@ export default function StorefrontPage() {
   }, [products]);
 
   // Filtered & Sorted Products for the main catalog (hidden products excluded from storefront)
+  // Determine if the selected category is a subcategory
+  const selectedIsSubcategory = useMemo(() => {
+    if (selectedCategory === "all") return false;
+    return categories.some((c) => c.slug === selectedCategory && c.parentSlug);
+  }, [selectedCategory, categories]);
+
+  const selectedParentSlug = useMemo(() => {
+    if (!selectedIsSubcategory) return null;
+    const sub = categories.find((c) => c.slug === selectedCategory);
+    return sub?.parentSlug || null;
+  }, [selectedIsSubcategory, selectedCategory, categories]);
+
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const list = products.filter((p) => {
       if (p.isHidden) return false;
-      if (selectedCategory !== "all" && p.categorySlug !== selectedCategory) {
-        return false;
+      if (selectedCategory !== "all") {
+        if (selectedIsSubcategory) {
+          // Filter by subcategory
+          if (p.subcategorySlug !== selectedCategory) return false;
+        } else {
+          // Filter by top-level category (includes all subcategories)
+          if (p.categorySlug !== selectedCategory) return false;
+        }
       }
       if (Number(p.price) > maxPrice) {
         return false;
@@ -355,11 +373,13 @@ export default function StorefrontPage() {
       if (sortBy === "stock") return b.stock - a.stock;
       return Number(b.isFeatured) - Number(a.isFeatured);
     });
-  }, [products, selectedCategory, maxPrice, onlyPromo, searchQuery, sortBy]);
+  }, [products, selectedCategory, selectedIsSubcategory, maxPrice, onlyPromo, searchQuery, sortBy]);
 
   // Keep every product under its parent category in the complete catalog.
+  // Only show top-level categories (not subcategories) as groups.
   const catalogGroups = useMemo(() => {
     return [...categories]
+      .filter((c) => !c.parentSlug)
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((category) => ({
         category,
@@ -881,7 +901,7 @@ export default function StorefrontPage() {
             >
               {t.allCategories}
             </button>
-            {categories.slice(0, 8).map((cat) => {
+            {categories.filter(c => !c.parentSlug).slice(0, 8).map((cat) => {
               const active = selectedCategory === cat.slug;
               return (
                 <button
@@ -1041,7 +1061,7 @@ export default function StorefrontPage() {
 
         {/* Every department stays visible (no horizontal scrolling): 4 per row on phones, one row on desktop */}
         <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:grid-cols-7">
-          {categories.map((cat) => {
+          {categories.filter(c => !c.parentSlug).map((cat) => {
             const countInCat = products.filter(
               (p) => !p.isHidden && p.categorySlug === cat.slug
             ).length;
@@ -1380,7 +1400,7 @@ export default function StorefrontPage() {
               </span>
             </button>
 
-            {categories.map((cat) => {
+            {categories.filter(c => !c.parentSlug).map((cat) => {
               const countInCat = products.filter(
                 (product) => !product.isHidden && product.categorySlug === cat.slug
               ).length;
