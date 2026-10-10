@@ -5,6 +5,8 @@ import type { Category, Product, StoreSettings } from "@/db/schema";
 import {
   THEMES,
   UI_TEXT,
+  bannerImageClass,
+  bannerScrimClass,
   formatPrice,
   type Language,
   type ThemeId,
@@ -980,11 +982,11 @@ export default function StorefrontPage() {
               <StoreImage
                 src={currentHero.imageUrl}
                 alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-                className="object-cover transition-all duration-700"
+                className={bannerImageClass(lang, "object-cover transition-all duration-700")}
                 priority
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/25 to-transparent" />
+              <div className={bannerScrimClass(lang, "from-black/70 via-black/25 to-transparent")} />
               <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-10 lg:p-14 text-white">
               <div className="mx-auto w-full max-w-[1760px]">
                 <span className="mb-2 inline-flex w-fit bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
@@ -1155,10 +1157,10 @@ export default function StorefrontPage() {
                   <StoreImage
                     src={landscapeBanner.imageUrl}
                     alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
-                    className="object-cover"
+                    className={bannerImageClass(lang, "object-cover")}
                     sizes="100vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
+                  <div className={bannerScrimClass(lang, "from-black/70 via-black/35 to-transparent")} />
                   <div className="absolute inset-0 flex flex-col justify-center p-6 text-white sm:p-10">
                     <span className="text-[11px] font-bold uppercase tracking-widest">
                       {lang === "ar" ? landscapeBanner.badgeAr : landscapeBanner.badgeEn}
