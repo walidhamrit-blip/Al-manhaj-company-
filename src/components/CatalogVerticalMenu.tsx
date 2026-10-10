@@ -296,12 +296,14 @@ export function CatalogVerticalMenu({
           onClick={() => handleQuickView(product)}
           className="flex min-w-0 flex-1 items-center gap-2.5 text-start"
         >
-          <ProductImage
-            product={product}
-            src={image}
-            alt={title}
-            className="h-10 w-10 shrink-0 rounded-md border border-gray-200 bg-white object-cover"
-          />
+          <span className="relative block h-10 w-10 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-white">
+            <ProductImage
+              product={product}
+              src={image}
+              alt={title}
+              className="h-full w-full object-cover"
+            />
+          </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[11px] font-semibold text-gray-800 transition group-hover:text-red-600">
               {title}

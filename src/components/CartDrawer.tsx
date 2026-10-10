@@ -414,12 +414,18 @@ export function CartDrawer({
                     className="rounded-2xl border p-3.5 shadow-sm transition"
                   >
                     <div className="flex gap-3">
-                      <ProductImage
-                        product={product}
-                        src={img}
-                        alt={product.titleEn}
-                        className="h-16 w-16 rounded-xl object-cover shrink-0 border border-black/10"
-                      />
+                      {/* ProductImage renders an absolutely positioned image:
+                          it needs a positioned, sized box here, otherwise the
+                          thumbnail escapes the row and every line ends up
+                          showing the same (last rendered) picture. */}
+                      <span className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-black/10">
+                        <ProductImage
+                          product={product}
+                          src={img}
+                          alt={product.titleEn}
+                          className="h-full w-full object-cover"
+                        />
+                      </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <h4 className="text-xs sm:text-sm font-bold leading-snug line-clamp-2">

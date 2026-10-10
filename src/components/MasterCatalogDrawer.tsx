@@ -362,19 +362,23 @@ export function MasterCatalogDrawer({
                             onClick={() => onQuickView(item)}
                             className="cursor-pointer flex gap-1.5 shrink-0"
                           >
-                            <ProductImage
-                              product={item}
-                              src={img1}
-                              alt={item.titleEn}
-                              className="h-16 w-16 rounded-xl object-cover border border-black/10"
-                            />
-                            {img2 && (
+                            <span className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-black/10">
                               <ProductImage
                                 product={item}
-                                src={img2}
+                                src={img1}
                                 alt={item.titleEn}
-                                className="hidden md:block h-16 w-16 rounded-xl object-cover border border-black/10 opacity-90"
+                                className="h-full w-full object-cover"
                               />
+                            </span>
+                            {img2 && (
+                              <span className="relative hidden h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-black/10 md:block">
+                                <ProductImage
+                                  product={item}
+                                  src={img2}
+                                  alt={item.titleEn}
+                                  className="h-full w-full object-cover opacity-90"
+                                />
+                              </span>
                             )}
                           </div>
 

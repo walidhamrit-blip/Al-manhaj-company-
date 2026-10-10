@@ -124,7 +124,7 @@ export function ProductQuickViewModal({
                         ? theme.colors.accentPrimary
                         : "transparent",
                   }}
-                  className="h-14 w-20 rounded-xl border-2 overflow-hidden transition"
+                  className="relative h-14 w-20 rounded-xl border-2 overflow-hidden transition"
                 >
                   <ProductImage
                     product={product}
