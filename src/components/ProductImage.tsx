@@ -3,11 +3,14 @@
 import React, { useState } from "react";
 import type { Product } from "@/db/schema";
 import { getProductImageFallback } from "@/lib/product-image-fallbacks";
+import { StoreImage } from "@/components/StoreImage";
 
-interface ProductImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface ProductImageProps {
   product: Pick<Product, "sku" | "categorySlug">;
   src: string;
   alt: string;
+  className?: string;
+  loading?: "lazy" | "eager";
 }
 
 /** Keep product tiles visible if an old catalog record points to a blocked external image host. */
@@ -15,7 +18,7 @@ export function ProductImage({
   product,
   src,
   alt,
-  ...imageProps
+  className,
 }: ProductImageProps) {
   const fallbackSrc = getProductImageFallback(product);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -23,11 +26,14 @@ export function ProductImage({
   const displayedSrc = failedSrc === source ? fallbackSrc : source;
 
   return (
-    <img
-      {...imageProps}
-      src={displayedSrc}
-      alt={alt}
-      onError={() => setFailedSrc(source)}
-    />
+    <span className="absolute inset-0 block overflow-hidden">
+      <StoreImage
+        src={displayedSrc}
+        alt={alt}
+        className={className}
+        sizes="(max-width: 768px) 50vw, 220px"
+        onError={() => setFailedSrc(source)}
+      />
+    </span>
   );
 }

@@ -2,18 +2,20 @@
 
 import React, { useState } from "react";
 import { getCategoryIllustration } from "@/lib/category-image-fallbacks";
+import { StoreImage } from "@/components/StoreImage";
 
-interface CategoryImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface CategoryImageProps {
   slug: string;
   src: string;
   alt: string;
+  className?: string;
 }
 
 export function CategoryImage({
   slug,
   src,
   alt,
-  ...imageProps
+  className,
 }: CategoryImageProps) {
   const fallbackSrc = getCategoryIllustration(slug);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -21,11 +23,14 @@ export function CategoryImage({
   const displayedSrc = failedSrc === source ? fallbackSrc : source;
 
   return (
-    <img
-      {...imageProps}
-      src={displayedSrc}
-      alt={alt}
-      onError={() => setFailedSrc(source)}
-    />
+    <span className={`relative block overflow-hidden ${className || "h-full w-full"}`}>
+      <StoreImage
+        src={displayedSrc}
+        alt={alt}
+        className="object-contain"
+        sizes="(max-width: 768px) 50vw, 240px"
+        onError={() => setFailedSrc(source)}
+      />
+    </span>
   );
 }

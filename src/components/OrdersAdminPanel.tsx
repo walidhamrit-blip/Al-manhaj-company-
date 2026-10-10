@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { Order, OrderStatus, StoreSettings } from "@/db/schema";
 import { openOrderDocument } from "@/lib/order-documents";
+import { StoreImage } from "@/components/StoreImage";
 import {
   ORDER_STATUSES,
   getOrderStatusLabel,
@@ -713,11 +714,14 @@ function FragmentOrderRow({
                     }}
                     className="flex items-center gap-2.5 rounded-lg border p-2.5"
                   >
-                    <img
-                      src={item.imageUrl || "/images/new/main-storefront-hq.jpg"}
-                      alt=""
-                      className="h-11 w-11 shrink-0 rounded-md object-cover"
-                    />
+                    <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md">
+                      <StoreImage
+                        src={item.imageUrl || "/images/new/main-storefront-hq.jpg"}
+                        alt=""
+                        className="object-cover"
+                        sizes="44px"
+                      />
+                    </div>
                     <div className="min-w-0 flex-1">
                       <p className="line-clamp-2 text-[11px] font-bold">
                         {isAr ? item.titleAr : item.titleEn}

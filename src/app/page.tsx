@@ -9,14 +9,17 @@ import {
   type Language,
   type ThemeId,
 } from "@/lib/i18n-themes";
-import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
+import { hydrateFallbackStore } from "@/lib/fallbackData";
+import { CATALOG_DEPARTMENTS } from "@/lib/catalog-tree";
 import {
   getProductParentSlug,
   getProductSubcategorySlug,
 } from "@/lib/category-hierarchy";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductCarousel } from "@/components/ProductCarousel";
 import { CategoryImage } from "@/components/CategoryImage";
-import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
+import { StoreImage } from "@/components/StoreImage";
+import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
@@ -32,7 +35,6 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Layers,
   SlidersHorizontal,
   MessageCircle,
@@ -43,8 +45,12 @@ import {
   MapPin,
   Clock,
   Building2,
-  Percent,
   RotateCcw,
+  Menu,
+  Truck,
+  Headphones,
+  CreditCard,
+  ChevronDown,
 } from "lucide-react";
 
 export default function StorefrontPage() {
@@ -53,9 +59,10 @@ export default function StorefrontPage() {
   const isRtl = lang === "ar";
   const t = UI_TEXT[lang];
 
-  // Visual Theme state (6 curated e-commerce themes)
-  const [themeId, setThemeId] = useState<ThemeId>("paperSource");
+  // Visual Theme state (7 curated e-commerce themes)
+  const [themeId, setThemeId] = useState<ThemeId>("cyber");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isCatNavOpen, setIsCatNavOpen] = useState(false);
   const currentTheme = useMemo(
     () => THEMES.find((th) => th.id === themeId) || THEMES[0],
     [themeId]
@@ -65,14 +72,27 @@ export default function StorefrontPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<StoreSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const categoriesBySlug = useMemo(
-    () =>
-      new Map<string, Category>(
-        categories.map((category) => [category.slug, category])
-      ),
+    () => new Map(categories.map((category) => [category.slug, category])),
     [categories]
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const topLevelCategories = useMemo(
+    () =>
+      [...categories]
+        .filter((category) => !category.parentSlug)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [categories]
+  );
+  const productMatchesCategory = useCallback(
+    (product: Product, categorySlug: string) => {
+      const category = categoriesBySlug.get(categorySlug);
+      return category?.parentSlug
+        ? getProductSubcategorySlug(product, categoriesBySlug) === categorySlug
+        : getProductParentSlug(product, categoriesBySlug) === categorySlug;
+    },
+    [categoriesBySlug]
+  );
 
   // Hero Carousel state
   const [heroIndex, setHeroIndex] = useState(0);
@@ -133,28 +153,45 @@ export default function StorefrontPage() {
       const res = await fetch("/api/store", { cache: "no-store" });
       if (!res.ok) throw new Error("API not available - using seed");
       const data = await res.json();
-      setCategories(data.categories || []);
-      setProducts(data.products || []);
+      const fallback = hydrateFallbackStore();
+      const nextCategories = (data.categories?.length
+        ? data.categories
+        : fallback.categories
+      ).map((category: Category, index: number) => ({
+        ...category,
+        id: Number(category.id) || index + 1,
+      }));
+      const nextProducts = (data.products?.length
+        ? data.products
+        : fallback.products
+      ).map((product: Product, index: number) => ({
+        ...product,
+        id: Number(product.id) || index + 1,
+      }));
+      setCategories(nextCategories);
+      setProducts(nextProducts);
       if (data.settings) {
-        setSettings(data.settings);
+        setSettings({ ...data.settings, id: Number(data.settings.id) || 1 });
+      } else {
+        setSettings(fallback.settings as StoreSettings);
       }
-      if (data.products && data.products.length > 0) {
-        setWholesaleProductId((prev) => prev || data.products[0].id);
+      if (nextProducts.length > 0) {
+        setWholesaleProductId((prev) => prev || nextProducts[0].id);
         const highest = Math.max(
-          ...data.products.map((p: Product) => Number(p.price) || 100),
+          ...nextProducts.map((p: Product) => Number(p.price) || 100),
           120
         );
         setMaxPrice(Math.ceil(highest + 20));
       }
     } catch (err) {
       console.error("Failed to fetch store data, using seed fallback:", err);
-      // Fallback pour Cloudflare Pages sans base de données - affiche les données de démo
       try {
-        setCategories(INITIAL_CATEGORIES as any);
-        setProducts(INITIAL_PRODUCTS as any);
-        setSettings(INITIAL_STORE_SETTINGS as any);
-        if (INITIAL_PRODUCTS.length > 0) {
-          setWholesaleProductId((prev) => prev || (INITIAL_PRODUCTS[0] as any).id || 1);
+        const fallback = hydrateFallbackStore();
+        setCategories(fallback.categories as Category[]);
+        setProducts(fallback.products as Product[]);
+        setSettings(fallback.settings as StoreSettings);
+        if (fallback.products.length > 0) {
+          setWholesaleProductId((prev) => prev || fallback.products[0].id);
         }
       } catch {}
     } finally {
@@ -170,8 +207,15 @@ export default function StorefrontPage() {
         if (savedCart) {
           setCart(JSON.parse(savedCart));
         }
-        const savedTheme = localStorage.getItem("atelier_theme_v1") as ThemeId;
-        if (savedTheme && THEMES.some((th) => th.id === savedTheme)) {
+        const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
+          localStorage.getItem("atelier_theme_v1")) as ThemeId;
+        // Keep SSR and the first client paint on the principal market theme.
+        if (
+          savedTheme &&
+          savedTheme !== "cyber" &&
+          savedTheme !== "paperSource" &&
+          THEMES.some((th) => th.id === savedTheme)
+        ) {
           setThemeId(savedTheme);
         }
       } catch {
@@ -252,7 +296,7 @@ export default function StorefrontPage() {
     setThemeId(id);
     setIsThemeMenuOpen(false);
     try {
-      localStorage.setItem("atelier_theme_v1", id);
+      localStorage.setItem("atelier_theme_v2", id);
     } catch {
       // ignore
     }
@@ -321,8 +365,27 @@ export default function StorefrontPage() {
 
   // Featured / Promotion products for the highlight section after Landscape Banner (hidden products excluded)
   const featuredProducts = useMemo(() => {
-    return products.filter((p) => !p.isHidden && (p.isFeatured || p.isPromotion)).slice(0, 6);
+    return products.filter((p) => !p.isHidden && (p.isFeatured || p.isPromotion)).slice(0, 10);
   }, [products]);
+
+  const promoProducts = useMemo(() => {
+    return products.filter((p) => !p.isHidden && p.isPromotion).slice(0, 10);
+  }, [products]);
+
+  const categorySelections = useMemo(() => {
+    return topLevelCategories
+      .map((category) => ({
+        category,
+        items: products
+          .filter(
+            (product) =>
+              !product.isHidden &&
+              productMatchesCategory(product, category.slug)
+          )
+          .slice(0, 10),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [topLevelCategories, products, productMatchesCategory]);
 
   // Highest product price for filter slider max
   const highestCatalogPrice = useMemo(() => {
@@ -333,29 +396,15 @@ export default function StorefrontPage() {
   }, [products]);
 
   // Filtered & Sorted Products for the main catalog (hidden products excluded from storefront)
-  // Determine if the selected category is a subcategory
-  const selectedIsSubcategory = useMemo(
-    () => Boolean(categoriesBySlug.get(selectedCategory)?.parentSlug),
-    [selectedCategory, categoriesBySlug]
-  );
-
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const list = products.filter((p) => {
       if (p.isHidden) return false;
-      if (selectedCategory !== "all") {
-        if (selectedIsSubcategory) {
-          // Support both the normalized parent+subcategory fields and older
-          // records where the child slug is stored directly as categorySlug.
-          if (getProductSubcategorySlug(p, categoriesBySlug) !== selectedCategory) {
-            return false;
-          }
-        } else if (
-          getProductParentSlug(p, categoriesBySlug) !== selectedCategory
-        ) {
-          // Selecting a parent includes products assigned to all its children.
-          return false;
-        }
+      if (
+        selectedCategory !== "all" &&
+        !productMatchesCategory(p, selectedCategory)
+      ) {
+        return false;
       }
       if (Number(p.price) > maxPrice) {
         return false;
@@ -385,72 +434,25 @@ export default function StorefrontPage() {
     });
   }, [
     products,
-    categoriesBySlug,
     selectedCategory,
-    selectedIsSubcategory,
     maxPrice,
     onlyPromo,
     searchQuery,
     sortBy,
+    productMatchesCategory,
   ]);
 
-  const hasActiveCatalogFilter =
-    selectedCategory !== "all" ||
-    Boolean(searchQuery.trim()) ||
-    onlyPromo ||
-    maxPrice < highestCatalogPrice;
-
-  // Build a real parent → subcategory hierarchy for the catalog. Products with
-  // a subcategory are rendered under that subcategory instead of being mixed
-  // into one undifferentiated parent-category grid. Empty categories remain
-  // visible in the unfiltered catalog so the catalog structure is complete.
+  // Keep every product under its parent category in the complete catalog.
   const catalogGroups = useMemo(() => {
-    const orderedCategories = [...categories].sort(
-      (a, b) => a.sortOrder - b.sortOrder
-    );
-    const parentCategories = orderedCategories.filter(
-      (category) => !category.parentSlug
-    );
-
-    return parentCategories
-      .map((category) => {
-        const childCategories = orderedCategories.filter(
-          (child) => child.parentSlug === category.slug
-        );
-        const items = filteredProducts.filter(
-          (product) => getProductParentSlug(product, categoriesBySlug) === category.slug
-        );
-        const childSlugs = new Set(childCategories.map((child) => child.slug));
-        const subcategories = childCategories
-          .map((subcategory) => ({
-            category: subcategory,
-            items: items.filter(
-              (product) =>
-                getProductSubcategorySlug(product, categoriesBySlug) ===
-                subcategory.slug
-            ),
-          }))
-          .filter(
-            (subcategory) =>
-              !hasActiveCatalogFilter || subcategory.items.length > 0
-          );
-        const unassignedItems = items.filter((product) => {
-          const subcategorySlug = getProductSubcategorySlug(
-            product,
-            categoriesBySlug
-          );
-          return !subcategorySlug || !childSlugs.has(subcategorySlug);
-        });
-
-        return { category, items, subcategories, unassignedItems };
-      })
-      .filter((group) => !hasActiveCatalogFilter || group.items.length > 0);
-  }, [
-    categories,
-    categoriesBySlug,
-    filteredProducts,
-    hasActiveCatalogFilter,
-  ]);
+    return topLevelCategories
+      .map((category) => ({
+        category,
+        items: filteredProducts.filter((product) =>
+          productMatchesCategory(product, category.slug)
+        ),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [topLevelCategories, filteredProducts, productMatchesCategory]);
 
   // Category selection handler that smoothly scrolls to the catalog section
   const handleSelectCategoryAndScroll = (slug: string) => {
@@ -459,6 +461,12 @@ export default function StorefrontPage() {
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const handleSearchSubmit = (event?: React.FormEvent) => {
+    event?.preventDefault();
+    setSelectedCategory("all");
+    document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" });
   };
 
   // Wholesale Calculator Logic
@@ -555,35 +563,6 @@ export default function StorefrontPage() {
     settings?.headerTaglineAr,
     "PAPER • STATIONERY • ATELIER • TRIPOLI"
   );
-  const storefront = {
-    image: settings?.storefrontImage || "/images/new/main-storefront-hq.jpg",
-    badge: pickText(
-      settings?.storefrontBadgeEn,
-      settings?.storefrontBadgeAr,
-      lang === "ar"
-        ? "البيفي، طرابلس، ليبيا"
-        : "Al Bivi, Tripoli, Libya"
-    ),
-    title: pickText(
-      settings?.storefrontTitleEn,
-      settings?.storefrontTitleAr,
-      lang === "ar"
-        ? "شركة المنهج للقرطاسية"
-        : "Al Manhaj Company for Stationery"
-    ),
-    subtitle: pickText(
-      settings?.storefrontSubtitleEn,
-      settings?.storefrontSubtitleAr,
-      "Almanhaj for Stationery and Computer Equipment"
-    ),
-    description: pickText(
-      settings?.storefrontDescriptionEn,
-      settings?.storefrontDescriptionAr,
-      lang === "ar"
-        ? "أدوات مكتبية • معدات هندسية • أدوات مدرسية • خزائن مختلفة • حبر طابعات ومعدات الحاسوب"
-        : "Office tools • Engineering equipment • School supplies • Cabinets • Printer ink & computer equipment"
-    ),
-  };
 
   // Legal footer bar (Admin → Store & homepage → الشريط القانوني)
   const complianceEnabled = settings?.complianceEnabled ?? true;
@@ -618,40 +597,58 @@ export default function StorefrontPage() {
   return (
     <div
       dir={isRtl ? "rtl" : "ltr"}
+      suppressHydrationWarning
       style={{
         backgroundColor: currentTheme.colors.bgPrimary,
         color: currentTheme.colors.textPrimary,
       }}
+      data-preview="8"
       className="min-h-screen flex flex-col transition-colors duration-300 pb-20 lg:pb-0"
     >
-      {/* ===== MYTEK-STYLE TOP ANNOUNCEMENT BAR ===== */}
       {announcementEnabled && (
-        <div className="w-full text-center py-1.5 text-[10px] sm:text-[11px] font-semibold tracking-wide" style={{backgroundColor: '#1A1A2E', color: '#FFFFFF'}}>
-          <span className="hidden sm:inline">{announcementText}</span>
-          <span className="sm:hidden">{announcementShort}</span>
-          {announcementNote ? (
-            <span className="opacity-70 font-normal hidden md:inline">
-              {" "}&nbsp;|&nbsp; {announcementNote}
-            </span>
-          ) : null}
+        <div className="w-full bg-[#222] text-white">
+          <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-3 px-2 sm:px-3 lg:px-4 py-1.5 text-[11px] sm:text-xs">
+            <div className="flex min-w-0 items-center gap-3">
+              <a href={`tel:+${whatsappDigits}`} className="hidden sm:inline-flex items-center gap-1.5 font-semibold hover:opacity-80">
+                <Phone className="h-3.5 w-3.5" />
+                <span dir="ltr">{contactPhoneDisplay}</span>
+              </a>
+              <span className="truncate font-medium opacity-90">
+                <span className="hidden sm:inline">{announcementText}</span>
+                <span className="sm:hidden">{announcementShort}</span>
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              {announcementNote ? (
+                <span className="hidden md:inline opacity-70">{announcementNote}</span>
+              ) : null}
+              <button type="button" onClick={() => goToOrderTracking()} className="hidden sm:inline hover:underline">
+                {t.trackOrder}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang((prev) => (prev === "en" ? "ar" : "en"))}
+                className="inline-flex items-center gap-1 font-bold hover:underline"
+              >
+                <Globe className="h-3.5 w-3.5" />
+                {lang === "en" ? "العربية" : "English"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
-      {/* ===== MYTEK-STYLE HEADER - Dark Navy Modern ===== */}
-      <header
-        style={{
-          backgroundColor: "#1A1A2E",
-          borderColor: "#2A2A4A",
-        }}
-        className="sticky top-0 z-40 border-b"
-      >
-        <div className="mx-auto flex max-w-[1580px] items-center justify-between gap-2 sm:gap-4 px-2 sm:px-3 lg:px-4 py-2 sm:py-2.5">
-          {/* Brand Identity */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <a
-              href="#top"
-              className="flex flex-col leading-tight hover:opacity-80 transition"
+
+      <header className="sticky top-0 z-40 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-[1760px] items-center gap-3 sm:gap-5 px-2 sm:px-3 lg:px-4 py-3">
+          <a href="#top" className="flex min-w-0 shrink-0 items-center gap-2.5">
+            <span
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-sm text-white text-lg font-black"
+              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
             >
-              <span className="text-white text-sm sm:text-lg font-extrabold tracking-wide truncate max-w-[180px] sm:max-w-xs lg:max-w-none">
+              {lang === "ar" ? "م" : "A"}
+            </span>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-base sm:text-xl font-extrabold tracking-tight max-w-[150px] sm:max-w-xs">
                 {settings
                   ? lang === "ar"
                     ? settings.storeNameAr
@@ -660,43 +657,55 @@ export default function StorefrontPage() {
                     ? "شركة المنهج للقرطاسية"
                     : "AL-MANHAJ"}
               </span>
-              <span className="text-gray-400 text-[9px] sm:text-[10px] font-medium tracking-wider uppercase hidden md:block truncate max-w-xs">
+              <span className="hidden md:block truncate text-[10px] font-medium uppercase tracking-wider text-neutral-500 max-w-xs">
                 {headerTagline}
               </span>
-            </a>
-          </div>
+            </span>
+          </a>
 
-          {/* Quick Search Bar in Header (Desktop) */}
-          <div className="hidden lg:flex relative flex-1 max-w-xl mx-4">
-            <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  document
-                    .getElementById("catalog-section")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              placeholder={t.searchPlaceholder}
-              className="w-full rounded-md py-2 ps-10 pe-4 text-xs font-medium outline-none transition bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white focus:text-gray-900 focus:border-red-500"
-            />
-          </div>
+          <form
+            className="hidden md:flex flex-1 max-w-2xl"
+            onSubmit={handleSearchSubmit}
+          >
+            <div className="flex w-full overflow-hidden rounded-sm border-2" style={{ borderColor: currentTheme.colors.accentPrimary }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                className="w-full bg-white px-4 py-2.5 text-sm outline-none"
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 px-4 text-sm font-bold text-white"
+                style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+              >
+                <Search className="h-4 w-4" />
+                <span className="hidden lg:inline">{t.searchBtn}</span>
+              </button>
+            </div>
+          </form>
 
-          {/* Right Utility Controls */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Theme Selector */}
+          {/* Right Utility Controls: 6 Themes, EN/AR Switcher, Admin, Cart */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {/* 6-Theme Selector Dropdown */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsThemeMenuOpen((prev) => !prev)}
-                className="flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-xs font-bold text-white transition hover:bg-white/20"
+                style={{
+                  backgroundColor: currentTheme.colors.bgSecondary,
+                  borderColor: currentTheme.colors.border,
+                  color: currentTheme.colors.textPrimary,
+                }}
+                className="flex items-center gap-1.5 rounded-none border px-2.5 sm:px-3 py-2 text-xs font-bold transition hover:opacity-85"
                 title={t.themeSelectorTitle}
               >
-                <Palette className="h-3.5 w-3.5 text-red-400" />
-                <span className="hidden xl:inline">
+                <Palette
+                  style={{ color: currentTheme.colors.accentPrimary }}
+                  className="h-4 w-4"
+                />
+                <span className="hidden xl:inline" suppressHydrationWarning>
                   {lang === "ar" ? currentTheme.nameAr : currentTheme.nameEn}
                 </span>
               </button>
@@ -708,10 +717,15 @@ export default function StorefrontPage() {
                     className="fixed inset-0 z-30"
                   />
                   <div
-                    className="absolute end-0 mt-2 z-40 w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-2xl space-y-1.5"
+                    style={{
+                      backgroundColor: currentTheme.colors.bgElevated,
+                      borderColor: currentTheme.colors.border,
+                      color: currentTheme.colors.textPrimary,
+                    }}
+                    className="absolute end-0 mt-2 z-40 w-72 rounded-none border p-3 shadow-2xl space-y-1.5"
                   >
-                    <div className="px-2 py-1 text-xs font-extrabold uppercase tracking-wider text-gray-500">
-                      {t.themeSelectorTitle} (6 Themes)
+                    <div className="px-2 py-1 text-xs font-extrabold uppercase tracking-wider opacity-70">
+                      {t.themeSelectorTitle} ({THEMES.length})
                     </div>
                     {THEMES.map((th) => {
                       const active = th.id === themeId;
@@ -721,16 +735,21 @@ export default function StorefrontPage() {
                           type="button"
                           onClick={() => handleSelectTheme(th.id)}
                           style={{
-                            backgroundColor: active ? "#FFF0F0" : "transparent",
-                            borderColor: active ? "#E31837" : "transparent",
+                            backgroundColor: active
+                              ? currentTheme.colors.bgSecondary
+                              : "transparent",
+                            borderColor: active
+                              ? currentTheme.colors.accentPrimary
+                              : "transparent",
                           }}
-                          className="flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-start transition hover:bg-gray-50"
+                          className="flex w-full items-center justify-between gap-3 rounded-none border px-3 py-2 text-start transition hover:opacity-90"
                         >
                           <div className="flex items-center gap-2.5">
+                            {/* Swatch Preview */}
                             <div className="flex -space-x-1 rtl:space-x-reverse">
                               <span
                                 style={{ backgroundColor: th.colors.bgPrimary }}
-                                className="h-5 w-5 rounded-full border border-gray-200"
+                                className="h-5 w-5 rounded-full border border-black/20"
                               />
                               <span
                                 style={{
@@ -746,16 +765,26 @@ export default function StorefrontPage() {
                               />
                             </div>
                             <div>
-                              <div className="text-xs font-bold text-gray-900">
+                              <div className="text-xs font-bold">
                                 {lang === "ar" ? th.nameAr : th.nameEn}
                               </div>
-                              <div className="text-[10px] text-gray-500">
+                              <div
+                                style={{
+                                  color: currentTheme.colors.textSecondary,
+                                }}
+                                className="text-[10px]"
+                              >
                                 {lang === "ar" ? th.subtitleAr : th.subtitleEn}
                               </div>
                             </div>
                           </div>
                           {active && (
-                            <Check className="h-4 w-4 shrink-0 text-red-600" />
+                            <Check
+                              style={{
+                                color: currentTheme.colors.accentPrimary,
+                              }}
+                              className="h-4 w-4 shrink-0"
+                            />
                           )}
                         </button>
                       );
@@ -765,561 +794,483 @@ export default function StorefrontPage() {
               )}
             </div>
 
-            {/* Bilingual Language Toggle */}
-            <button
-              type="button"
-              onClick={() => setLang((prev) => (prev === "en" ? "ar" : "en"))}
-              className="flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-xs font-extrabold text-white transition hover:bg-white/20"
-              title="Switch Language (English / العربية)"
-            >
-              <Globe className="h-3.5 w-3.5 text-red-400" />
-              <span>{lang === "en" ? "العربية" : "EN"}</span>
-            </button>
-
-            {/* Order Tracking */}
+            {/* Order Tracking Shortcut */}
             <button
               type="button"
               onClick={() => goToOrderTracking()}
-              className="hidden lg:flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-2.5 py-1.5 text-[10px] sm:text-xs font-bold text-white transition hover:bg-white/20"
+              style={{
+                backgroundColor: currentTheme.colors.bgSecondary,
+                borderColor: currentTheme.colors.border,
+                color: currentTheme.colors.textPrimary,
+              }}
+              className="hidden lg:flex items-center gap-1.5 rounded-none border px-3 py-2 text-xs font-bold transition hover:opacity-85"
             >
-              <PackageSearch className="h-3.5 w-3.5 text-red-400" />
+              <PackageSearch
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4"
+              />
               <span>{t.trackOrder}</span>
             </button>
 
-            {/* Admin Button */}
+            {/* Secured Admin Button */}
             <button
               type="button"
               onClick={() => setIsAdminOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-2.5 py-1.5 text-[10px] sm:text-xs font-bold text-white transition hover:bg-white/20"
+              style={{
+                backgroundColor: currentTheme.colors.bgSecondary,
+                borderColor: currentTheme.colors.border,
+                color: currentTheme.colors.textPrimary,
+              }}
+              className="hidden sm:flex items-center gap-1.5 rounded-none border px-3 py-2 text-xs font-bold transition hover:opacity-85"
             >
-              <ShieldCheck className="h-3.5 w-3.5 text-red-400" />
+              <ShieldCheck
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4"
+              />
               <span>{t.adminBtn}</span>
             </button>
 
-            {/* Cart Button */}
             <button
               type="button"
               onClick={() => setIsCartOpen(true)}
-              className="relative flex items-center gap-1.5 rounded-md px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-extrabold text-white shadow-sm transition hover:opacity-95 active:scale-95"
-              style={{backgroundColor: '#E31837'}}
+              className="relative flex items-center gap-2 px-1 py-1 text-xs sm:text-sm font-bold"
             >
-              <ShoppingBag className="h-4 w-4 sm:h-4 sm:w-4" />
-              <span className="tabular-nums">{totalCartUnits}</span>
+              <span className="relative">
+                <ShoppingBag className="h-6 w-6" />
+                <span
+                  className="absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold text-white"
+                  style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                >
+                  {totalCartUnits}
+                </span>
+              </span>
+              <span className="hidden sm:flex flex-col leading-tight">
+                <span className="text-[10px] font-medium text-neutral-500">{t.myCart}</span>
+                <span className="tabular-nums text-xs font-extrabold">{totalCartUnits}</span>
+              </span>
             </button>
           </div>
         </div>
 
-        {/* ===== MYTEK-STYLE NAVIGATION STRIP =====
-            The vertical catalogue opens as a floating dropdown anchored here,
-            so it never takes up room in the homepage layout. On mobile the
-            same menu is opened from the bottom bar as an off-canvas drawer. */}
-        <div
-          className="hidden lg:block border-t"
-          style={{ backgroundColor: "#FFFFFF", borderColor: "#E0E0E0" }}
-        >
-          <div className="mx-auto flex max-w-[1580px] items-center gap-1 px-2 sm:px-3 lg:px-4">
-            <CatalogVerticalMenu
-              isOpen={isCatalogOpen}
-              onOpenChange={setIsCatalogOpen}
-              categories={categories}
-              products={products}
-              lang={lang}
-              onSelectCategory={handleSelectCategoryAndScroll}
-              onShowPromotions={() => {
-                setOnlyPromo(true);
-                handleSelectCategoryAndScroll("all");
-              }}
-              onQuickView={setQuickViewProduct}
-              onAddToCart={handleAddToCart}
+        <div className="md:hidden border-t px-2 py-2" style={{ borderColor: currentTheme.colors.border }}>
+          <form
+            className="flex overflow-hidden rounded-sm border-2"
+            style={{ borderColor: currentTheme.colors.accentPrimary }}
+            onSubmit={handleSearchSubmit}
+          >
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t.searchPlaceholder}
+              className="w-full px-3 py-2 text-sm outline-none"
             />
-
-            <nav
-              aria-label="Quick links"
-              className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto no-scrollbar ps-2 text-[11px] font-bold text-gray-700"
+            <button
+              type="submit"
+              className="px-3 text-white"
+              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
             >
-              <button
-                type="button"
-                onClick={() => handleSelectCategoryAndScroll("all")}
-                className="shrink-0 rounded-md px-3 py-2 transition hover:bg-gray-100 hover:text-red-600"
-              >
-                {t.catalogMenuAllProducts}
-              </button>
-              <a
-                href="#departments-section"
-                className="shrink-0 rounded-md px-3 py-2 transition hover:bg-gray-100 hover:text-red-600"
-              >
-                {t.navDepartments}
-              </a>
-              <button
-                type="button"
-                onClick={() => {
-                  setOnlyPromo(true);
-                  handleSelectCategoryAndScroll("all");
-                }}
-                className="inline-flex shrink-0 items-center gap-1 rounded-md px-3 py-2 text-red-600 transition hover:bg-red-50"
-              >
-                <Percent className="h-3 w-3" />
-                <span>{t.navPromotions}</span>
-              </button>
-              <a
-                href="#wholesale-section"
-                className="shrink-0 rounded-md px-3 py-2 transition hover:bg-gray-100 hover:text-red-600"
-              >
-                {t.navWholesale}
-              </a>
-              <a
-                href="#contact-section"
-                className="shrink-0 rounded-md px-3 py-2 transition hover:bg-gray-100 hover:text-red-600"
-              >
-                {t.navContact}
-              </a>
-            </nav>
-          </div>
+              <Search className="h-4 w-4" />
+            </button>
+          </form>
         </div>
-      </header>
 
-      {/* =====================================================================
-          0. MYTEK-STYLE HERO BANNER
-      ===================================================================== */}
-      <section
-        id="top"
-        className="relative w-full overflow-hidden"
-      >
-        {/* Full-width hero banner image */}
-        <div className="relative w-full h-[220px] sm:h-[340px] lg:h-[440px]">
-          <img
-            src={storefront.image}
-            alt={storefront.title}
-            className="absolute inset-0 h-full w-full object-cover kenburns-bg"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-          <div className="relative z-10 mx-auto flex h-full w-full max-w-[1580px] flex-col justify-end px-3 sm:px-6 lg:px-8 pb-4 sm:pb-8 text-white">
-            <div className="max-w-2xl space-y-2 sm:space-y-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white" style={{backgroundColor: '#E31837'}}>
-                <MapPin className="h-3 w-3" />
-                {storefront.badge}
-              </span>
-
-              <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold leading-tight">
-                {storefront.title}
-              </h1>
-              <p className="text-xs sm:text-sm font-semibold text-red-300 uppercase tracking-wide">
-                {storefront.subtitle}
-              </p>
-              <p className="text-[11px] sm:text-sm text-white/80 leading-relaxed max-w-lg hidden sm:block">
-                {storefront.description}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1">
+        <nav
+          className="text-white"
+          style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+        >
+          <div className="mx-auto flex max-w-[1760px] items-stretch gap-0 px-1 sm:px-2">
+            <button
+              type="button"
+              onClick={() => setIsCatNavOpen((open) => !open)}
+              className="flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-extrabold uppercase tracking-wide hover:bg-black/15"
+            >
+              <Menu className="h-4 w-4" />
+              <span className="hidden sm:inline">{t.allDepartments}</span>
+              <ChevronDown className={`h-3.5 w-3.5 transition ${isCatNavOpen ? "rotate-180" : ""}`} />
+            </button>
+            <div className="hidden md:flex min-w-0 flex-1 items-center overflow-x-auto no-scrollbar">
+              {topLevelCategories.map((cat) => (
+                <button
+                  key={cat.slug}
+                  type="button"
+                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                  className="shrink-0 px-3 py-2.5 text-[13px] font-semibold hover:bg-black/15"
+                >
+                  {lang === "ar" ? cat.nameAr : cat.nameEn}
+                </button>
+              ))}
+            </div>
+            <a
+              href="/magasin"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+            >
+              <MapPin className="h-4 w-4" />
+              {t.ourStore}
+            </a>
+            <button
+              type="button"
+              onClick={() => setIsCatalogOpen(true)}
+              className="ms-auto hidden sm:flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+            >
+              <BookOpen className="h-4 w-4" />
+              {t.masterCatalog}
+            </button>
+          </div>
+          <div className="flex md:hidden overflow-x-auto no-scrollbar border-t border-white/20">
+            <a href="/magasin" className="shrink-0 px-3 py-2 text-[12px] font-semibold">
+              {t.ourStore}
+            </a>
+            {topLevelCategories.map((cat) => (
+              <button
+                key={`mnav-${cat.slug}`}
+                type="button"
+                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                className="shrink-0 px-3 py-2 text-[12px] font-semibold"
+              >
+                {lang === "ar" ? cat.nameAr : cat.nameEn}
+              </button>
+            ))}
+          </div>
+          {isCatNavOpen && (
+            <div className="border-t border-white/20 bg-white text-neutral-900 shadow-lg">
+              <div className="mx-auto grid max-w-[1760px] grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 <button
                   type="button"
                   onClick={() => {
-                    setWaPanelMessage(
-                      lang === "ar"
-                        ? "مرحباً شركة المنهج للقرطاسية، أود الاستفسار عن منتجاتكم."
-                        : "Hello Al Manhaj Company for Stationery, I would like to ask about your products."
-                    );
-                    setWaPanelOpen(true);
+                    setIsCatNavOpen(false);
+                    handleSelectCategoryAndScroll("all");
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-[#25D366] px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-extrabold text-white transition hover:bg-[#1EBE5D]"
+                  className="px-3 py-2 text-start text-sm font-bold hover:bg-neutral-100"
                 >
-                  <MessageCircle className="h-3.5 w-3.5 fill-current" />
-                  <span dir="ltr">{contactPhoneDisplay}</span>
+                  {t.allCategories}
                 </button>
+                {CATALOG_DEPARTMENTS.map((dept) => (
+                  <div key={dept.slug} className="px-2">
+                    <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-[#E30613]">
+                      {lang === "ar" ? dept.nameAr : dept.nameEn}
+                    </p>
+                    {dept.children.map((childSlug) => {
+                      const cat = categories.find((c) => c.slug === childSlug);
+                      if (!cat) return null;
+                      return (
+                        <button
+                          key={`nav-${cat.slug}`}
+                          type="button"
+                          onClick={() => {
+                            setIsCatNavOpen(false);
+                            handleSelectCategoryAndScroll(cat.slug);
+                          }}
+                          className="block w-full px-1 py-1.5 text-start text-sm font-medium hover:bg-neutral-100"
+                        >
+                          {lang === "ar" ? cat.nameAr : cat.nameEn}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </nav>
+      </header>
 
-                <a
-                  href={`tel:+${whatsappDigits}`}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold text-white transition"
-                >
-                  <Phone className="h-3.5 w-3.5" />
-                  <span>{lang === "ar" ? "اتصل الآن" : "Call now"}</span>
-                </a>
+      <main id="top" className="flex-1">
+        <section className="relative w-full overflow-hidden bg-black">
+            <div className="relative h-[340px] w-full sm:h-[480px] lg:h-[560px] xl:h-[620px]">
+              <StoreImage
+                src={currentHero.imageUrl}
+                alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
+                className="object-cover transition-all duration-700"
+                priority
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/25 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-10 lg:p-14 text-white">
+              <div className="mx-auto w-full max-w-[1760px]">
+                <span className="mb-2 inline-flex w-fit bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
+                  {lang === "ar" ? currentHero.badgeAr : currentHero.badgeEn}
+                </span>
+                <h1 className="max-w-3xl text-3xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+                  {lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm text-white/85 sm:text-base">
+                  {lang === "ar" ? currentHero.subtitleAr : currentHero.subtitleEn}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSelectCategoryAndScroll(currentHero.targetCategory || "all")
+                    }
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-extrabold text-white"
+                    style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                  >
+                    <span>{lang === "ar" ? currentHero.ctaAr : currentHero.ctaEn}</span>
+                    <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCatalogOpen(true)}
+                    className="inline-flex items-center gap-2 border border-white/70 bg-white/10 px-4 py-2 text-xs font-bold text-white backdrop-blur-sm"
+                  >
+                    {t.masterCatalog}
+                  </button>
+                </div>
+              </div>
+              </div>
+              {heroSlides.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setHeroIndex((heroIndex - 1 + heroSlides.length) % heroSlides.length)
+                    }
+                    aria-label="Previous slide"
+                    className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroIndex((heroIndex + 1) % heroSlides.length)}
+                    aria-label="Next slide"
+                    className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <div className="absolute bottom-3 start-1/2 flex -translate-x-1/2 items-center gap-1.5">
+                    {heroSlides.map((slide, idx) => (
+                      <button
+                        key={slide.id || idx}
+                        type="button"
+                        onClick={() => setHeroIndex(idx)}
+                        aria-label={`Slide ${idx + 1}`}
+                        className={`h-2 rounded-full transition-all ${
+                          heroIndex === idx ? "w-6 bg-white" : "w-2 bg-white/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+        </section>
 
+        <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleSelectCategoryAndScroll("it-peripherals")}
+                className="relative h-[140px] overflow-hidden sm:h-[180px] lg:h-[200px] text-start"
+              >
+                <StoreImage
+                  src="/images/new/hero-it-tech-01.jpg"
+                  alt={t.dealsTitle}
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                    {t.dealsTitle}
+                  </div>
+                  <div className="text-sm font-extrabold leading-snug line-clamp-2">{t.shopNow}</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCatalogOpen(true)}
+                className="relative h-[140px] overflow-hidden sm:h-[180px] lg:h-[200px] text-start"
+              >
+                <StoreImage
+                  src={landscapeBanner.imageUrl}
+                  alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                    {lang === "ar" ? landscapeBanner.badgeAr : landscapeBanner.badgeEn}
+                  </div>
+                  <div className="text-sm font-extrabold leading-snug line-clamp-2">
+                    {lang === "ar" ? landscapeBanner.ctaAr : landscapeBanner.ctaEn}
+                  </div>
+                </div>
+              </button>
+            </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
+            {topLevelCategories.map((cat) => (
+              <button
+                key={`tile-${cat.slug}`}
+                type="button"
+                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                className="group overflow-hidden border bg-white text-start hover:shadow-md"
+                style={{ borderColor: currentTheme.colors.border }}
+              >
+                <div className="relative aspect-[16/9] overflow-hidden bg-white">
+                  <CategoryImage
+                    slug={cat.slug}
+                    src={cat.imageUrl}
+                    alt={lang === "ar" ? cat.nameAr : cat.nameEn}
+                    className="h-full w-full object-contain p-2 transition group-hover:scale-105"
+                  />
+                </div>
+                <div className="border-t px-2 py-2 text-center text-[11px] font-bold leading-tight sm:text-xs" style={{ borderColor: currentTheme.colors.border }}>
+                  {lang === "ar" ? cat.nameAr : cat.nameEn}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <ProductCarousel
+          title={t.dealsTitle}
+          products={promoProducts.length ? promoProducts : featuredProducts}
+          categories={categories}
+          lang={lang}
+          theme={currentTheme}
+          currencySymbol={currencySymbol}
+          cart={cart}
+          onAddToCart={handleAddToCart}
+          onQuickView={setQuickViewProduct}
+          onSeeMore={() => {
+            setOnlyPromo(true);
+            handleSelectCategoryAndScroll("all");
+          }}
+        />
+
+        {categorySelections.slice(0, 4).map((group, index) => (
+          <div key={`sel-${group.category.slug}`}>
+            {index === 1 && (
+              <section className="mx-auto w-full max-w-[1760px] px-2 sm:px-3 lg:px-4 py-2">
                 <button
                   type="button"
                   onClick={() => setIsCatalogOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-extrabold text-white transition hover:opacity-90"
-                  style={{backgroundColor: '#E31837'}}
+                  className="relative block h-[140px] w-full overflow-hidden sm:h-[200px]"
                 >
-                  <BookOpen className="h-3.5 w-3.5" />
-                  <span>{t.masterCatalog}</span>
+                  <StoreImage
+                    src={landscapeBanner.imageUrl}
+                    alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
+                    className="object-cover"
+                    sizes="100vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
+                  <div className="absolute inset-0 flex flex-col justify-center p-6 text-white sm:p-10">
+                    <span className="text-[11px] font-bold uppercase tracking-widest">
+                      {lang === "ar" ? landscapeBanner.badgeAr : landscapeBanner.badgeEn}
+                    </span>
+                    <h2 className="mt-1 max-w-xl text-xl font-extrabold sm:text-3xl">
+                      {lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
+                    </h2>
+                    <span
+                      className="mt-3 inline-flex w-fit items-center gap-2 px-4 py-2 text-xs font-extrabold text-white"
+                      style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                    >
+                      {lang === "ar" ? landscapeBanner.ctaAr : landscapeBanner.ctaEn}
+                      <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
+                    </span>
+                  </div>
                 </button>
-              </div>
-            </div>
+              </section>
+            )}
+            <ProductCarousel
+              title={`${t.selectionPrefix} ${lang === "ar" ? group.category.nameAr : group.category.nameEn}`}
+              products={group.items}
+              categories={categories}
+              lang={lang}
+              theme={currentTheme}
+              currencySymbol={currencySymbol}
+              cart={cart}
+              onAddToCart={handleAddToCart}
+              onQuickView={setQuickViewProduct}
+              onSeeMore={() => handleSelectCategoryAndScroll(group.category.slug)}
+            />
           </div>
-        </div>
+        ))}
 
-        {/* Quick category strip below hero (Mytek style) */}
-        <div className="w-full border-b" style={{backgroundColor: '#F5F5F5', borderColor: '#E0E0E0'}}>
-          <div className="mx-auto max-w-[1580px] flex items-center gap-1 overflow-x-auto no-scrollbar px-2 sm:px-4 py-2">
+        <section
+          id="departments-section"
+          className="mx-auto w-full max-w-[1760px] px-2 sm:px-3 lg:px-4 py-6"
+        >
+          <div className="mb-3 flex items-center justify-between border-b pb-2" style={{ borderColor: currentTheme.colors.border }}>
+            <h2 className="text-lg font-bold sm:text-xl">{t.otherCategories}</h2>
             <button
               type="button"
               onClick={() => handleSelectCategoryAndScroll("all")}
-              className="shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] sm:text-[11px] font-bold transition hover:shadow-sm"
-              style={{
-                backgroundColor: selectedCategory === "all" ? '#E31837' : '#FFFFFF',
-                color: selectedCategory === "all" ? '#FFFFFF' : '#1A1A1A',
-                border: selectedCategory === "all" ? '1px solid #E31837' : '1px solid #E0E0E0',
-              }}
+              className="text-xs font-semibold hover:underline sm:text-sm"
+              style={{ color: currentTheme.colors.accentPrimary }}
             >
-              {t.allCategories}
+              {t.seeMore}
             </button>
-            {categories.filter(c => !c.parentSlug).slice(0, 8).map((cat) => {
-              const active = selectedCategory === cat.slug;
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {topLevelCategories.map((cat) => {
+              const countInCat = products.filter(
+                (product) =>
+                  !product.isHidden &&
+                  productMatchesCategory(product, cat.slug)
+              ).length;
               return (
                 <button
                   key={cat.slug}
                   type="button"
                   onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                  className="shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] sm:text-[11px] font-bold transition hover:shadow-sm"
-                  style={{
-                    backgroundColor: active ? '#E31837' : '#FFFFFF',
-                    color: active ? '#FFFFFF' : '#1A1A1A',
-                    border: active ? '1px solid #E31837' : '1px solid #E0E0E0',
-                  }}
+                  className="group flex items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
+                  style={{ borderColor: currentTheme.colors.border }}
                 >
-                  {lang === "ar" ? cat.nameAr : cat.nameEn}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== MYTEK-STYLE HERO SLIDER ===== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pt-4 sm:pt-6">
-        <div className="relative h-[200px] sm:h-[320px] lg:h-[400px] w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          {/* Slide Image */}
-          <img
-            src={currentHero.imageUrl}
-            alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-            className="h-full w-full object-cover transition-all duration-700"
-          />
-          {/* Mytek-style overlay - strong gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-
-          {/* Slide Content - Mytek style with prominent CTA */}
-          <div className="absolute inset-0 flex flex-col justify-center p-6 sm:p-10 lg:p-12">
-            <div className="max-w-lg space-y-2 sm:space-y-3">
-              <span className="inline-block rounded-full px-3 py-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white" style={{backgroundColor: '#E31837'}}>
-                {lang === "ar" ? currentHero.badgeAr : currentHero.badgeEn}
-              </span>
-
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-tight text-white drop-shadow-lg">
-                {lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-              </h2>
-
-              <p className="text-[11px] sm:text-sm text-white/90 leading-relaxed max-w-md font-medium">
-                {lang === "ar"
-                  ? currentHero.subtitleAr
-                  : currentHero.subtitleEn}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleSelectCategoryAndScroll(
-                      currentHero.targetCategory || "all"
-                    )
-                  }
-                  className="inline-flex items-center gap-1.5 rounded-md px-4 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-extrabold text-white transition hover:opacity-90 shadow-lg"
-                  style={{backgroundColor: '#E31837'}}
-                >
-                  <span>
-                    {lang === "ar" ? currentHero.ctaAr : currentHero.ctaEn}
-                  </span>
-                  <ArrowRight
-                    className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsCatalogOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 px-4 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold text-white transition"
-                >
-                  <span>{t.masterCatalog}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Carousel Prev/Next Controls & Dots */}
-          {heroSlides.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={() =>
-                  setHeroIndex(
-                    (heroIndex - 1 + heroSlides.length) % heroSlides.length
-                  )
-                }
-                aria-label="Previous slide"
-                className="absolute top-1/2 -translate-y-1/2 left-2 sm:left-4 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-black/70 transition"
-              >
-                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setHeroIndex((heroIndex + 1) % heroSlides.length)
-                }
-                aria-label="Next slide"
-                className="absolute top-1/2 -translate-y-1/2 right-2 sm:right-4 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-black/70 transition"
-              >
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-
-              <div className="absolute bottom-3 end-4 flex items-center gap-1.5">
-                {heroSlides.map((slide, idx) => (
-                  <button
-                    key={slide.id || idx}
-                    type="button"
-                    onClick={() => setHeroIndex(idx)}
-                    aria-label={`Slide ${idx + 1}`}
-                    className={`rounded-full transition-all ${
-                      heroIndex === idx
-                        ? "w-6 h-2 bg-white"
-                        : "w-2 h-2 bg-white/50 hover:bg-white/80"
-                    }`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* =====================================================================
-          2. MYTEK-STYLE DEPARTMENT TILES
-          Compact single row of tiles (the full department navigation now
-          lives in the vertical catalogue menu, so this strip stays light).
-      ===================================================================== */}
-      <section
-        id="departments-section"
-        className="mx-auto w-full max-w-[1580px] scroll-mt-24 px-2 sm:px-3 lg:px-4 py-6 sm:py-8 bg-white"
-      >
-        <div className="mb-3 sm:mb-4 flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-0.5">
-              {lang === "ar" ? "تسوق حسب القسم" : "SHOP BY DEPARTMENT"}
-            </span>
-            <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">
-              {t.categoriesTitle}
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleSelectCategoryAndScroll("all")}
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-[11px] font-bold transition hover:bg-gray-50 text-gray-700"
-          >
-            <span>
-              {t.allCategories} ({products.filter(p=>!p.isHidden).length})
-            </span>
-            <ArrowRight className={`h-3 w-3 ${isRtl ? "rotate-180" : ""}`} />
-          </button>
-        </div>
-
-        {/* Every department stays visible (no horizontal scrolling): 4 per row on phones, one row on desktop */}
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:grid-cols-7">
-          {categories.filter(c => !c.parentSlug).map((cat) => {
-            const countInCat = products.filter(
-              (product) =>
-                !product.isHidden &&
-                getProductParentSlug(product, categoriesBySlug) === cat.slug
-            ).length;
-            const isSelected = selectedCategory === cat.slug;
-
-            return (
-              <button
-                key={cat.slug}
-                type="button"
-                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                aria-pressed={isSelected}
-                className="category-card-mytek group relative flex flex-col items-center gap-1.5 rounded-lg border bg-white px-1.5 py-2 text-center shadow-sm sm:gap-2 sm:px-2 sm:py-3"
-                style={{
-                  borderColor: isSelected ? '#E31837' : '#E0E0E0',
-                  borderWidth: isSelected ? '2px' : '1px',
-                }}
-              >
-                <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-16 sm:w-16 lg:h-20 lg:w-20">
                   <CategoryImage
                     slug={cat.slug}
                     src={cat.imageUrl}
                     alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                    className="h-full w-full object-contain p-1 transition-transform duration-300 group-hover:scale-105"
+                    className="h-16 w-16 shrink-0 object-contain bg-white"
                   />
-                </span>
-
-                <span className="line-clamp-2 w-full text-[9px] font-extrabold leading-tight text-gray-900 sm:text-[11px]">
-                  {lang === "ar" ? cat.nameAr : cat.nameEn}
-                </span>
-                <span className="hidden text-[9px] font-medium text-gray-500 sm:block">
-                  {countInCat} {t.itemsLabel}
-                </span>
-
-                {isSelected && (
-                  <span className="absolute top-1 end-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold text-white" style={{backgroundColor: '#E31837'}}>
-                    ✓
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold leading-snug line-clamp-2">
+                      {lang === "ar" ? cat.nameAr : cat.nameEn}
+                    </span>
+                    <span className="text-[11px] text-neutral-500">
+                      {countInCat} {t.itemsLabel}
+                    </span>
                   </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* =====================================================================
-          3. MYTEK-STYLE PROMOTIONAL BANNER
-      ===================================================================== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-8 sm:pb-12">
-        <div className="relative min-h-[180px] sm:min-h-[240px] w-full overflow-hidden rounded-lg border border-gray-200 flex items-center shadow-sm">
-          <img
-            src={landscapeBanner.imageUrl}
-            alt={
-              lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn
-            }
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A2E]/90 via-[#1A1A2E]/70 to-transparent" />
-
-          <div className="relative z-10 max-w-xl p-6 sm:p-10 text-white space-y-3">
-            <span className="inline-block rounded-full px-3 py-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white" style={{backgroundColor: '#E31837'}}>
-              {lang === "ar"
-                ? landscapeBanner.badgeAr
-                : landscapeBanner.badgeEn}
-            </span>
-
-            <h2 className="text-lg sm:text-2xl lg:text-3xl font-extrabold leading-tight">
-              {lang === "ar"
-                ? landscapeBanner.titleAr
-                : landscapeBanner.titleEn}
-            </h2>
-
-            <p className="text-[11px] sm:text-sm text-white/80 leading-relaxed max-w-md">
-              {lang === "ar"
-                ? landscapeBanner.subtitleAr
-                : landscapeBanner.subtitleEn}
-            </p>
-
-            <div className="flex flex-wrap gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setIsCatalogOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-[11px] sm:text-xs font-extrabold text-white shadow-lg transition hover:opacity-95"
-                style={{backgroundColor: '#E31837'}}
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                <span>
-                  {lang === "ar"
-                    ? landscapeBanner.ctaAr
-                    : landscapeBanner.ctaEn}
-                </span>
-              </button>
-
-              <a
-                href="#wholesale-section"
-                className="inline-flex items-center gap-1.5 rounded-md bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-4 py-2 text-[11px] sm:text-xs font-bold text-white transition"
-              >
-                <Layers className="h-3.5 w-3.5" />
-                <span>
-                  {lang === "ar"
-                    ? "عروض البيع بالجملة"
-                    : "Wholesale B2B Pricing"}
-                </span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          4. MYTEK-STYLE FEATURED PRODUCTS SECTION
-      ===================================================================== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14">
-        <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
-          <div className="mb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1">
-                <Sparkles className="h-3.5 w-3.5 text-red-600" />
-                <span className="text-red-600">
-                  {lang === "ar"
-                    ? "اختياراتنا المميزة والتخفيضات"
-                    : "TOP PICKS & SPECIAL PROMOTIONS"}
-                </span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
-                {t.featuredTitle}
-              </h2>
-              <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
-                {t.featuredSubtitle}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setOnlyPromo(true);
-                handleSelectCategoryAndScroll("all");
-              }}
-              className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-[11px] font-extrabold text-white shadow-sm"
-              style={{backgroundColor: '#E31837'}}
-            >
-              <Percent className="h-3 w-3" />
-              <span>{t.onlyPromotions}</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-            {featuredProducts.map((product) => {
-              const cat = categories.find(
-                (c) => c.slug === product.categorySlug
-              );
-              const inCart =
-                cart.find((c) => c.product.id === product.id)?.quantity || 0;
-              return (
-                <ProductCard
-                  key={`featured-${product.id}`}
-                  product={product}
-                  category={cat}
-                  lang={lang}
-                  theme={currentTheme}
-                  currencySymbol={currencySymbol}
-                  cartQty={inCart}
-                  onAddToCart={handleAddToCart}
-                  onQuickView={setQuickViewProduct}
-                />
+                </button>
               );
             })}
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* =====================================================================
-          5. MYTEK-STYLE CATALOG WITH FILTERS
+          5. COMPLETE STORE CATALOG WITH SEARCH BAR & ADVANCED FILTERS
       ===================================================================== */}
       <section
         id="catalog-section"
-        className="mx-auto w-full max-w-[1580px] scroll-mt-24 px-2 sm:px-3 lg:px-4 pb-12 sm:pb-18"
+        className="mx-auto w-full max-w-[1760px] scroll-mt-36 px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
-        <div className="mb-5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-1">
-            {lang === "ar" ? "جميع المنتجات" : "ALL PRODUCTS"}
-          </span>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
+        <div className="mb-6">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
             {t.allProductsTitle}
           </h2>
-          <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
+          <p
+            style={{ color: currentTheme.colors.textSecondary }}
+            className="text-xs sm:text-sm mt-1"
+          >
             {t.showingItems} <strong>{filteredProducts.length}</strong>{" "}
             {t.itemsLabel} • {t.swipePhotosHint}
           </p>
         </div>
 
         {/* Interactive Filter & Search Toolbar */}
-        <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 sm:p-5 shadow-sm space-y-4">
+        <div
+          style={{
+            backgroundColor: currentTheme.colors.bgElevated,
+            borderColor: currentTheme.colors.border,
+          }}
+          className="mb-8 rounded-none border p-4 sm:p-5 shadow-sm space-y-4"
+        >
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             {/* Search Input */}
             <div className="md:col-span-5 relative">
@@ -1438,151 +1389,79 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          {/* Parent categories and their children are deliberately shown in
-              separate levels, matching the hierarchy used by the catalog below. */}
-          <div className="space-y-2 pt-1">
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => setSelectedCategory("all")}
-                aria-pressed={selectedCategory === "all"}
-                style={
-                  selectedCategory === "all"
-                    ? {
-                        backgroundColor: currentTheme.colors.accentPrimary,
-                        borderColor: currentTheme.colors.accentPrimary,
-                        color: "#FFFFFF",
-                      }
-                    : {
-                        backgroundColor: currentTheme.colors.bgSecondary,
-                        borderColor: currentTheme.colors.border,
-                        color: currentTheme.colors.textPrimary,
-                      }
-                }
-                className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-bold transition hover:opacity-85"
-              >
-                <span className="min-w-0 truncate">{t.allCategories}</span>
-                <span className="shrink-0 tabular-nums opacity-75">
-                  ({products.filter((product) => !product.isHidden).length})
-                </span>
-              </button>
+          {/* Keep every category visible without a horizontal scrolling strip. */}
+          <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3 xl:grid-cols-4">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("all")}
+              aria-pressed={selectedCategory === "all"}
+              style={
+                selectedCategory === "all"
+                  ? {
+                      backgroundColor: currentTheme.colors.accentPrimary,
+                      borderColor: currentTheme.colors.accentPrimary,
+                      color: "#FFFFFF",
+                    }
+                  : {
+                      backgroundColor: currentTheme.colors.bgSecondary,
+                      borderColor: currentTheme.colors.border,
+                      color: currentTheme.colors.textPrimary,
+                    }
+              }
+              className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-bold transition hover:opacity-85"
+            >
+              <span className="min-w-0 flex-1 line-clamp-2">{t.allCategories}</span>
+              <span className="shrink-0 tabular-nums opacity-75">
+                ({products.filter((product) => !product.isHidden).length})
+              </span>
+            </button>
 
-              {categories
-                .filter((category) => !category.parentSlug)
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((category) => {
-                  const countInCategory = products.filter(
-                    (product) =>
-                      !product.isHidden &&
-                      getProductParentSlug(product, categoriesBySlug) ===
-                        category.slug
-                  ).length;
-                  const active = selectedCategory === category.slug;
-                  return (
-                    <button
-                      key={category.slug}
-                      type="button"
-                      onClick={() => setSelectedCategory(category.slug)}
-                      aria-pressed={active}
-                      style={
-                        active
-                          ? {
-                              backgroundColor: currentTheme.colors.accentPrimary,
-                              borderColor: currentTheme.colors.accentPrimary,
-                              color: "#FFFFFF",
-                            }
-                          : {
-                              backgroundColor: currentTheme.colors.bgSecondary,
-                              borderColor: currentTheme.colors.border,
-                              color: currentTheme.colors.textPrimary,
-                            }
-                      }
-                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-semibold transition hover:opacity-85"
-                    >
-                      <span className="min-w-0 truncate">
-                        {lang === "ar" ? category.nameAr : category.nameEn}
-                      </span>
-                      <span className="shrink-0 tabular-nums opacity-75">
-                        ({countInCategory})
-                      </span>
-                    </button>
-                  );
-                })}
-            </div>
-
-            {categories
-              .filter((category) => !category.parentSlug)
-              .sort((a, b) => a.sortOrder - b.sortOrder)
-              .map((parent) => {
-                const children = categories
-                  .filter((category) => category.parentSlug === parent.slug)
-                  .sort((a, b) => a.sortOrder - b.sortOrder);
-                if (children.length === 0) return null;
-
-                return (
-                  <div
-                    key={`subcategories-${parent.slug}`}
-                    className="flex flex-wrap items-center gap-1.5 border-s border-gray-200 ps-2 sm:ps-3"
-                  >
-                    <span className="text-[10px] font-bold text-gray-500">
-                      {lang === "ar" ? parent.nameAr : parent.nameEn}:
-                    </span>
-                    {children.map((subcategory) => {
-                      const countInSubcategory = products.filter(
-                        (product) =>
-                          !product.isHidden &&
-                          getProductSubcategorySlug(
-                            product,
-                            categoriesBySlug
-                          ) === subcategory.slug
-                      ).length;
-                      const active = selectedCategory === subcategory.slug;
-                      return (
-                        <button
-                          key={subcategory.slug}
-                          type="button"
-                          onClick={() => setSelectedCategory(subcategory.slug)}
-                          aria-pressed={active}
-                          style={
-                            active
-                              ? {
-                                  backgroundColor: currentTheme.colors.accentPrimary,
-                                  borderColor: currentTheme.colors.accentPrimary,
-                                  color: "#FFFFFF",
-                                }
-                              : {
-                                  backgroundColor: currentTheme.colors.bgSecondary,
-                                  borderColor: currentTheme.colors.border,
-                                  color: currentTheme.colors.textSecondary,
-                                }
-                          }
-                          className="inline-flex max-w-full items-center gap-1 rounded-full border px-2.5 py-1 text-start text-[10px] font-medium transition hover:opacity-85"
-                        >
-                          <span className="min-w-0 truncate">
-                            {lang === "ar"
-                              ? subcategory.nameAr
-                              : subcategory.nameEn}
-                          </span>
-                          <span className="shrink-0 tabular-nums opacity-75">
-                            ({countInSubcategory})
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })}
+            {categories.map((cat) => {
+              const countInCat = products.filter(
+                (product) =>
+                  !product.isHidden &&
+                  productMatchesCategory(product, cat.slug)
+              ).length;
+              const active = selectedCategory === cat.slug;
+              return (
+                <button
+                  key={cat.slug}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.slug)}
+                  aria-pressed={active}
+                  style={
+                    active
+                      ? {
+                          backgroundColor: currentTheme.colors.accentPrimary,
+                          borderColor: currentTheme.colors.accentPrimary,
+                          color: "#FFFFFF",
+                        }
+                      : {
+                          backgroundColor: currentTheme.colors.bgSecondary,
+                          borderColor: currentTheme.colors.border,
+                          color: currentTheme.colors.textPrimary,
+                        }
+                  }
+                  className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-semibold transition hover:opacity-85"
+                >
+                  <span className="min-w-0 flex-1 line-clamp-2">
+                    {lang === "ar" ? cat.nameAr : cat.nameEn}
+                  </span>
+                  <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {[1, 2, 3, 4, 5].map((n) => (
               <div
                 key={n}
                 style={{ backgroundColor: currentTheme.colors.bgSecondary }}
-                className="aspect-[3/4] rounded-lg animate-pulse"
+                className="h-44 sm:h-52 rounded-2xl animate-pulse"
               />
             ))}
           </div>
@@ -1619,177 +1498,89 @@ export default function StorefrontPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {catalogGroups.map(
-              ({ category, items: categoryProducts, subcategories, unassignedItems }) => {
-                const renderProductGrid = (
-                  gridProducts: Product[],
-                  productCategory: Category
-                ) => (
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
-                    {gridProducts.map((product) => {
-                      const inCart =
-                        cart.find((item) => item.product.id === product.id)?.quantity || 0;
-                      return (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          category={productCategory}
-                          lang={lang}
-                          theme={currentTheme}
-                          currencySymbol={currencySymbol}
-                          cartQty={inCart}
-                          onAddToCart={handleAddToCart}
-                          onQuickView={setQuickViewProduct}
-                        />
-                      );
-                    })}
-                  </div>
-                );
-
-                return (
-                  <section
-                    key={category.slug}
-                    id={`catalog-category-${category.slug}`}
-                    className="scroll-mt-28 space-y-3 sm:space-y-4"
-                  >
-                    <div
-                      style={{
-                        backgroundColor: currentTheme.colors.bgElevated,
-                        borderColor: currentTheme.colors.border,
-                      }}
-                      className="flex items-center justify-between gap-3 rounded-2xl border p-3 sm:p-4"
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <CategoryImage
-                          slug={category.slug}
-                          src={category.imageUrl}
-                          alt={lang === "ar" ? category.nameAr : category.nameEn}
-                          className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain p-1"
-                        />
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-extrabold sm:text-base">
-                            {lang === "ar" ? category.nameAr : category.nameEn}
-                          </h3>
-                          <p
-                            style={{ color: currentTheme.colors.textSecondary }}
-                            className="line-clamp-1 text-xs"
-                          >
-                            {lang === "ar" ? category.descriptionAr : category.descriptionEn}
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        style={{
-                          backgroundColor: currentTheme.colors.badgeBg,
-                          color: currentTheme.colors.badgeText,
-                        }}
-                        className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:text-xs"
+            {catalogGroups.map(({ category, items: categoryProducts }) => (
+              <section
+                key={category.slug}
+                id={`catalog-category-${category.slug}`}
+                className="scroll-mt-36 space-y-3 sm:space-y-4"
+              >
+                <div
+                  style={{
+                    backgroundColor: currentTheme.colors.bgElevated,
+                    borderColor: currentTheme.colors.border,
+                  }}
+                  className="flex items-center justify-between gap-3 rounded-2xl border p-3 sm:p-4"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <CategoryImage
+                      slug={category.slug}
+                      src={category.imageUrl}
+                      alt={lang === "ar" ? category.nameAr : category.nameEn}
+                      className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain p-1"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-extrabold sm:text-base">
+                        {lang === "ar" ? category.nameAr : category.nameEn}
+                      </h3>
+                      <p
+                        style={{ color: currentTheme.colors.textSecondary }}
+                        className="line-clamp-1 text-xs"
                       >
-                        {categoryProducts.length} {t.itemsLabel}
-                      </span>
-                    </div>
-
-                    {subcategories.length > 0 ? (
-                      <div className="space-y-5 sm:space-y-6">
-                        {subcategories.map((subcategory) => (
-                          <section
-                            key={subcategory.category.slug}
-                            id={`catalog-subcategory-${subcategory.category.slug}`}
-                            className="scroll-mt-28 space-y-2.5"
-                          >
-                            <div
-                              style={{ borderColor: currentTheme.colors.border }}
-                              className="flex items-center justify-between gap-3 border-b pb-2"
-                            >
-                              <div className="flex min-w-0 items-center gap-2.5">
-                                <CategoryImage
-                                  slug={subcategory.category.slug}
-                                  src={subcategory.category.imageUrl}
-                                  alt={
-                                    lang === "ar"
-                                      ? subcategory.category.nameAr
-                                      : subcategory.category.nameEn
-                                  }
-                                  className="h-9 w-9 shrink-0 rounded-lg border border-gray-100 bg-white object-contain p-1"
-                                />
-                                <div className="min-w-0">
-                                  <h4 className="truncate text-xs font-extrabold sm:text-sm">
-                                    {lang === "ar"
-                                      ? subcategory.category.nameAr
-                                      : subcategory.category.nameEn}
-                                  </h4>
-                                  <p
-                                    style={{ color: currentTheme.colors.textSecondary }}
-                                    className="line-clamp-1 text-[10px] sm:text-xs"
-                                  >
-                                    {lang === "ar"
-                                      ? subcategory.category.descriptionAr
-                                      : subcategory.category.descriptionEn}
-                                  </p>
-                                </div>
-                              </div>
-                              <span
-                                style={{
-                                  backgroundColor: currentTheme.colors.badgeBg,
-                                  color: currentTheme.colors.badgeText,
-                                }}
-                                className="shrink-0 rounded-full px-2 py-1 text-[10px] font-bold"
-                              >
-                                {subcategory.items.length} {t.itemsLabel}
-                              </span>
-                            </div>
-                            {subcategory.items.length > 0 ? (
-                              renderProductGrid(
-                                subcategory.items,
-                                subcategory.category
-                              )
-                            ) : (
-                              <p className="rounded-lg border border-dashed border-gray-200 px-3 py-4 text-center text-xs text-gray-500">
-                                {lang === "ar"
-                                  ? "لا توجد منتجات في هذا القسم حالياً"
-                                  : "No products in this category yet"}
-                              </p>
-                            )}
-                          </section>
-                        ))}
-
-                        {unassignedItems.length > 0 && (
-                          <section className="space-y-2.5">
-                            <h4 className="border-b border-gray-200 pb-2 text-xs font-extrabold sm:text-sm">
-                              {lang === "ar" ? "منتجات أخرى" : "Other products"}
-                              <span className="ms-2 text-[10px] font-semibold text-gray-500">
-                                ({unassignedItems.length})
-                              </span>
-                            </h4>
-                            {renderProductGrid(unassignedItems, category)}
-                          </section>
-                        )}
-                      </div>
-                    ) : categoryProducts.length > 0 ? (
-                      renderProductGrid(categoryProducts, category)
-                    ) : (
-                      <p className="rounded-lg border border-dashed border-gray-200 px-3 py-4 text-center text-xs text-gray-500">
-                        {lang === "ar"
-                          ? "لا توجد منتجات في هذا القسم حالياً"
-                          : "No products in this category yet"}
+                        {lang === "ar" ? category.descriptionAr : category.descriptionEn}
                       </p>
-                    )}
-                  </section>
-                );
-              }
-            )}
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      backgroundColor: currentTheme.colors.badgeBg,
+                      color: currentTheme.colors.badgeText,
+                    }}
+                    className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:text-xs"
+                  >
+                    {categoryProducts.length} {t.itemsLabel}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-3">
+                  {categoryProducts.map((product) => {
+                    const inCart =
+                      cart.find((item) => item.product.id === product.id)?.quantity || 0;
+                    return (
+                      <ProductCard
+                        key={product.sku}
+                        product={product}
+                        category={category}
+                        lang={lang}
+                        theme={currentTheme}
+                        currencySymbol={currencySymbol}
+                        cartQty={inCart}
+                        onAddToCart={handleAddToCart}
+                        onQuickView={setQuickViewProduct}
+                        layout="compact"
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         )}
       </section>
 
       {/* =====================================================================
-          6. MYTEK-STYLE WHOLESALE SECTION
+          6. DEDICATED WHOLESALE & B2B BULK ORDERING SECTION
       ===================================================================== */}
       <section
         id="wholesale-section"
-        className="mx-auto w-full max-w-[1580px] scroll-mt-24 px-2 sm:px-3 lg:px-4 pb-12 sm:pb-20"
+        className="mx-auto w-full max-w-[1760px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
-        <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-8 shadow-sm">
+        <div
+          style={{
+            backgroundColor: currentTheme.colors.bgElevated,
+            borderColor: currentTheme.colors.border,
+          }}
+          className="rounded-none border p-6 sm:p-10 shadow-sm"
+        >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Column: Wholesale Tiers & Conditions */}
             <div className="lg:col-span-7 space-y-6">
@@ -1922,7 +1713,7 @@ export default function StorefrontPage() {
                   className="w-full rounded-none border px-3 py-2.5 text-xs sm:text-sm font-bold outline-none"
                 >
                   {products.map((prod) => (
-                    <option key={prod.id} value={prod.id}>
+                    <option key={prod.sku} value={prod.id}>
                       {lang === "ar" ? prod.titleAr : prod.titleEn} (
                       {formatPrice(prod.wholesalePrice, lang)})
                     </option>
@@ -2038,18 +1829,31 @@ export default function StorefrontPage() {
         theme={currentTheme}
         trackingRequest={trackingRequest}
       />
+      </main>
 
-      {/* =====================================================================
-          7. MYTEK-STYLE DARK FOOTER
-      ===================================================================== */}
-      <footer
-        id="contact-section"
-        className="mt-auto scroll-mt-24 py-8 sm:py-10"
-        style={{backgroundColor: '#1A1A2E', borderTop: '3px solid #E31837'}}
-      >
-        <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-6 sm:gap-8 text-white">
+      <section className="border-y bg-white" style={{ borderColor: currentTheme.colors.border }}>
+        <div className="mx-auto grid max-w-[1760px] grid-cols-2 gap-px bg-neutral-200 lg:grid-cols-4">
+          {[
+            { icon: Truck, title: t.servicesDelivery, sub: t.servicesDeliverySub },
+            { icon: CreditCard, title: t.servicesPayment, sub: t.servicesPaymentSub },
+            { icon: Headphones, title: t.servicesSupport, sub: t.servicesSupportSub },
+            { icon: Building2, title: t.servicesWholesale, sub: t.servicesWholesaleSub },
+          ].map((item) => (
+            <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-4">
+              <item.icon className="h-8 w-8 shrink-0" style={{ color: currentTheme.colors.accentPrimary }} />
+              <div>
+                <div className="text-sm font-extrabold">{item.title}</div>
+                <div className="text-xs text-neutral-500">{item.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="mt-auto bg-[#1a1a1a] py-10 text-white">
+        <div className="mx-auto max-w-[1760px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
-            <h3 className="text-base sm:text-lg font-extrabold text-white">
+            <h3 className="text-lg font-black">
               {settings
                 ? lang === "ar"
                   ? settings.storeNameAr
@@ -2058,7 +1862,7 @@ export default function StorefrontPage() {
                   ? "شركة المنهج للقرطاسية"
                   : "Al Manhaj Company for Stationery"}
             </h3>
-            <p className="text-xs sm:text-sm leading-relaxed text-gray-400">
+            <p className="text-xs sm:text-sm leading-relaxed text-neutral-400">
               {settings
                 ? lang === "ar"
                   ? settings.taglineAr
@@ -2069,75 +1873,70 @@ export default function StorefrontPage() {
               <button
                 type="button"
                 onClick={() => setIsAdminOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-white/20 transition"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white"
               >
-                <ShieldCheck className="h-3.5 w-3.5 text-red-400" />
+                <ShieldCheck className="h-4 w-4" />
                 <span>{t.adminBtn}</span>
               </button>
               <button
                 type="button"
                 onClick={() => goToOrderTracking()}
-                className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-white/20 transition"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white"
               >
-                <PackageSearch className="h-3.5 w-3.5 text-red-400" />
+                <PackageSearch className="h-4 w-4" />
                 <span>{t.trackOrder}</span>
               </button>
             </div>
           </div>
 
-          {/* Keep the footer focused on store-wide shortcuts. Category hierarchy
-              and category-specific links live in the catalog above. */}
+          {/* Quick Departments */}
           <div>
-            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3 text-white">
-              {lang === "ar" ? "تصفح المتجر" : "Browse the store"}
+            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
+              {t.categoriesTitle}
             </h4>
-            <div className="flex flex-col items-start gap-2 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => handleSelectCategoryAndScroll("all")}
-                className="text-start text-gray-400 transition hover:text-red-400"
-              >
-                • {t.catalogMenuAllProducts}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setOnlyPromo(true);
-                  handleSelectCategoryAndScroll("all");
-                }}
-                className="text-start text-gray-400 transition hover:text-red-400"
-              >
-                • {t.navPromotions}
-              </button>
-              <a
-                href="#wholesale-section"
-                className="text-start text-gray-400 transition hover:text-red-400"
-              >
-                • {t.navWholesale}
-              </a>
+            <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+              {topLevelCategories.map((cat) => (
+                <button
+                  key={cat.slug}
+                  type="button"
+                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                  className="text-start hover:underline truncate"
+                >
+                  • {lang === "ar" ? cat.nameAr : cat.nameEn}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Dynamic Contact Details */}
+          {/* Dynamic Contact Details from PostgreSQL */}
           <div className="space-y-2.5 text-xs sm:text-sm">
-            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3 text-white">
+            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
               {t.contactUsTitle}
             </h4>
             <div className="flex items-center gap-2.5">
-              <Phone className="h-4 w-4 shrink-0 text-red-400" />
-              <span className="font-mono font-semibold text-gray-300">
+              <Phone
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4 shrink-0"
+              />
+              <span className="font-mono font-semibold">
                 {settings?.contactPhone || "+218 91-214-5050"}
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <Mail className="h-4 w-4 shrink-0 text-red-400" />
-              <span className="text-gray-400">
+              <Mail
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4 shrink-0"
+              />
+              <span>
                 {settings?.contactEmail || "info@almanhaj.ly"}
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <MapPin className="h-4 w-4 shrink-0 text-red-400" />
-              <span className="text-gray-400">
+              <MapPin
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4 shrink-0"
+              />
+              <span>
                 {settings
                   ? lang === "ar"
                     ? settings.addressAr
@@ -2146,8 +1945,11 @@ export default function StorefrontPage() {
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <Clock className="h-4 w-4 shrink-0 text-red-400" />
-              <span className="text-gray-400">
+              <Clock
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4 shrink-0"
+              />
+              <span>
                 {settings
                   ? lang === "ar"
                     ? settings.workingHoursAr
@@ -2156,32 +1958,45 @@ export default function StorefrontPage() {
               </span>
             </div>
           </div>
+
+          <div>
+            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
+              {lang === "ar" ? "معلومات قانونية" : "Legal"}
+            </h4>
+            <div className="flex flex-col gap-2 text-xs font-semibold text-neutral-300">
+              <a href="/magasin" className="hover:text-white hover:underline">{t.ourStore}</a>
+              <a href="/privacy" className="hover:text-white hover:underline">{t.footerPrivacy}</a>
+              <a href="/terms" className="hover:text-white hover:underline">{t.footerTerms}</a>
+              <a href="/returns" className="hover:text-white hover:underline">{t.footerReturns}</a>
+              <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:text-white hover:underline">{t.footerPaymentProviders}</a>
+            </div>
+          </div>
         </div>
-        {/* ===== CBL / Mawthooq Compliance Bar ===== */}
+        {/* ===== CBL / Mawthooq Compliance Bar (editable from Admin) ===== */}
         {complianceEnabled && (
-          <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 mt-8 pt-5 border-t border-white/10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[10px] sm:text-[11px] leading-5">
+          <div className="mx-auto max-w-[1760px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t border-white/15">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-gray-300">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> {complianceStatus}
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white px-3 py-1.5 font-bold text-neutral-900">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> {complianceStatus}
                 </span>
-                <span className="text-gray-500">
-                  {t.footerCommercialRegistry}: <span className="font-mono font-extrabold text-gray-400">{commercialRegistry}</span> — {t.footerMawthooqLicense}: <span className="font-mono font-extrabold text-gray-400">{mawthooqLicense}</span>
+                <span className="opacity-70">
+                  {t.footerCommercialRegistry}: <span className="font-mono font-extrabold">{commercialRegistry}</span> — {t.footerMawthooqLicense}: <span className="font-mono font-extrabold">{mawthooqLicense}</span>
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-3 font-bold">
-                <a href="/privacy" className="hover:text-red-400 transition text-gray-400">{t.footerPrivacy}</a>
-                <span className="opacity-30 text-white">•</span>
-                <a href="/terms" className="hover:text-red-400 transition text-gray-400">{t.footerTerms}</a>
-                <span className="opacity-30 text-white">•</span>
-                <a href="/returns" className="hover:text-red-400 transition text-gray-400">{t.footerReturns}</a>
-                <span className="opacity-30 text-white">•</span>
-                <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:text-red-400 transition text-gray-400">{t.footerPaymentProviders}</a>
+                <a href="/privacy" className="hover:underline underline-offset-4">{t.footerPrivacy}</a>
+                <span className="opacity-30">•</span>
+                <a href="/terms" className="hover:underline underline-offset-4">{t.footerTerms}</a>
+                <span className="opacity-30">•</span>
+                <a href="/returns" className="hover:underline underline-offset-4">{t.footerReturns}</a>
+                <span className="opacity-30">•</span>
+                <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:underline underline-offset-4">{t.footerPaymentProviders}</a>
               </div>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2 text-[10px] leading-5 text-gray-500">
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px] leading-5 text-neutral-400">
               <span>{paymentNotice}</span>
-              <span className="hidden sm:inline opacity-30 text-white">—</span>
+              <span className="hidden sm:inline opacity-30">—</span>
               <span>{copyrightLine}</span>
             </div>
           </div>
@@ -2189,45 +2004,60 @@ export default function StorefrontPage() {
       </footer>
 
       {/* =====================================================================
-          MOBILE STICKY BOTTOM BAR - MYTEK STYLE
+          MOBILE STICKY BOTTOM BAR (PERFECT ERGONOMICS ON SMARTPHONES)
       ===================================================================== */}
       <nav
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 flex items-center justify-around border-t py-1.5 px-2 shadow-2xl"
-        style={{backgroundColor: '#1A1A2E', borderColor: '#2A2A4A'}}
+        style={{
+          backgroundColor: currentTheme.colors.bgElevated,
+          borderColor: currentTheme.colors.border,
+        }}
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 flex items-center justify-around border-t py-2 px-2 shadow-2xl"
       >
         <button
           type="button"
           onClick={() => setIsCatalogOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
+          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
         >
-          <BookOpen className="h-4.5 w-4.5 text-red-400" />
+          <BookOpen
+            style={{ color: currentTheme.colors.accentPrimary }}
+            className="h-5 w-5"
+          />
           <span>{t.masterCatalog}</span>
         </button>
 
         <a
           href="#wholesale-section"
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
+          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
         >
-          <Layers className="h-4.5 w-4.5 text-red-400" />
+          <Layers
+            style={{ color: currentTheme.colors.accentPrimary }}
+            className="h-5 w-5"
+          />
           <span>{t.wholesalePrice}</span>
         </a>
 
         <button
           type="button"
           onClick={() => goToOrderTracking()}
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
+          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
         >
-          <PackageSearch className="h-4.5 w-4.5 text-red-400" />
+          <PackageSearch
+            style={{ color: currentTheme.colors.accentPrimary }}
+            className="h-5 w-5"
+          />
           <span>{t.trackOrderShort}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setIsCartOpen(true)}
-          className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-md"
-          style={{backgroundColor: '#E31837'}}
+          style={{
+            backgroundColor: currentTheme.colors.accentPrimary,
+            color: "#FFFFFF",
+          }}
+          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-extrabold shadow-md"
         >
-          <ShoppingBag className="h-4 w-4" />
+          <MessageCircle className="h-4 w-4 fill-current" />
           <span>
             {t.cartTitle} ({totalCartUnits})
           </span>
@@ -2236,17 +2066,35 @@ export default function StorefrontPage() {
         <button
           type="button"
           onClick={() => setIsAdminOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
+          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
         >
-          <ShieldCheck className="h-4.5 w-4.5 text-red-400" />
+          <ShieldCheck
+            style={{ color: currentTheme.colors.accentPrimary }}
+            className="h-5 w-5"
+          />
           <span>Admin</span>
         </button>
       </nav>
 
       {/* =====================================================================
-          OVERLAYS: CART DRAWER, QUICK VIEW, ADMIN, WHATSAPP
-          (the vertical catalogue menu lives in the header navigation strip)
+          OVERLAYS: MASTER CATALOGUE DRAWER, CART DRAWER, QUICK VIEW, ADMIN
       ===================================================================== */}
+      <MasterCatalogDrawer
+        isOpen={isCatalogOpen}
+        onClose={() => setIsCatalogOpen(false)}
+        categories={categories}
+        products={products}
+        lang={lang}
+        theme={currentTheme}
+        currencySymbol={currencySymbol}
+        onSelectCategory={handleSelectCategoryAndScroll}
+        onAddToCart={handleAddToCart}
+        onQuickView={(prod) => {
+          setIsCatalogOpen(false);
+          setQuickViewProduct(prod);
+        }}
+      />
+
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
@@ -2296,7 +2144,7 @@ export default function StorefrontPage() {
       />
 
       {/* Cookie Consent - CBL Privacy requirement */}
-      <div id="cookie-banner" className="fixed bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60] hidden">
+      <div id="cookie-banner" className="fixed bottom-20 lg:bottom-4 inset-x-4 lg:inset-x-auto lg:right-4 lg:max-w-md z-[60]" style={{ display: "none" }}>
         <div style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="rounded-none border shadow-2xl p-4 flex flex-col gap-3">
           <p className="text-xs leading-5 font-semibold">نستخدم ملفات ضرورية فقط لتذكر سلتك ولغتك. بالمتابعة أنت توافق على سياسة الخصوصية. <a href="/privacy" className="underline text-amber-700">اقرأ المزيد</a></p>
           <div className="flex gap-2">

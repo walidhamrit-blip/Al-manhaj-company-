@@ -32,6 +32,9 @@ const CATEGORY_FALLBACKS: Record<string, string> = {
   "ink-consumables": "/images/new/toner-01.jpg",
   "art-drafting": "/images/new/markers-48-01.jpg",
   "calculators-tech": "/images/new/calculator-desk-01.jpg",
+  "files-folders": "/images/new/paper-a4-01.jpg",
+  "office-supplies": "/images/new/organizer-walnut-01.jpg",
+  "school-essentials": "/images/new/bag-oslo-01.jpg",
 };
 
 export function getProductImageFallback(
