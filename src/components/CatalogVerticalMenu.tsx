@@ -7,6 +7,10 @@ import { UI_TEXT, formatPrice, type Language } from "@/lib/i18n-themes";
 import { CategoryImage } from "@/components/CategoryImage";
 import { ProductImage } from "@/components/ProductImage";
 import {
+  getProductParentSlug,
+  getProductSubcategorySlug,
+} from "@/lib/category-hierarchy";
+import {
   ArrowRight,
   Check,
   ChevronDown,
@@ -104,6 +108,14 @@ export function CatalogVerticalMenu({
     [products]
   );
 
+  const categoriesBySlug = useMemo(
+    () =>
+      new Map<string, Category>(
+        categories.map((category) => [category.slug, category])
+      ),
+    [categories]
+  );
+
   const topLevelCategories = useMemo(
     () =>
       [...categories]
@@ -135,20 +147,17 @@ export function CatalogVerticalMenu({
         const subcategories = subs.map((sub) => ({
           category: sub,
           items: visibleProducts.filter(
-            (product) => product.subcategorySlug === sub.slug
+            (product) =>
+              getProductSubcategorySlug(product, categoriesBySlug) === sub.slug
           ),
         }));
-        // Products without a subcategorySlug still belong to the parent
-        const unassigned = visibleProducts.filter(
-          (product) =>
-            product.categorySlug === category.slug && !product.subcategorySlug
-        );
         const items = visibleProducts.filter(
-          (product) => product.categorySlug === category.slug
+          (product) =>
+            getProductParentSlug(product, categoriesBySlug) === category.slug
         );
         return { category, items, subcategories };
       }),
-    [topLevelCategories, subcategoriesByParent, visibleProducts]
+    [topLevelCategories, subcategoriesByParent, visibleProducts, categoriesBySlug]
   );
 
   const promoCount = useMemo(
@@ -383,7 +392,7 @@ export function CatalogVerticalMenu({
           const active = activeSlug === category.slug;
           const name = categoryName(category);
           return (
-            <li key={category.id}>
+            <li key={category.slug}>
               <button
                 type="button"
                 role="menuitem"
@@ -659,7 +668,7 @@ export function CatalogVerticalMenu({
             const expanded = expandedSlug === category.slug;
             const name = categoryName(category);
             return (
-              <div key={category.id} className="border-b border-gray-100">
+              <div key={category.slug} className="border-b border-gray-100">
                 <button
                   type="button"
                   aria-expanded={expanded}
