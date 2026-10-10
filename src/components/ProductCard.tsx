@@ -97,20 +97,15 @@ export function ProductCard({
 
   return (
     <div
-      style={{
-        backgroundColor: theme.colors.bgElevated,
-        borderColor: theme.colors.border,
-        color: theme.colors.textPrimary,
-      }}
-      className={`group relative flex ${
+      className={`product-card-mytek group relative flex ${
         isListLayout ? "flex-col sm:flex-row sm:items-stretch" : "flex-col"
-      } rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden`}
+      } rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm`}
     >
-      {/* Image Gallery Container (Scrollable 1 or 2 photos) */}
+      {/* Image Gallery Container */}
       <div
-        className={`relative w-full overflow-hidden bg-neutral-100 ${
+        className={`relative w-full overflow-hidden bg-gray-50 ${
           isListLayout
-            ? "aspect-[16/9] sm:aspect-square sm:h-52 sm:w-52 sm:shrink-0 sm:self-center sm:ms-3 sm:rounded-xl"
+            ? "aspect-[16/9] sm:aspect-square sm:h-48 sm:w-48 sm:shrink-0 sm:self-center sm:ms-3 sm:rounded-lg"
             : "aspect-[16/9]"
         }`}
       >
@@ -135,43 +130,30 @@ export function ProductCard({
           ))}
         </div>
 
-        {/* Top Badges */}
-        <div className="pointer-events-none absolute top-3 inset-x-3 flex items-start justify-between gap-2">
-          <div className="flex flex-wrap gap-1.5">
+        {/* Top Badges - Mytek style */}
+        <div className="pointer-events-none absolute top-2 inset-x-2 flex items-start justify-between gap-1.5">
+          <div className="flex flex-wrap gap-1">
             {discountPct > 0 && (
-              <span
-                style={{
-                  backgroundColor: theme.colors.accentPrimary,
-                  color: "#FFFFFF",
-                }}
-                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm"
-              >
+              <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold text-white shadow-sm" style={{backgroundColor: '#E31837'}}>
                 -{discountPct}%
               </span>
             )}
             {product.isFeatured && (
-              <span
-                style={{
-                  backgroundColor: theme.colors.badgeBg,
-                  color: theme.colors.badgeText,
-                }}
-                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm backdrop-blur-md"
-              >
-                <Sparkles className="h-3 w-3" />
-                {lang === "ar" ? "الأكثر مبيعاً" : "Bestseller"}
+              <span className="inline-flex items-center gap-1 rounded-md bg-[#1A1A2E] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                <Sparkles className="h-2.5 w-2.5" />
+                {lang === "ar" ? "مميز" : "TOP"}
               </span>
             )}
           </div>
 
-          {/* Photo counter badge */}
           {images.length > 1 && (
-            <span className="rounded-full bg-black/65 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-              {activeImageIdx + 1} / {images.length} {t.photoCount}
+            <span className="rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+              {activeImageIdx + 1}/{images.length}
             </span>
           )}
         </div>
 
-        {/* Navigation Arrows for Multi-Image Scroll */}
+        {/* Navigation Arrows */}
         {images.length > 1 && (
           <>
             <button
@@ -181,9 +163,9 @@ export function ProductCard({
                 scrollToImage(activeImageIdx - 1);
               }}
               aria-label="Previous image"
-              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition hover:bg-white active:scale-95"
+              className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-md transition hover:bg-white active:scale-95 opacity-0 group-hover:opacity-100"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
@@ -192,105 +174,46 @@ export function ProductCard({
                 scrollToImage(activeImageIdx + 1);
               }}
               aria-label="Next image"
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition hover:bg-white active:scale-95"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-md transition hover:bg-white active:scale-95 opacity-0 group-hover:opacity-100"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
-
-            {/* Bottom Dots + Quick View Trigger */}
-            <div className="absolute bottom-2.5 inset-x-3 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 backdrop-blur-sm">
-                {images.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => scrollToImage(i)}
-                    aria-label={`View image ${i + 1}`}
-                    className={`h-2 rounded-full transition-all ${
-                      activeImageIdx === i
-                        ? "w-5 bg-white"
-                        : "w-2 bg-white/50 hover:bg-white/80"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onQuickView(product)}
-                className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm transition hover:bg-white"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                <span>{t.viewDetails}</span>
-              </button>
-            </div>
           </>
         )}
 
-        {images.length === 1 && (
-          <button
-            type="button"
-            onClick={() => onQuickView(product)}
-            className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm transition hover:bg-white"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            <span>{t.viewDetails}</span>
-          </button>
-        )}
+        {/* Quick View Button - Mytek style */}
+        <button
+          type="button"
+          onClick={() => onQuickView(product)}
+          className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-800 shadow-sm backdrop-blur-sm transition hover:bg-white opacity-0 group-hover:opacity-100"
+        >
+          <Eye className="h-3 w-3" />
+          <span>{t.viewDetails}</span>
+        </button>
       </div>
 
-      {/* Card Body */}
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
-        {/* Category & Stock Row */}
-        <div className="mb-2 flex items-center justify-between gap-2 text-xs">
-          <span
-            style={{ color: theme.colors.accentPrimary }}
-            className="font-semibold uppercase tracking-wider truncate"
-          >
-            {categoryName}
-          </span>
-
-          {product.stock > 15 ? (
-            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-              <PackageCheck className="h-3.5 w-3.5" />
-              {t.inStock} ({product.stock})
-            </span>
-          ) : product.stock > 0 ? (
-            <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {t.lowStock} ({product.stock})
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 text-rose-600 font-semibold">
-              {t.outOfStock}
-            </span>
-          )}
-        </div>
+      {/* Card Body - Mytek style clean layout */}
+      <div className="flex flex-1 flex-col p-3">
+        {/* Category Label */}
+        <span className="text-[9px] font-bold uppercase tracking-wider text-red-600 mb-0.5 truncate">
+          {categoryName}
+        </span>
 
         {/* Product Title */}
         <h3
           onClick={() => onQuickView(product)}
-          className="cursor-pointer text-base sm:text-lg font-bold leading-snug line-clamp-2 mb-1.5 hover:opacity-80 transition-opacity"
+          className="cursor-pointer text-[12px] sm:text-sm font-bold leading-snug line-clamp-2 mb-1 text-gray-900 hover:text-red-700 transition-colors"
         >
           {title}
         </h3>
 
-        {/* Short product summary with expandable reading details */}
-        <div className="mb-3 flex-1">
-          <p
-            style={{ color: theme.colors.textSecondary }}
-            className={`text-xs sm:text-sm leading-relaxed ${detailsExpanded ? "" : "line-clamp-1"}`}
-          >
+        {/* Description (collapsible) */}
+        <div className="mb-2 flex-1">
+          <p className={`text-[10px] sm:text-[11px] leading-relaxed text-gray-500 ${detailsExpanded ? "" : "line-clamp-1"}`}>
             {description}
           </p>
           {detailsExpanded && specs && (
-            <p
-              style={{
-                backgroundColor: theme.colors.bgSecondary,
-                color: theme.colors.textSecondary,
-              }}
-              className="mt-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium"
-            >
+            <p className="mt-1.5 rounded-md bg-gray-50 px-2 py-1 text-[10px] font-medium text-gray-600">
               {specs}
             </p>
           )}
@@ -298,68 +221,64 @@ export function ProductCard({
             type="button"
             aria-expanded={detailsExpanded}
             onClick={() => setDetailsExpanded((expanded) => !expanded)}
-            style={{ color: theme.colors.accentPrimary }}
-            className="mt-1.5 text-xs font-bold underline underline-offset-2"
+            className="mt-1 text-[10px] font-bold text-red-600 hover:text-red-700 transition"
           >
             {detailsExpanded ? t.hideDetails : t.readDetails}
           </button>
         </div>
 
-        {/* Retail price stays visible; wholesale pricing is disclosed on request. */}
-        <div className="mb-3 space-y-1.5">
-          <div
-            style={{
-              backgroundColor: theme.colors.bgSecondary,
-              borderColor: theme.colors.border,
-            }}
-            className="rounded-xl border p-2.5"
-          >
-            <span
-              style={{ color: theme.colors.textSecondary }}
-              className="block text-[11px] font-medium"
-            >
-              {t.retailPrice}
+        {/* Price Section - Mytek prominent style */}
+        <div className="mb-2">
+          <div className="flex items-baseline gap-1.5">
+            <span dir="ltr" className="text-sm sm:text-base font-extrabold text-gray-900">
+              {formatPrice(product.price, lang)}
             </span>
-            <div className="flex items-baseline gap-1.5">
-              <span dir="ltr" className="text-base sm:text-lg font-extrabold tabular-nums">
-                {formatPrice(product.price, lang)}
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span dir="ltr" className="text-[10px] sm:text-xs line-through text-gray-400">
+                {formatPrice(product.originalPrice, lang)}
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
-                <span
-                  style={{ color: theme.colors.textSecondary }}
-                  dir="ltr"
-                  className="text-xs line-through opacity-75 tabular-nums"
-                >
-                  {formatPrice(product.originalPrice, lang)}
-                </span>
-              )}
-            </div>
+            )}
+          </div>
+          {/* Stock indicator */}
+          <div className="mt-0.5">
+            {product.stock > 15 ? (
+              <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] text-emerald-600 font-semibold">
+                <PackageCheck className="h-3 w-3" />
+                {t.inStock}
+              </span>
+            ) : product.stock > 0 ? (
+              <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] text-amber-600 font-semibold">
+                <AlertTriangle className="h-3 w-3" />
+                {t.lowStock} ({product.stock})
+              </span>
+            ) : (
+              <span className="text-[9px] sm:text-[10px] text-red-600 font-semibold">
+                {t.outOfStock}
+              </span>
+            )}
           </div>
           <WholesalePriceDisclosure product={product} lang={lang} theme={theme} compact />
         </div>
 
-        {/* Action Buttons: Add Retail (+1) & Add Wholesale Pack */}
-        <div className="grid grid-cols-5 gap-2">
+        {/* Action Buttons - Mytek style */}
+        <div className="flex gap-1.5">
           <button
             type="button"
             disabled={product.stock <= 0}
             onClick={() => triggerAdd(1)}
+            className="flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 px-2 text-[10px] sm:text-[11px] font-bold text-white shadow-sm transition hover:opacity-95 active:scale-[0.98] disabled:opacity-40"
             style={{
-              backgroundColor: justAdded
-                ? "#059669"
-                : theme.colors.accentPrimary,
-              color: "#FFFFFF",
+              backgroundColor: justAdded ? "#059669" : "#E31837",
             }}
-            className="col-span-3 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold shadow-sm transition hover:opacity-95 active:scale-[0.98] disabled:opacity-40"
           >
             {justAdded ? (
               <>
-                <Check className="h-4 w-4" />
-                <span>{lang === "ar" ? "تمت الإضافة!" : "Added!"}</span>
+                <Check className="h-3.5 w-3.5" />
+                <span>{lang === "ar" ? "تمت!" : "Added!"}</span>
               </>
             ) : (
               <>
-                <ShoppingBag className="h-4 w-4 shrink-0" />
+                <ShoppingBag className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">
                   {t.addToCart}
                   {cartQty > 0 ? ` (${cartQty})` : ""}
@@ -372,19 +291,11 @@ export function ProductCard({
             type="button"
             disabled={product.stock <= 0}
             onClick={() => triggerAdd(product.wholesaleMinQty)}
-            style={{
-              borderColor: theme.colors.border,
-              backgroundColor: theme.colors.bgElevated,
-              color: theme.colors.textPrimary,
-            }}
             title={`${t.addWholesaleMin} (+${product.wholesaleMinQty})`}
-            className="col-span-2 flex items-center justify-center gap-1 rounded-xl border py-2 px-2 text-xs font-semibold transition hover:opacity-80 active:scale-[0.98] disabled:opacity-40"
+            className="flex items-center justify-center gap-1 rounded-md border border-gray-200 py-1.5 px-2 text-[10px] font-semibold text-gray-700 transition hover:bg-gray-50 active:scale-[0.98] disabled:opacity-40"
           >
-            <Layers
-              style={{ color: theme.colors.accentPrimary }}
-              className="h-3.5 w-3.5 shrink-0"
-            />
-            <span className="truncate">+{product.wholesaleMinQty} {lang === "ar" ? "جملة" : "Bulk"}</span>
+            <Layers className="h-3 w-3 shrink-0 text-red-500" />
+            <span className="truncate">+{product.wholesaleMinQty}</span>
           </button>
         </div>
       </div>

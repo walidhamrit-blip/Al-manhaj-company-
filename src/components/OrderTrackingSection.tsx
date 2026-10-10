@@ -152,45 +152,24 @@ export function OrderTrackingSection({
   return (
     <section
       id="order-tracking"
-      style={{
-        backgroundColor: theme.colors.bgPrimary,
-        color: theme.colors.textPrimary,
-        borderColor: theme.colors.border,
-      }}
-      className="scroll-mt-24 border-t px-3 py-12 sm:px-5 sm:py-16"
+      className="scroll-mt-24 border-t border-gray-200 px-3 py-10 sm:px-5 sm:py-14 bg-gray-50"
     >
       <div className="mx-auto max-w-[1280px]">
-        <div className="mb-7 flex flex-col gap-4 sm:mb-9 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
-            <div
-              style={{ color: theme.colors.accentPrimary }}
-              className="mb-2 inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em]"
-            >
-              <PackageSearch className="h-4 w-4" />
+            <div className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-red-600">
+              <PackageSearch className="h-3.5 w-3.5" />
               {isAr ? "خدمة متابعة الطلبات" : "ORDER CARE"}
             </div>
-            <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+            <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl text-gray-900">
               {t.trackOrderTitle}
             </h2>
-            <p
-              style={{ color: theme.colors.textSecondary }}
-              className="mt-2 max-w-xl text-sm leading-6"
-            >
+            <p className="mt-1.5 max-w-xl text-[11px] sm:text-sm leading-5 text-gray-500">
               {t.trackOrderSubtitle}
             </p>
           </div>
-          <div
-            style={{
-              backgroundColor: theme.colors.bgSecondary,
-              borderColor: theme.colors.border,
-              color: theme.colors.textSecondary,
-            }}
-            className="flex max-w-md items-start gap-2.5 rounded-xl border px-3.5 py-3 text-xs leading-5"
-          >
-            <ClipboardCheck
-              style={{ color: theme.colors.accentPrimary }}
-              className="mt-0.5 h-4 w-4 shrink-0"
-            />
+          <div className="flex max-w-md items-start gap-2.5 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-[11px] leading-4 text-gray-600">
+            <ClipboardCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
             <span>{t.trackOrderPrivacy}</span>
           </div>
         </div>

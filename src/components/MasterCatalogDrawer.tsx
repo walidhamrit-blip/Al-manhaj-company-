@@ -94,34 +94,25 @@ export function MasterCatalogDrawer({
         }}
         className="relative z-10 flex h-full w-full max-w-4xl flex-col border-e shadow-2xl overflow-hidden"
       >
-        {/* Header */}
+        {/* Header - Mytek dark style */}
         <div
-          style={{
-            backgroundColor: theme.colors.bgElevated,
-            borderColor: theme.colors.border,
-          }}
-          className="flex flex-col gap-4 border-b p-4 sm:p-6"
+          className="flex flex-col gap-4 p-4 sm:p-6"
+          style={{backgroundColor: '#1A1A2E', borderBottom: '3px solid #E31837'}}
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div
-                style={{
-                  backgroundColor: theme.colors.accentPrimary,
-                  color: "#FFFFFF",
-                }}
-                className="flex h-11 w-11 items-center justify-center rounded-xl shadow-md"
+                className="flex h-10 w-10 items-center justify-center rounded-md shadow-sm"
+                style={{backgroundColor: '#E31837', color: '#FFFFFF'}}
               >
-                <BookOpen className="h-6 w-6" />
+                <BookOpen className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-extrabold tracking-tight">
+                <h2 className="text-base sm:text-lg font-extrabold tracking-tight text-white">
                   {t.masterCatalog} ({products.length}{" "}
                   {lang === "ar" ? "منتج" : "SKUs"})
                 </h2>
-                <p
-                  style={{ color: theme.colors.textSecondary }}
-                  className="text-xs sm:text-sm"
-                >
+                <p className="text-[11px] sm:text-xs text-gray-400">
                   {t.catalogSubtitle}
                 </p>
               </div>
@@ -130,35 +121,23 @@ export function MasterCatalogDrawer({
             <button
               type="button"
               onClick={onClose}
-              style={{
-                backgroundColor: theme.colors.bgSecondary,
-                color: theme.colors.textPrimary,
-              }}
-              className="flex h-10 w-10 items-center justify-center rounded-xl transition hover:opacity-80"
+              className="flex h-9 w-9 items-center justify-center rounded-md bg-white/10 text-white transition hover:bg-white/20"
               aria-label={t.closeBtn}
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Search & Department Jump Bar */}
+          {/* Search Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search
-                style={{ color: theme.colors.textSecondary }}
-                className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4"
-              />
+              <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                style={{
-                  backgroundColor: theme.colors.bgSecondary,
-                  borderColor: theme.colors.border,
-                  color: theme.colors.textPrimary,
-                }}
-                className="w-full rounded-xl border py-2.5 ps-10 pe-4 text-sm outline-none focus:ring-2"
+                className="w-full rounded-md border border-white/20 bg-white/10 py-2.5 ps-10 pe-4 text-sm text-white placeholder-gray-400 outline-none focus:border-red-500 focus:bg-white focus:text-gray-900 transition"
               />
             </div>
           </div>

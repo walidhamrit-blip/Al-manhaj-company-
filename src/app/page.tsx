@@ -540,49 +540,34 @@ export default function StorefrontPage() {
       }}
       className="min-h-screen flex flex-col transition-colors duration-300 pb-20 lg:pb-0"
     >
-      {/* ===== PAPER SOURCE TOP BAR (editable from Admin → Store & homepage) ===== */}
+      {/* ===== MYTEK-STYLE TOP ANNOUNCEMENT BAR ===== */}
       {announcementEnabled && (
-        <div className="w-full bg-black text-white text-center py-2 text-[11px] sm:text-xs font-semibold tracking-widest uppercase">
+        <div className="w-full text-center py-1.5 text-[10px] sm:text-[11px] font-semibold tracking-wide" style={{backgroundColor: '#1A1A2E', color: '#FFFFFF'}}>
           <span className="hidden sm:inline">{announcementText}</span>
           <span className="sm:hidden">{announcementShort}</span>
           {announcementNote ? (
-            <span className="opacity-60 font-normal normal-case tracking-normal hidden md:inline">
-              {" "}
-              &nbsp;•&nbsp; {announcementNote}
+            <span className="opacity-70 font-normal hidden md:inline">
+              {" "}&nbsp;|&nbsp; {announcementNote}
             </span>
           ) : null}
         </div>
       )}
-      {/* ===== PAPER SOURCE HEADER - Minimal White ===== */}
+      {/* ===== MYTEK-STYLE HEADER - Dark Navy Modern ===== */}
       <header
         style={{
-          backgroundColor: "#FFFFFF",
-          borderColor: "#E8E6E1",
+          backgroundColor: "#1A1A2E",
+          borderColor: "#2A2A4A",
         }}
-        className="sticky top-0 z-40 border-b bg-white"
+        className="sticky top-0 z-40 border-b"
       >
-        <div className="mx-auto flex max-w-[1580px] items-center justify-between gap-2 sm:gap-4 px-2 sm:px-3 lg:px-4 py-3">
-          {/* Top-Corner Master Catalogue Button + Brand Identity */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5">
-            <button
-              type="button"
-              onClick={() => setIsCatalogOpen(true)}
-              style={{
-                backgroundColor: "#111111",
-                color: "#FFFFFF",
-              }}
-              className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold tracking-widest uppercase transition hover:bg-black active:scale-95"
-              title={t.masterCatalog}
-            >
-              <BookOpen className="h-3.5 w-3.5 shrink-0" />
-              <span>{t.masterCatalog}</span>
-            </button>
-
+        <div className="mx-auto flex max-w-[1580px] items-center justify-between gap-2 sm:gap-4 px-2 sm:px-3 lg:px-4 py-2 sm:py-2.5">
+          {/* Brand Identity */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <a
               href="#top"
               className="flex flex-col leading-tight hover:opacity-80 transition"
             >
-              <span style={{fontFamily: "'Cormorant Garamond','Playfair Display',serif"}} className="text-base sm:text-xl font-semibold tracking-tight truncate max-w-[190px] sm:max-w-xs lg:max-w-none">
+              <span className="text-white text-sm sm:text-lg font-extrabold tracking-wide truncate max-w-[180px] sm:max-w-xs lg:max-w-none">
                 {settings
                   ? lang === "ar"
                     ? settings.storeNameAr
@@ -591,21 +576,15 @@ export default function StorefrontPage() {
                     ? "شركة المنهج للقرطاسية"
                     : "AL-MANHAJ"}
               </span>
-              <span
-                style={{ color: "#6B6B6B" }}
-                className="hidden md:block text-[10px] font-medium tracking-[0.14em] uppercase truncate max-w-xs"
-              >
+              <span className="text-gray-400 text-[9px] sm:text-[10px] font-medium tracking-wider uppercase hidden md:block truncate max-w-xs">
                 {headerTagline}
               </span>
             </a>
           </div>
 
           {/* Quick Search Bar in Header (Desktop) */}
-          <div className="hidden lg:flex relative flex-1 max-w-md mx-4">
-            <Search
-              style={{ color: currentTheme.colors.textSecondary }}
-              className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4"
-            />
+          <div className="hidden lg:flex relative flex-1 max-w-xl mx-4">
+            <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
@@ -618,34 +597,21 @@ export default function StorefrontPage() {
                 }
               }}
               placeholder={t.searchPlaceholder}
-              style={{
-                backgroundColor: "#FAFAF8",
-                borderColor: "#E8E6E1",
-                color: "#111111",
-              }}
-              className="w-full rounded-full border py-2 ps-10 pe-4 text-xs font-medium outline-none focus:border-black focus:bg-white transition"
+              className="w-full rounded-md py-2 ps-10 pe-4 text-xs font-medium outline-none transition bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white focus:text-gray-900 focus:border-red-500"
             />
           </div>
 
-          {/* Right Utility Controls: 6 Themes, EN/AR Switcher, Admin, Cart */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* 6-Theme Selector Dropdown */}
+          {/* Right Utility Controls */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Theme Selector */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsThemeMenuOpen((prev) => !prev)}
-                style={{
-                  backgroundColor: currentTheme.colors.bgSecondary,
-                  borderColor: currentTheme.colors.border,
-                  color: currentTheme.colors.textPrimary,
-                }}
-                className="flex items-center gap-1.5 rounded-none border px-2.5 sm:px-3 py-2 text-xs font-bold transition hover:opacity-85"
+                className="flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-xs font-bold text-white transition hover:bg-white/20"
                 title={t.themeSelectorTitle}
               >
-                <Palette
-                  style={{ color: currentTheme.colors.accentPrimary }}
-                  className="h-4 w-4"
-                />
+                <Palette className="h-3.5 w-3.5 text-red-400" />
                 <span className="hidden xl:inline">
                   {lang === "ar" ? currentTheme.nameAr : currentTheme.nameEn}
                 </span>
@@ -658,14 +624,9 @@ export default function StorefrontPage() {
                     className="fixed inset-0 z-30"
                   />
                   <div
-                    style={{
-                      backgroundColor: currentTheme.colors.bgElevated,
-                      borderColor: currentTheme.colors.border,
-                      color: currentTheme.colors.textPrimary,
-                    }}
-                    className="absolute end-0 mt-2 z-40 w-72 rounded-none border p-3 shadow-2xl space-y-1.5"
+                    className="absolute end-0 mt-2 z-40 w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-2xl space-y-1.5"
                   >
-                    <div className="px-2 py-1 text-xs font-extrabold uppercase tracking-wider opacity-70">
+                    <div className="px-2 py-1 text-xs font-extrabold uppercase tracking-wider text-gray-500">
                       {t.themeSelectorTitle} (6 Themes)
                     </div>
                     {THEMES.map((th) => {
@@ -676,21 +637,16 @@ export default function StorefrontPage() {
                           type="button"
                           onClick={() => handleSelectTheme(th.id)}
                           style={{
-                            backgroundColor: active
-                              ? currentTheme.colors.bgSecondary
-                              : "transparent",
-                            borderColor: active
-                              ? currentTheme.colors.accentPrimary
-                              : "transparent",
+                            backgroundColor: active ? "#FFF0F0" : "transparent",
+                            borderColor: active ? "#E31837" : "transparent",
                           }}
-                          className="flex w-full items-center justify-between gap-3 rounded-none border px-3 py-2 text-start transition hover:opacity-90"
+                          className="flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-start transition hover:bg-gray-50"
                         >
                           <div className="flex items-center gap-2.5">
-                            {/* Swatch Preview */}
                             <div className="flex -space-x-1 rtl:space-x-reverse">
                               <span
                                 style={{ backgroundColor: th.colors.bgPrimary }}
-                                className="h-5 w-5 rounded-full border border-black/20"
+                                className="h-5 w-5 rounded-full border border-gray-200"
                               />
                               <span
                                 style={{
@@ -706,26 +662,16 @@ export default function StorefrontPage() {
                               />
                             </div>
                             <div>
-                              <div className="text-xs font-bold">
+                              <div className="text-xs font-bold text-gray-900">
                                 {lang === "ar" ? th.nameAr : th.nameEn}
                               </div>
-                              <div
-                                style={{
-                                  color: currentTheme.colors.textSecondary,
-                                }}
-                                className="text-[10px]"
-                              >
+                              <div className="text-[10px] text-gray-500">
                                 {lang === "ar" ? th.subtitleAr : th.subtitleEn}
                               </div>
                             </div>
                           </div>
                           {active && (
-                            <Check
-                              style={{
-                                color: currentTheme.colors.accentPrimary,
-                              }}
-                              className="h-4 w-4 shrink-0"
-                            />
+                            <Check className="h-4 w-4 shrink-0 text-red-600" />
                           )}
                         </button>
                       );
@@ -735,72 +681,57 @@ export default function StorefrontPage() {
               )}
             </div>
 
-            {/* Bilingual Language Toggle (EN <-> AR with auto RTL) */}
+            {/* Bilingual Language Toggle */}
             <button
               type="button"
               onClick={() => setLang((prev) => (prev === "en" ? "ar" : "en"))}
-              style={{
-                backgroundColor: currentTheme.colors.bgSecondary,
-                borderColor: currentTheme.colors.border,
-                color: currentTheme.colors.textPrimary,
-              }}
-              className="flex items-center gap-1.5 rounded-none border px-2.5 sm:px-3 py-2 text-xs font-extrabold transition hover:opacity-85"
+              className="flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-xs font-extrabold text-white transition hover:bg-white/20"
               title="Switch Language (English / العربية)"
             >
-              <Globe
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4"
-              />
-              <span>{lang === "en" ? "العربية" : "English"}</span>
+              <Globe className="h-3.5 w-3.5 text-red-400" />
+              <span>{lang === "en" ? "العربية" : "EN"}</span>
             </button>
 
-            {/* Order Tracking Shortcut */}
+            {/* Order Tracking */}
             <button
               type="button"
               onClick={() => goToOrderTracking()}
-              style={{
-                backgroundColor: currentTheme.colors.bgSecondary,
-                borderColor: currentTheme.colors.border,
-                color: currentTheme.colors.textPrimary,
-              }}
-              className="hidden lg:flex items-center gap-1.5 rounded-none border px-3 py-2 text-xs font-bold transition hover:opacity-85"
+              className="hidden lg:flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-2.5 py-1.5 text-[10px] sm:text-xs font-bold text-white transition hover:bg-white/20"
             >
-              <PackageSearch
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4"
-              />
+              <PackageSearch className="h-3.5 w-3.5 text-red-400" />
               <span>{t.trackOrder}</span>
             </button>
 
-            {/* Secured Admin Button */}
+            {/* Admin Button */}
             <button
               type="button"
               onClick={() => setIsAdminOpen(true)}
-              style={{
-                backgroundColor: currentTheme.colors.bgSecondary,
-                borderColor: currentTheme.colors.border,
-                color: currentTheme.colors.textPrimary,
-              }}
-              className="hidden sm:flex items-center gap-1.5 rounded-none border px-3 py-2 text-xs font-bold transition hover:opacity-85"
+              className="hidden sm:flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-2.5 py-1.5 text-[10px] sm:text-xs font-bold text-white transition hover:bg-white/20"
             >
-              <ShieldCheck
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4"
-              />
+              <ShieldCheck className="h-3.5 w-3.5 text-red-400" />
               <span>{t.adminBtn}</span>
             </button>
 
-            {/* Cart Button with Live Badge */}
+            {/* Master Catalog Button */}
+            <button
+              type="button"
+              onClick={() => setIsCatalogOpen(true)}
+              className="hidden md:flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[10px] sm:text-xs font-bold text-white transition hover:opacity-90"
+              style={{backgroundColor: '#E31837'}}
+              title={t.masterCatalog}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>{t.masterCatalog}</span>
+            </button>
+
+            {/* Cart Button */}
             <button
               type="button"
               onClick={() => setIsCartOpen(true)}
-              style={{
-                backgroundColor: currentTheme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="relative flex items-center gap-2 rounded-none px-3 sm:px-4 py-2 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95 active:scale-95"
+              className="relative flex items-center gap-1.5 rounded-md px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-extrabold text-white shadow-sm transition hover:opacity-95 active:scale-95"
+              style={{backgroundColor: '#E31837'}}
             >
-              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+              <ShoppingBag className="h-4 w-4 sm:h-4 sm:w-4" />
               <span className="tabular-nums">{totalCartUnits}</span>
             </button>
           </div>
@@ -808,107 +739,144 @@ export default function StorefrontPage() {
       </header>
 
       {/* =====================================================================
-          0. COMPANY STOREFRONT BACKGROUND WITH KEN BURNS ZOOM
+          0. MYTEK-STYLE HERO BANNER
       ===================================================================== */}
       <section
         id="top"
-        className="relative w-full overflow-hidden h-[64vh] min-h-[420px] sm:h-[78vh] sm:min-h-[560px] max-h-[860px]"
+        className="relative w-full overflow-hidden"
       >
-        <img
-          src={storefront.image}
-          alt={storefront.title}
-          className="absolute inset-0 h-full w-full object-cover kenburns-bg"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-white/5" />
+        {/* Full-width hero banner image */}
+        <div className="relative w-full h-[220px] sm:h-[340px] lg:h-[440px]">
+          <img
+            src={storefront.image}
+            alt={storefront.title}
+            className="absolute inset-0 h-full w-full object-cover kenburns-bg"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-[1580px] flex-col justify-end px-2 sm:px-4 lg:px-6 pb-6 sm:pb-10 text-white">
-          <div className="max-w-3xl space-y-3 sm:space-y-5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-black/35 px-3.5 py-1.5 text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.18em] text-amber-200 backdrop-blur-md">
-              <MapPin className="h-3.5 w-3.5" />
-              {storefront.badge}
-            </span>
+          <div className="relative z-10 mx-auto flex h-full w-full max-w-[1580px] flex-col justify-end px-3 sm:px-6 lg:px-8 pb-4 sm:pb-8 text-white">
+            <div className="max-w-2xl space-y-2 sm:space-y-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white" style={{backgroundColor: '#E31837'}}>
+                <MapPin className="h-3 w-3" />
+                {storefront.badge}
+              </span>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight drop-shadow-none">
-              {storefront.title}
-            </h1>
-            <p className="text-sm sm:text-xl font-bold tracking-[0.12em] text-amber-300/95 uppercase">
-              {storefront.subtitle}
-            </p>
+              <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold leading-tight">
+                {storefront.title}
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-red-300 uppercase tracking-wide">
+                {storefront.subtitle}
+              </p>
+              <p className="text-[11px] sm:text-sm text-white/80 leading-relaxed max-w-lg hidden sm:block">
+                {storefront.description}
+              </p>
 
-            <p className="text-sm sm:text-lg text-white/90 leading-relaxed max-w-2xl">
-              {storefront.description}
-            </p>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWaPanelMessage(
+                      lang === "ar"
+                        ? "مرحباً شركة المنهج للقرطاسية، أود الاستفسار عن منتجاتكم."
+                        : "Hello Al Manhaj Company for Stationery, I would like to ask about your products."
+                    );
+                    setWaPanelOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-[#25D366] px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-extrabold text-white transition hover:bg-[#1EBE5D]"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 fill-current" />
+                  <span dir="ltr">{contactPhoneDisplay}</span>
+                </button>
 
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setWaPanelMessage(
-                    lang === "ar"
-                      ? "مرحباً شركة المنهج للقرطاسية، أود الاستفسار عن منتجاتكم."
-                      : "Hello Al Manhaj Company for Stationery, I would like to ask about your products."
-                  );
-                  setWaPanelOpen(true);
-                }}
-                className="inline-flex items-center gap-2 rounded-none bg-[#25D366] px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-white shadow-none transition hover:bg-[#1EBE5D]"
-              >
-                <MessageCircle className="h-4 w-4 fill-current" />
-                <span dir="ltr">{contactPhoneDisplay}</span>
-              </button>
+                <a
+                  href={`tel:+${whatsappDigits}`}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold text-white transition"
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  <span>{lang === "ar" ? "اتصل الآن" : "Call now"}</span>
+                </a>
 
-              <a
-                href={`tel:+${whatsappDigits}`}
-                className="inline-flex items-center gap-2 rounded-none bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white transition"
-              >
-                <Phone className="h-4 w-4" />
-                <span>{lang === "ar" ? "اتصل الآن" : "Call now"}</span>
-              </a>
-
-              <button
-                type="button"
-                onClick={() => setIsCatalogOpen(true)}
-                className="inline-flex items-center gap-2 rounded-none bg-amber-500 hover:bg-amber-400 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold text-slate-950 shadow-none transition"
-              >
-                <BookOpen className="h-4 w-4" />
-                <span>{t.masterCatalog}</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCatalogOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-extrabold text-white transition hover:opacity-90"
+                  style={{backgroundColor: '#E31837'}}
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>{t.masterCatalog}</span>
+                </button>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Quick category strip below hero (Mytek style) */}
+        <div className="w-full border-b" style={{backgroundColor: '#F5F5F5', borderColor: '#E0E0E0'}}>
+          <div className="mx-auto max-w-[1580px] flex items-center gap-1 overflow-x-auto no-scrollbar px-2 sm:px-4 py-2">
+            <button
+              type="button"
+              onClick={() => handleSelectCategoryAndScroll("all")}
+              className="shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] sm:text-[11px] font-bold transition hover:shadow-sm"
+              style={{
+                backgroundColor: selectedCategory === "all" ? '#E31837' : '#FFFFFF',
+                color: selectedCategory === "all" ? '#FFFFFF' : '#1A1A1A',
+                border: selectedCategory === "all" ? '1px solid #E31837' : '1px solid #E0E0E0',
+              }}
+            >
+              {t.allCategories}
+            </button>
+            {categories.slice(0, 8).map((cat) => {
+              const active = selectedCategory === cat.slug;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                  className="shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] sm:text-[11px] font-bold transition hover:shadow-sm"
+                  style={{
+                    backgroundColor: active ? '#E31837' : '#FFFFFF',
+                    color: active ? '#FFFFFF' : '#1A1A1A',
+                    border: active ? '1px solid #E31837' : '1px solid #E0E0E0',
+                  }}
+                >
+                  {lang === "ar" ? cat.nameAr : cat.nameEn}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ===== PAPER SOURCE HERO - Editorial Minimal ===== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pt-6 sm:pt-8">
-        <div className="relative h-[420px] sm:h-[480px] lg:h-[520px] w-full overflow-hidden rounded-none border border-[#E8E6E1] bg-white">
+      {/* ===== MYTEK-STYLE HERO SLIDER ===== */}
+      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pt-4 sm:pt-6">
+        <div className="relative h-[200px] sm:h-[320px] lg:h-[400px] w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           {/* Slide Image */}
           <img
             src={currentHero.imageUrl}
             alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
             className="h-full w-full object-cover transition-all duration-700"
           />
-          {/* Soft Paper Source overlay - white bottom for text */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent opacity-95" />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-transparent hidden sm:block" />
+          {/* Mytek-style overlay - strong gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
 
-          {/* Slide Content - Paper Source editorial centered */}
-          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-12">
-            <div className="max-w-2xl space-y-3 sm:space-y-3">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-black border border-black px-3 py-1 bg-white/80 backdrop-blur">
+          {/* Slide Content - Mytek style with prominent CTA */}
+          <div className="absolute inset-0 flex flex-col justify-center p-6 sm:p-10 lg:p-12">
+            <div className="max-w-lg space-y-2 sm:space-y-3">
+              <span className="inline-block rounded-full px-3 py-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white" style={{backgroundColor: '#E31837'}}>
                 {lang === "ar" ? currentHero.badgeAr : currentHero.badgeEn}
               </span>
 
-              <h1 style={{fontFamily: "'Cormorant Garamond','Playfair Display',serif"}} className="text-3xl sm:text-4xl lg:text-[44px] font-medium leading-tight tracking-tight text-black">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-tight text-white drop-shadow-lg">
                 {lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-              </h1>
+              </h2>
 
-              <p className="text-xs sm:text-[13px] text-[#6B6B6B] leading-relaxed max-w-xl font-medium">
+              <p className="text-[11px] sm:text-sm text-white/90 leading-relaxed max-w-md font-medium">
                 {lang === "ar"
                   ? currentHero.subtitleAr
                   : currentHero.subtitleEn}
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() =>
@@ -916,7 +884,8 @@ export default function StorefrontPage() {
                       currentHero.targetCategory || "all"
                     )
                   }
-                  className="inline-flex items-center gap-2 bg-black text-white px-6 py-2.5 text-xs font-semibold tracking-widest uppercase hover:bg-zinc-800 transition"
+                  className="inline-flex items-center gap-1.5 rounded-md px-4 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-extrabold text-white transition hover:opacity-90 shadow-lg"
+                  style={{backgroundColor: '#E31837'}}
                 >
                   <span>
                     {lang === "ar" ? currentHero.ctaAr : currentHero.ctaEn}
@@ -929,7 +898,7 @@ export default function StorefrontPage() {
                 <button
                   type="button"
                   onClick={() => setIsCatalogOpen(true)}
-                  className="inline-flex items-center gap-2 bg-white border border-black text-black px-6 py-2.5 text-xs font-semibold tracking-widest uppercase hover:bg-black hover:text-white transition"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 px-4 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold text-white transition"
                 >
                   <span>{t.masterCatalog}</span>
                 </button>
@@ -948,9 +917,9 @@ export default function StorefrontPage() {
                   )
                 }
                 aria-label="Previous slide"
-                className="absolute top-1/2 -translate-y-1/2 left-3 sm:left-5 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md hover:bg-black/70 transition"
+                className="absolute top-1/2 -translate-y-1/2 left-2 sm:left-4 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-black/70 transition"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <button
                 type="button"
@@ -958,22 +927,22 @@ export default function StorefrontPage() {
                   setHeroIndex((heroIndex + 1) % heroSlides.length)
                 }
                 aria-label="Next slide"
-                className="absolute top-1/2 -translate-y-1/2 right-3 sm:right-5 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md hover:bg-black/70 transition"
+                className="absolute top-1/2 -translate-y-1/2 right-2 sm:right-4 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-black/70 transition"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
 
-              <div className="absolute bottom-5 end-6 flex items-center gap-2">
+              <div className="absolute bottom-3 end-4 flex items-center gap-1.5">
                 {heroSlides.map((slide, idx) => (
                   <button
                     key={slide.id || idx}
                     type="button"
                     onClick={() => setHeroIndex(idx)}
                     aria-label={`Slide ${idx + 1}`}
-                    className={`h-2.5 rounded-full transition-all ${
+                    className={`rounded-full transition-all ${
                       heroIndex === idx
-                        ? "w-8 bg-white"
-                        : "w-2.5 bg-white/50 hover:bg-white/80"
+                        ? "w-6 h-2 bg-white"
+                        : "w-2 h-2 bg-white/50 hover:bg-white/80"
                     }`}
                   />
                 ))}
@@ -984,24 +953,21 @@ export default function StorefrontPage() {
       </section>
 
       {/* =====================================================================
-          2. SEVEN VISUAL CATEGORY CARDS ON HOME PAGE (CLICKABLE TO FILTER)
+          2. MYTEK-STYLE CATEGORY CARDS
       ===================================================================== */}
       <section
         id="departments-section"
-        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 py-10 sm:py-14 bg-white"
+        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 py-8 sm:py-12 bg-white"
       >
-        <div className="mb-6 sm:mb-8 flex flex-col items-center text-center gap-3">
-          <div className="text-center">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-black border-b border-black pb-1 block mb-3">
-              {lang === "ar" ? "أقسامنا الرئيسية" : "SHOP BY CATEGORY"}
+        <div className="mb-5 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-1">
+              {lang === "ar" ? "تسوق حسب القسم" : "SHOP BY DEPARTMENT"}
             </span>
-            <h2 style={{fontFamily: "'Cormorant Garamond',serif"}} className="text-2xl sm:text-3xl font-medium tracking-tight text-black">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
               {t.categoriesTitle}
             </h2>
-            <p
-              style={{ color: currentTheme.colors.textSecondary }}
-              className="text-xs sm:text-sm mt-1"
-            >
+            <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
               {t.categoriesSubtitle}
             </p>
           </div>
@@ -1009,20 +975,17 @@ export default function StorefrontPage() {
           <button
             type="button"
             onClick={() => handleSelectCategoryAndScroll("all")}
-            style={{
-              backgroundColor: currentTheme.colors.bgSecondary,
-              color: currentTheme.colors.textPrimary,
-            }}
-            className="self-start sm:self-auto inline-flex items-center gap-2 rounded-none px-4 py-2.5 text-xs font-bold transition hover:opacity-80"
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-2 text-[11px] font-bold transition hover:bg-gray-50 text-gray-700"
           >
             <span>
               {t.allCategories} ({products.filter(p=>!p.isHidden).length})
             </span>
+            <ArrowRight className="h-3 w-3" />
           </button>
         </div>
 
-        {/* Main Category Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Mytek-style Category Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => !p.isHidden && p.categorySlug === cat.slug
@@ -1034,50 +997,33 @@ export default function StorefrontPage() {
                 key={cat.id}
                 type="button"
                 onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                className="category-card-mytek group relative flex h-48 sm:h-56 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-start shadow-sm"
                 style={{
-                  borderColor: isSelected
-                    ? currentTheme.colors.accentPrimary
-                    : currentTheme.colors.border,
+                  borderColor: isSelected ? '#E31837' : '#E0E0E0',
+                  borderWidth: isSelected ? '2px' : '1px',
                 }}
-                className={`group relative flex h-64 sm:h-72 flex-col overflow-hidden rounded-none border-2 bg-white text-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
-                  isSelected ? "ring-2 ring-offset-2" : ""
-                }`}
               >
                 <CategoryImage
                   slug={cat.slug}
                   src={cat.imageUrl}
                   alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                  className="h-[78%] w-full scale-125 bg-white object-contain px-2 pt-2 transition-transform duration-300 group-hover:scale-150"
+                  className="h-[70%] w-full bg-gray-50 object-contain px-3 pt-3 transition-transform duration-300 group-hover:scale-105"
                 />
 
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="mt-auto min-h-0 border-t px-3 py-2.5"
-                >
-                  <span
-                    style={{ color: currentTheme.colors.accentPrimary }}
-                    className="mb-0.5 block truncate text-[9px] font-bold uppercase tracking-wider"
-                  >
-                    {lang === "ar" ? cat.badgeAr : cat.badgeEn}
-                  </span>
-                  <h3 className="line-clamp-2 text-xs font-extrabold leading-snug text-neutral-900 sm:text-sm">
+                <div className="mt-auto border-t border-gray-100 px-3 py-2 bg-white">
+                  <h3 className="line-clamp-1 text-[11px] font-extrabold leading-snug text-gray-900 sm:text-xs">
                     {lang === "ar" ? cat.nameAr : cat.nameEn}
                   </h3>
+                  <span className="text-[9px] text-gray-500 font-medium">
+                    {countInCat} {t.itemsLabel}
+                  </span>
                 </div>
 
-                <span
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    color: currentTheme.colors.textPrimary,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="absolute start-2 top-2 rounded-full border px-2 py-0.5 text-[9px] font-bold shadow-sm"
-                >
-                  {countInCat} {t.itemsLabel}
-                </span>
+                {isSelected && (
+                  <span className="absolute top-2 end-2 rounded-full px-2 py-0.5 text-[8px] font-bold text-white" style={{backgroundColor: '#E31837'}}>
+                    ✓
+                  </span>
+                )}
               </button>
             );
           })}
@@ -1085,10 +1031,10 @@ export default function StorefrontPage() {
       </section>
 
       {/* =====================================================================
-          3. LARGE LANDSCAPE PANORAMIC BACKGROUND BANNER
+          3. MYTEK-STYLE PROMOTIONAL BANNER
       ===================================================================== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14">
-        <div className="relative min-h-[300px] sm:min-h-[360px] w-full overflow-hidden rounded-none border border-[#E8E6E1] flex items-center">
+      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-8 sm:pb-12">
+        <div className="relative min-h-[180px] sm:min-h-[240px] w-full overflow-hidden rounded-lg border border-gray-200 flex items-center shadow-sm">
           <img
             src={landscapeBanner.imageUrl}
             alt={
@@ -1096,41 +1042,35 @@ export default function StorefrontPage() {
             }
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A2E]/90 via-[#1A1A2E]/70 to-transparent" />
 
-          <div className="relative z-10 max-w-2xl p-6 sm:p-12 text-white space-y-4">
-            <span
-              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
-              className="inline-block rounded-full px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest"
-            >
+          <div className="relative z-10 max-w-xl p-6 sm:p-10 text-white space-y-3">
+            <span className="inline-block rounded-full px-3 py-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white" style={{backgroundColor: '#E31837'}}>
               {lang === "ar"
                 ? landscapeBanner.badgeAr
                 : landscapeBanner.badgeEn}
             </span>
 
-            <h2 className="text-2xl sm:text-4xl font-black leading-tight">
+            <h2 className="text-lg sm:text-2xl lg:text-3xl font-extrabold leading-tight">
               {lang === "ar"
                 ? landscapeBanner.titleAr
                 : landscapeBanner.titleEn}
             </h2>
 
-            <p className="text-xs sm:text-base text-white/90 leading-relaxed">
+            <p className="text-[11px] sm:text-sm text-white/80 leading-relaxed max-w-md">
               {lang === "ar"
                 ? landscapeBanner.subtitleAr
                 : landscapeBanner.subtitleEn}
             </p>
 
-            <div className="flex flex-wrap gap-3 pt-2">
+            <div className="flex flex-wrap gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => setIsCatalogOpen(true)}
-                style={{
-                  backgroundColor: currentTheme.colors.accentPrimary,
-                  color: "#FFFFFF",
-                }}
-                className="inline-flex items-center gap-2 rounded-none px-5 py-3 text-xs sm:text-sm font-extrabold shadow-none transition hover:opacity-95"
+                className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-[11px] sm:text-xs font-extrabold text-white shadow-lg transition hover:opacity-95"
+                style={{backgroundColor: '#E31837'}}
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-3.5 w-3.5" />
                 <span>
                   {lang === "ar"
                     ? landscapeBanner.ctaAr
@@ -1140,9 +1080,9 @@ export default function StorefrontPage() {
 
               <a
                 href="#wholesale-section"
-                className="inline-flex items-center gap-2 rounded-none bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-5 py-3 text-xs sm:text-sm font-bold text-white transition"
+                className="inline-flex items-center gap-1.5 rounded-md bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 px-4 py-2 text-[11px] sm:text-xs font-bold text-white transition"
               >
-                <Layers className="h-4 w-4" />
+                <Layers className="h-3.5 w-3.5" />
                 <span>
                   {lang === "ar"
                     ? "عروض البيع بالجملة"
@@ -1155,36 +1095,24 @@ export default function StorefrontPage() {
       </section>
 
       {/* =====================================================================
-          4. FEATURED BESTSELLERS & PROMOTIONS SECTION (FOLLOWING LANDSCAPE BANNER)
+          4. MYTEK-STYLE FEATURED PRODUCTS SECTION
       ===================================================================== */}
-      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-12 sm:pb-16">
-        <div
-          style={{
-            backgroundColor: currentTheme.colors.bgSecondary,
-            borderColor: currentTheme.colors.border,
-          }}
-          className="rounded-none border p-5 sm:p-8"
-        >
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <section className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14">
+        <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
+          <div className="mb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider mb-1">
-                <Sparkles
-                  style={{ color: currentTheme.colors.accentPrimary }}
-                  className="h-4 w-4"
-                />
-                <span style={{ color: currentTheme.colors.accentPrimary }}>
+              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1">
+                <Sparkles className="h-3.5 w-3.5 text-red-600" />
+                <span className="text-red-600">
                   {lang === "ar"
                     ? "اختياراتنا المميزة والتخفيضات"
                     : "TOP PICKS & SPECIAL PROMOTIONS"}
                 </span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
                 {t.featuredTitle}
               </h2>
-              <p
-                style={{ color: currentTheme.colors.textSecondary }}
-                className="text-xs sm:text-sm mt-1"
-              >
+              <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
                 {t.featuredSubtitle}
               </p>
             </div>
@@ -1195,18 +1123,15 @@ export default function StorefrontPage() {
                 setOnlyPromo(true);
                 handleSelectCategoryAndScroll("all");
               }}
-              style={{
-                backgroundColor: currentTheme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="self-start sm:self-auto inline-flex items-center gap-2 rounded-none px-4 py-2.5 text-xs font-extrabold shadow-sm"
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-[11px] font-extrabold text-white shadow-sm"
+              style={{backgroundColor: '#E31837'}}
             >
-              <Percent className="h-3.5 w-3.5" />
+              <Percent className="h-3 w-3" />
               <span>{t.onlyPromotions}</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
             {featuredProducts.map((product) => {
               const cat = categories.find(
                 (c) => c.slug === product.categorySlug
@@ -1232,33 +1157,27 @@ export default function StorefrontPage() {
       </section>
 
       {/* =====================================================================
-          5. COMPLETE STORE CATALOG WITH SEARCH BAR & ADVANCED FILTERS
+          5. MYTEK-STYLE CATALOG WITH FILTERS
       ===================================================================== */}
       <section
         id="catalog-section"
-        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-14 sm:pb-20"
+        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-12 sm:pb-18"
       >
-        <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+        <div className="mb-5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-1">
+            {lang === "ar" ? "جميع المنتجات" : "ALL PRODUCTS"}
+          </span>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
             {t.allProductsTitle}
           </h2>
-          <p
-            style={{ color: currentTheme.colors.textSecondary }}
-            className="text-xs sm:text-sm mt-1"
-          >
+          <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
             {t.showingItems} <strong>{filteredProducts.length}</strong>{" "}
             {t.itemsLabel} • {t.swipePhotosHint}
           </p>
         </div>
 
         {/* Interactive Filter & Search Toolbar */}
-        <div
-          style={{
-            backgroundColor: currentTheme.colors.bgElevated,
-            borderColor: currentTheme.colors.border,
-          }}
-          className="mb-8 rounded-none border p-4 sm:p-5 shadow-sm space-y-4"
-        >
+        <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 sm:p-5 shadow-sm space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             {/* Search Input */}
             <div className="md:col-span-5 relative">
@@ -1554,19 +1473,13 @@ export default function StorefrontPage() {
       </section>
 
       {/* =====================================================================
-          6. DEDICATED WHOLESALE & B2B BULK ORDERING SECTION
+          6. MYTEK-STYLE WHOLESALE SECTION
       ===================================================================== */}
       <section
         id="wholesale-section"
-        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-16 sm:pb-24"
+        className="mx-auto w-full max-w-[1580px] px-2 sm:px-3 lg:px-4 pb-12 sm:pb-20"
       >
-        <div
-          style={{
-            backgroundColor: currentTheme.colors.bgElevated,
-            borderColor: currentTheme.colors.border,
-          }}
-          className="rounded-none border p-6 sm:p-10 shadow-sm"
-        >
+        <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-8 shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Column: Wholesale Tiers & Conditions */}
             <div className="lg:col-span-7 space-y-6">
@@ -1817,18 +1730,15 @@ export default function StorefrontPage() {
       />
 
       {/* =====================================================================
-          7. FOOTER WITH LIVE CONTACT INFORMATION & WHATSAPP DIRECT LINK
+          7. MYTEK-STYLE DARK FOOTER
       ===================================================================== */}
       <footer
-        style={{
-          backgroundColor: currentTheme.colors.bgSecondary,
-          borderColor: currentTheme.colors.border,
-        }}
-        className="mt-auto border-t py-10"
+        className="mt-auto py-8 sm:py-10"
+        style={{backgroundColor: '#1A1A2E', borderTop: '3px solid #E31837'}}
       >
-        <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-6 sm:gap-8 text-white">
           <div className="space-y-3">
-            <h3 className="text-lg font-black">
+            <h3 className="text-base sm:text-lg font-extrabold text-white">
               {settings
                 ? lang === "ar"
                   ? settings.storeNameAr
@@ -1837,10 +1747,7 @@ export default function StorefrontPage() {
                   ? "شركة المنهج للقرطاسية"
                   : "Al Manhaj Company for Stationery"}
             </h3>
-            <p
-              style={{ color: currentTheme.colors.textSecondary }}
-              className="text-xs sm:text-sm leading-relaxed"
-            >
+            <p className="text-xs sm:text-sm leading-relaxed text-gray-400">
               {settings
                 ? lang === "ar"
                   ? settings.taglineAr
@@ -1851,25 +1758,17 @@ export default function StorefrontPage() {
               <button
                 type="button"
                 onClick={() => setIsAdminOpen(true)}
-                style={{
-                  backgroundColor: currentTheme.colors.bgElevated,
-                  borderColor: currentTheme.colors.border,
-                }}
-                className="inline-flex items-center gap-1.5 rounded-none border px-3.5 py-2 text-xs font-bold"
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-white/20 transition"
               >
-                <ShieldCheck className="h-4 w-4" />
+                <ShieldCheck className="h-3.5 w-3.5 text-red-400" />
                 <span>{t.adminBtn}</span>
               </button>
               <button
                 type="button"
                 onClick={() => goToOrderTracking()}
-                style={{
-                  backgroundColor: currentTheme.colors.bgElevated,
-                  borderColor: currentTheme.colors.border,
-                }}
-                className="inline-flex items-center gap-1.5 rounded-none border px-3.5 py-2 text-xs font-bold"
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-white/20 transition"
               >
-                <PackageSearch className="h-4 w-4" />
+                <PackageSearch className="h-3.5 w-3.5 text-red-400" />
                 <span>{t.trackOrder}</span>
               </button>
             </div>
@@ -1877,7 +1776,7 @@ export default function StorefrontPage() {
 
           {/* Quick Departments */}
           <div>
-            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
+            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3 text-white">
               {t.categoriesTitle}
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
@@ -1886,7 +1785,7 @@ export default function StorefrontPage() {
                   key={cat.id}
                   type="button"
                   onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                  className="text-start hover:underline truncate"
+                  className="text-start hover:text-red-400 transition truncate text-gray-400"
                 >
                   • {lang === "ar" ? cat.nameAr : cat.nameEn}
                 </button>
@@ -1894,35 +1793,26 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          {/* Dynamic Contact Details from PostgreSQL */}
+          {/* Dynamic Contact Details */}
           <div className="space-y-2.5 text-xs sm:text-sm">
-            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
+            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3 text-white">
               {t.contactUsTitle}
             </h4>
             <div className="flex items-center gap-2.5">
-              <Phone
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4 shrink-0"
-              />
-              <span className="font-mono font-semibold">
+              <Phone className="h-4 w-4 shrink-0 text-red-400" />
+              <span className="font-mono font-semibold text-gray-300">
                 {settings?.contactPhone || "+218 91-214-5050"}
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <Mail
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4 shrink-0"
-              />
-              <span>
+              <Mail className="h-4 w-4 shrink-0 text-red-400" />
+              <span className="text-gray-400">
                 {settings?.contactEmail || "info@almanhaj.ly"}
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <MapPin
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4 shrink-0"
-              />
-              <span>
+              <MapPin className="h-4 w-4 shrink-0 text-red-400" />
+              <span className="text-gray-400">
                 {settings
                   ? lang === "ar"
                     ? settings.addressAr
@@ -1931,11 +1821,8 @@ export default function StorefrontPage() {
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <Clock
-                style={{ color: currentTheme.colors.accentPrimary }}
-                className="h-4 w-4 shrink-0"
-              />
-              <span>
+              <Clock className="h-4 w-4 shrink-0 text-red-400" />
+              <span className="text-gray-400">
                 {settings
                   ? lang === "ar"
                     ? settings.workingHoursAr
@@ -1945,31 +1832,31 @@ export default function StorefrontPage() {
             </div>
           </div>
         </div>
-        {/* ===== CBL / Mawthooq Compliance Bar (editable from Admin) ===== */}
+        {/* ===== CBL / Mawthooq Compliance Bar ===== */}
         {complianceEnabled && (
-          <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t" style={{borderColor: currentTheme.colors.border}}>
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
+          <div className="mx-auto max-w-[1580px] px-2 sm:px-3 lg:px-4 mt-8 pt-5 border-t border-white/10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[10px] sm:text-[11px] leading-5">
               <div className="flex flex-wrap items-center gap-2">
-                <span style={{backgroundColor: currentTheme.colors.bgElevated, borderColor: currentTheme.colors.border}} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> {complianceStatus}
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-gray-300">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> {complianceStatus}
                 </span>
-                <span className="opacity-70">
-                  {t.footerCommercialRegistry}: <span className="font-mono font-extrabold">{commercialRegistry}</span> — {t.footerMawthooqLicense}: <span className="font-mono font-extrabold">{mawthooqLicense}</span>
+                <span className="text-gray-500">
+                  {t.footerCommercialRegistry}: <span className="font-mono font-extrabold text-gray-400">{commercialRegistry}</span> — {t.footerMawthooqLicense}: <span className="font-mono font-extrabold text-gray-400">{mawthooqLicense}</span>
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-3 font-bold">
-                <a href="/privacy" className="hover:underline underline-offset-4">{t.footerPrivacy}</a>
-                <span className="opacity-30">•</span>
-                <a href="/terms" className="hover:underline underline-offset-4">{t.footerTerms}</a>
-                <span className="opacity-30">•</span>
-                <a href="/returns" className="hover:underline underline-offset-4">{t.footerReturns}</a>
-                <span className="opacity-30">•</span>
-                <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:underline underline-offset-4">{t.footerPaymentProviders}</a>
+                <a href="/privacy" className="hover:text-red-400 transition text-gray-400">{t.footerPrivacy}</a>
+                <span className="opacity-30 text-white">•</span>
+                <a href="/terms" className="hover:text-red-400 transition text-gray-400">{t.footerTerms}</a>
+                <span className="opacity-30 text-white">•</span>
+                <a href="/returns" className="hover:text-red-400 transition text-gray-400">{t.footerReturns}</a>
+                <span className="opacity-30 text-white">•</span>
+                <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:text-red-400 transition text-gray-400">{t.footerPaymentProviders}</a>
               </div>
             </div>
-            <div style={{color: currentTheme.colors.textSecondary}} className="mt-3 flex flex-wrap gap-2 text-[11px] leading-5">
+            <div className="mt-3 flex flex-wrap gap-2 text-[10px] leading-5 text-gray-500">
               <span>{paymentNotice}</span>
-              <span className="hidden sm:inline opacity-30">—</span>
+              <span className="hidden sm:inline opacity-30 text-white">—</span>
               <span>{copyrightLine}</span>
             </div>
           </div>
@@ -1977,60 +1864,45 @@ export default function StorefrontPage() {
       </footer>
 
       {/* =====================================================================
-          MOBILE STICKY BOTTOM BAR (PERFECT ERGONOMICS ON SMARTPHONES)
+          MOBILE STICKY BOTTOM BAR - MYTEK STYLE
       ===================================================================== */}
       <nav
-        style={{
-          backgroundColor: currentTheme.colors.bgElevated,
-          borderColor: currentTheme.colors.border,
-        }}
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 flex items-center justify-around border-t py-2 px-2 shadow-2xl"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 flex items-center justify-around border-t py-1.5 px-2 shadow-2xl"
+        style={{backgroundColor: '#1A1A2E', borderColor: '#2A2A4A'}}
       >
         <button
           type="button"
           onClick={() => setIsCatalogOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
         >
-          <BookOpen
-            style={{ color: currentTheme.colors.accentPrimary }}
-            className="h-5 w-5"
-          />
+          <BookOpen className="h-4.5 w-4.5 text-red-400" />
           <span>{t.masterCatalog}</span>
         </button>
 
         <a
           href="#wholesale-section"
-          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
         >
-          <Layers
-            style={{ color: currentTheme.colors.accentPrimary }}
-            className="h-5 w-5"
-          />
+          <Layers className="h-4.5 w-4.5 text-red-400" />
           <span>{t.wholesalePrice}</span>
         </a>
 
         <button
           type="button"
           onClick={() => goToOrderTracking()}
-          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
         >
-          <PackageSearch
-            style={{ color: currentTheme.colors.accentPrimary }}
-            className="h-5 w-5"
-          />
+          <PackageSearch className="h-4.5 w-4.5 text-red-400" />
           <span>{t.trackOrderShort}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setIsCartOpen(true)}
-          style={{
-            backgroundColor: "#25D366",
-            color: "#FFFFFF",
-          }}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-extrabold shadow-md"
+          className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-md"
+          style={{backgroundColor: '#E31837'}}
         >
-          <MessageCircle className="h-4 w-4 fill-current" />
+          <ShoppingBag className="h-4 w-4" />
           <span>
             {t.cartTitle} ({totalCartUnits})
           </span>
@@ -2039,12 +1911,9 @@ export default function StorefrontPage() {
         <button
           type="button"
           onClick={() => setIsAdminOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white"
         >
-          <ShieldCheck
-            style={{ color: currentTheme.colors.accentPrimary }}
-            className="h-5 w-5"
-          />
+          <ShieldCheck className="h-4.5 w-4.5 text-red-400" />
           <span>Admin</span>
         </button>
       </nav>

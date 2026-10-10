@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased selection:bg-black selection:text-white" style={{ fontFamily: "'Inter','IBM Plex Sans Arabic',system-ui,sans-serif" }}>
+      <body className="antialiased selection:bg-red-600 selection:text-white" style={{ fontFamily: "'Inter','IBM Plex Sans Arabic',system-ui,sans-serif" }}>
         {children}
       </body>
     </html>
