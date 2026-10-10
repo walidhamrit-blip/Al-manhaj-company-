@@ -227,27 +227,11 @@ export default function StorefrontPage() {
     return () => window.clearTimeout(timer);
   }, [fetchStoreData]);
 
-  // Keep cart synced with latest product prices/stocks from DB
-  useEffect(() => {
-    if (products.length === 0) return;
-    const timer = window.setTimeout(() => {
-      setCart((prev) =>
-        prev
-          .map((item) => {
-            const fresh = products.find((p) => p.id === item.product.id);
-            return fresh ? { ...item, product: fresh } : item;
-          })
-          .filter((item) => products.some((p) => p.id === item.product.id))
-      );
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [products]);
-
   // Apply a cart update and persist it. Every mutation goes through the
   // functional updater, so rapid updates (fast clicks on the quantity stepper)
   // always build on the latest cart instead of a stale snapshot, and the stored
   // copy stays in sync with the state.
-  const updateCart = (updater: (prev: CartItem[]) => CartItem[]) => {
+  const updateCart = useCallback((updater: (prev: CartItem[]) => CartItem[]) => {
     setCart((prev) => {
       const nextCart = updater(prev);
       try {
@@ -257,7 +241,25 @@ export default function StorefrontPage() {
       }
       return nextCart;
     });
-  };
+  }, []);
+
+  // Keep cart synced with latest product prices/stocks from DB. The refreshed
+  // cart also goes through updateCart so the stored copy can never drift from
+  // the state (an item dropped here used to come back on the next reload).
+  useEffect(() => {
+    if (products.length === 0) return;
+    const timer = window.setTimeout(() => {
+      updateCart((prev) =>
+        prev
+          .map((item) => {
+            const fresh = products.find((p) => p.id === item.product.id);
+            return fresh ? { ...item, product: fresh } : item;
+          })
+          .filter((item) => products.some((p) => p.id === item.product.id))
+      );
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [products, updateCart]);
 
   const handleAddToCart = (product: Product, qtyToAdd: number) => {
     updateCart((prev) => {
@@ -282,6 +284,20 @@ export default function StorefrontPage() {
       prev.map((item) =>
         item.product.id === productId ? { ...item, quantity: newQty } : item
       )
+    );
+  };
+
+  // Quantities are applied as a delta on the freshest cart, so N clicks on the
+  // stepper always mean N units even when React batches them into one render
+  // (fast clicking, slow devices) — the "+"/"−" buttons used to send an absolute
+  // value computed from the render they were drawn in, losing all but one click.
+  const handleAdjustCartQty = (productId: number, delta: number) => {
+    updateCart((prev) =>
+      prev.flatMap((item) => {
+        if (item.product.id !== productId) return [item];
+        const nextQty = item.quantity + delta;
+        return nextQty > 0 ? [{ ...item, quantity: nextQty }] : [];
+      })
     );
   };
 
@@ -2101,6 +2117,7 @@ export default function StorefrontPage() {
         onClose={() => setIsCartOpen(false)}
         cart={cart}
         onUpdateQty={handleUpdateCartQty}
+        onAdjustQty={handleAdjustCartQty}
         onRemoveItem={handleRemoveCartItem}
         onClearCart={handleClearCart}
         settings={settings}
@@ -2154,7 +2171,6 @@ export default function StorefrontPage() {
           </div>
         </div>
       </div>
-      <script dangerouslySetInnerHTML={{__html: `(function(){try{if(!localStorage.getItem('almanhaj_cookie')){var b=document.getElementById('cookie-banner'); if(b) b.style.display='block';}}catch(e){}})()`}} />
-    </div>
+      <script dangerouslySetInnerHTML={{__html: `(function(){try{if(!localStorage.getItem('almanhaj_cookie')){var b=document.getElementById('cookie-banner'); if(b) b.style.display='block';}}catch(e){}})()`}} />    </div>
   );
 }
