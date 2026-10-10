@@ -26,7 +26,6 @@ interface ProductCardProps {
   cartQty: number;
   onAddToCart: (product: Product, qty: number) => void;
   onQuickView: (product: Product) => void;
-  layout?: "card" | "list";
 }
 
 export function ProductCard({
@@ -38,10 +37,8 @@ export function ProductCard({
   cartQty,
   onAddToCart,
   onQuickView,
-  layout = "card",
 }: ProductCardProps) {
   const t = UI_TEXT[lang];
-  const isListLayout = layout === "list";
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
@@ -96,19 +93,9 @@ export function ProductCard({
   };
 
   return (
-    <div
-      className={`product-card-mytek group relative flex ${
-        isListLayout ? "flex-col sm:flex-row sm:items-stretch" : "flex-col"
-      } rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm`}
-    >
-      {/* Image Gallery Container */}
-      <div
-        className={`relative w-full overflow-hidden bg-gray-50 ${
-          isListLayout
-            ? "aspect-[16/9] sm:aspect-square sm:h-48 sm:w-48 sm:shrink-0 sm:self-center sm:ms-3 sm:rounded-lg"
-            : "aspect-[16/9]"
-        }`}
-      >
+    <div className="product-card-mytek group relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+      {/* Square product gallery, matching Mytek's compact catalogue cards */}
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-gray-50">
         <div
           ref={scrollRef}
           onScroll={handleScroll}

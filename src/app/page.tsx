@@ -1361,12 +1361,12 @@ export default function StorefrontPage() {
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
             {[1, 2, 3, 4, 5].map((n) => (
               <div
                 key={n}
                 style={{ backgroundColor: currentTheme.colors.bgSecondary }}
-                className="h-44 sm:h-52 rounded-2xl animate-pulse"
+                className="aspect-[3/4] rounded-lg animate-pulse"
               />
             ))}
           </div>
@@ -1446,7 +1446,7 @@ export default function StorefrontPage() {
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
                   {categoryProducts.map((product) => {
                     const inCart =
                       cart.find((item) => item.product.id === product.id)?.quantity || 0;
@@ -1461,7 +1461,6 @@ export default function StorefrontPage() {
                         cartQty={inCart}
                         onAddToCart={handleAddToCart}
                         onQuickView={setQuickViewProduct}
-                        layout="list"
                       />
                     );
                   })}
