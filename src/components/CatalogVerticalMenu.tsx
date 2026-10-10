@@ -44,6 +44,7 @@ const MENU_ID = "catalog-vertical-menu";
 interface CategoryGroup {
   category: Category;
   items: Product[];
+  subcategories: { category: Category; items: Product[] }[];
 }
 
 interface CatalogVerticalMenuProps {
@@ -103,17 +104,51 @@ export function CatalogVerticalMenu({
     [products]
   );
 
-  const groups = useMemo<CategoryGroup[]>(
+  const topLevelCategories = useMemo(
     () =>
       [...categories]
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((category) => ({
-          category,
+        .filter((c) => !c.parentSlug)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [categories]
+  );
+
+  const subcategoriesByParent = useMemo(() => {
+    const map = new Map<string, Category[]>();
+    for (const c of categories) {
+      if (c.parentSlug) {
+        const list = map.get(c.parentSlug) || [];
+        list.push(c);
+        map.set(c.parentSlug, list);
+      }
+    }
+    // Sort subcategories within each parent
+    for (const [, subs] of map) {
+      subs.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+    return map;
+  }, [categories]);
+
+  const groups = useMemo<CategoryGroup[]>(
+    () =>
+      topLevelCategories.map((category) => {
+        const subs = subcategoriesByParent.get(category.slug) || [];
+        const subcategories = subs.map((sub) => ({
+          category: sub,
           items: visibleProducts.filter(
-            (product) => product.categorySlug === category.slug
+            (product) => product.subcategorySlug === sub.slug
           ),
-        })),
-    [categories, visibleProducts]
+        }));
+        // Products without a subcategorySlug still belong to the parent
+        const unassigned = visibleProducts.filter(
+          (product) =>
+            product.categorySlug === category.slug && !product.subcategorySlug
+        );
+        const items = visibleProducts.filter(
+          (product) => product.categorySlug === category.slug
+        );
+        return { category, items, subcategories };
+      }),
+    [topLevelCategories, subcategoriesByParent, visibleProducts]
   );
 
   const promoCount = useMemo(
@@ -452,26 +487,73 @@ export function CatalogVerticalMenu({
               <p className="py-8 text-center text-xs text-gray-500">
                 {t.catalogMenuEmpty}
               </p>
-            ) : (
-              <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-0.5">
-                {activeGroup.items
-                  .slice(0, FLYOUT_PRODUCT_LIMIT)
-                  .map((product) => renderProductRow(product))}
+            ) : activeGroup.subcategories.length > 0 ? (
+              <div className="mt-3 space-y-4">
+                {activeGroup.subcategories.map((sub) => (
+                  <div key={sub.category.slug}>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectCategory(sub.category.slug)}
+                      className="mb-1.5 flex items-center gap-2 text-left transition hover:opacity-80"
+                    >
+                      <span
+                        className="text-[10px] font-extrabold uppercase tracking-wider"
+                        style={{ color: MYTEK_RED }}
+                      >
+                        {lang === "ar" ? sub.category.nameAr : sub.category.nameEn}
+                      </span>
+                      <span className="text-[10px] tabular-nums text-gray-400">
+                        ({sub.items.length})
+                      </span>
+                    </button>
+                    {sub.items.length === 0 ? (
+                      <p className="py-2 text-center text-[10px] text-gray-400">
+                        —
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                        {sub.items
+                          .slice(0, FLYOUT_PRODUCT_LIMIT)
+                          .map((product) => renderProductRow(product))}
+                      </div>
+                    )}
+                    {sub.items.length > FLYOUT_PRODUCT_LIMIT && (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectCategory(sub.category.slug)}
+                        className="mt-1 self-start text-[10px] font-bold underline underline-offset-2"
+                        style={{ color: MYTEK_RED }}
+                      >
+                        {t.catalogMenuMore.replace(
+                          "{count}",
+                          String(sub.items.length - FLYOUT_PRODUCT_LIMIT)
+                        )}
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
-
-            {activeGroup.items.length > FLYOUT_PRODUCT_LIMIT && (
-              <button
-                type="button"
-                onClick={() => handleSelectCategory(activeGroup.category.slug)}
-                className="mt-3 self-start text-[11px] font-bold underline underline-offset-2"
-                style={{ color: MYTEK_RED }}
-              >
-                {t.catalogMenuMore.replace(
-                  "{count}",
-                  String(activeGroup.items.length - FLYOUT_PRODUCT_LIMIT)
+            ) : (
+              <>
+                <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-0.5">
+                  {activeGroup.items
+                    .slice(0, FLYOUT_PRODUCT_LIMIT)
+                    .map((product) => renderProductRow(product))}
+                </div>
+                {activeGroup.items.length > FLYOUT_PRODUCT_LIMIT && (
+                  <button
+                    type="button"
+                    onClick={() => handleSelectCategory(activeGroup.category.slug)}
+                    className="mt-3 self-start text-[11px] font-bold underline underline-offset-2"
+                    style={{ color: MYTEK_RED }}
+                  >
+                    {t.catalogMenuMore.replace(
+                      "{count}",
+                      String(activeGroup.items.length - FLYOUT_PRODUCT_LIMIT)
+                    )}
+                  </button>
                 )}
-              </button>
+              </>
             )}
           </div>
 
@@ -573,7 +655,7 @@ export function CatalogVerticalMenu({
             </span>
           </button>
 
-          {groups.map(({ category, items }) => {
+          {groups.map(({ category, items, subcategories }) => {
             const expanded = expandedSlug === category.slug;
             const name = categoryName(category);
             return (
@@ -612,8 +694,42 @@ export function CatalogVerticalMenu({
                 </button>
 
                 {expanded && (
-                  <div className="space-y-2 bg-gray-50 px-3 pb-3 pt-1">
-                    {items.length === 0 ? (
+                  <div className="bg-gray-50 px-3 pb-3 pt-1">
+                    {subcategories.length > 0 ? (
+                      <div className="space-y-1">
+                        {subcategories.map((sub) => (
+                          <div key={sub.category.slug} className="rounded-md bg-white border border-gray-200 overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => handleSelectCategory(sub.category.slug)}
+                              className="flex w-full items-center justify-between px-3 py-2 text-start transition hover:bg-gray-50"
+                            >
+                              <span className="text-[11px] font-bold" style={{ color: MYTEK_RED }}>
+                                {lang === "ar" ? sub.category.nameAr : sub.category.nameEn}
+                              </span>
+                              <span className="text-[10px] tabular-nums text-gray-400">
+                                {sub.items.length}
+                              </span>
+                            </button>
+                            {sub.items.length > 0 && (
+                              <div className="divide-y divide-gray-100 border-t border-gray-100">
+                                {sub.items.slice(0, 3).map((product) => renderProductRow(product))}
+                                {sub.items.length > 3 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectCategory(sub.category.slug)}
+                                    className="w-full px-3 py-1.5 text-start text-[10px] font-bold"
+                                    style={{ color: MYTEK_RED }}
+                                  >
+                                    {viewAllLabel(sub.items.length)}
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : items.length === 0 ? (
                       <p className="py-3 text-center text-[11px] text-gray-500">
                         {t.catalogMenuEmpty}
                       </p>
@@ -625,7 +741,7 @@ export function CatalogVerticalMenu({
                     <button
                       type="button"
                       onClick={() => handleSelectCategory(category.slug)}
-                      className="flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-[11px] font-extrabold text-white transition hover:opacity-90"
+                      className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-[11px] font-extrabold text-white transition hover:opacity-90"
                       style={{ backgroundColor: MYTEK_RED }}
                     >
                       <span>{viewAllLabel(items.length)}</span>

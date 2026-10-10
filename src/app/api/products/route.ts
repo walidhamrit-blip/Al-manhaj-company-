@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       .values({
         sku: String(body.sku || `SKU-${Date.now().toString().slice(-4)}`),
         categorySlug: String(body.categorySlug || "notebooks"),
+        subcategorySlug: body.subcategorySlug || null,
         titleEn: String(body.titleEn || "New Product"),
         titleAr: String(body.titleAr || "منتج جديد"),
         descriptionEn: String(body.descriptionEn || ""),

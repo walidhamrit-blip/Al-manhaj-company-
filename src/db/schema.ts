@@ -38,6 +38,7 @@ export interface LandscapeBannerConfig {
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
+  parentSlug: text("parent_slug"),
   nameEn: text("name_en").notNull(),
   nameAr: text("name_ar").notNull(),
   descriptionEn: text("description_en").notNull(),
@@ -52,6 +53,7 @@ export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   sku: text("sku").notNull(),
   categorySlug: text("category_slug").notNull(),
+  subcategorySlug: text("subcategory_slug"),
   titleEn: text("title_en").notNull(),
   titleAr: text("title_ar").notNull(),
   descriptionEn: text("description_en").notNull(),

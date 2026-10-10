@@ -98,6 +98,273 @@ export const INITIAL_CATEGORIES: NewCategory[] = [
     badgeAr: "معتمدة للامتحانات",
     sortOrder: 7,
   },
+
+  // ─── SUBCATEGORIES ───────────────────────────────────────────────────
+  // 1. Notebooks subcategories
+  {
+    slug: "dotted-journals",
+    parentSlug: "notebooks",
+    nameEn: "Dotted Journals",
+    nameAr: "دفاتر منقطة",
+    descriptionEn: "Premium dotted journals for bullet journaling and creative note-taking.",
+    descriptionAr: "دفاتر منقطة فاخرة لتقنية بوليت jurnal والملاحظات الإبداعية.",
+    imageUrl: "/images/category-illustrations/notebooks.webp",
+    badgeEn: "Bullet Journal",
+    badgeAr: "بوليت jurnal",
+    sortOrder: 11,
+  },
+  {
+    slug: "grid-notebooks",
+    parentSlug: "notebooks",
+    nameEn: "Grid Notebooks",
+    nameAr: "دفاتر مربعات",
+    descriptionEn: "Twin-wire and spiral grid notebooks for academic and STEM notes.",
+    descriptionAr: "دفاتر مربعات بسلك مزدوج ولولبية للملاحظات الأكاديمية والعلمية.",
+    imageUrl: "/images/category-illustrations/notebooks.webp",
+    badgeEn: "Academic",
+    badgeAr: "أكاديمي",
+    sortOrder: 12,
+  },
+  {
+    slug: "planners-organizers",
+    parentSlug: "notebooks",
+    nameEn: "Planners & Organizers",
+    nameAr: "مخططات ومنظمات",
+    descriptionEn: "Weekly planners, desk pads, and sticky note folios for productivity.",
+    descriptionAr: "مخططات أسبوعية ومنظمات مكتبية وملاحظات لاصقة لتعزيز الإنتاجية.",
+    imageUrl: "/images/category-illustrations/notebooks.webp",
+    badgeEn: "Productivity",
+    badgeAr: "إنتاجية",
+    sortOrder: 13,
+  },
+
+  // 2. Writing subcategories
+  {
+    slug: "fountain-pens",
+    parentSlug: "writing",
+    nameEn: "Fountain Pens",
+    nameAr: "أقلام حبر سائل",
+    descriptionEn: "Fine nib fountain pens with premium German engineering.",
+    descriptionAr: "أقلام حبر سائل بريشة دقيقة وهندسة ألمانية فاخرة.",
+    imageUrl: "/images/category-illustrations/writing.webp",
+    badgeEn: "Fine Nib",
+    badgeAr: "ريشة دقيقة",
+    sortOrder: 21,
+  },
+  {
+    slug: "gel-rollers",
+    parentSlug: "writing",
+    nameEn: "Gel Rollers",
+    nameAr: "أقلام جل",
+    descriptionEn: "Smooth-flow gel ink pens with quick-dry pigment ink.",
+    descriptionAr: "أقلام جل سلسة بحبر صبغي سريع الجفاف.",
+    imageUrl: "/images/category-illustrations/writing.webp",
+    badgeEn: "Smooth Flow",
+    badgeAr: "تدفق سلس",
+    sortOrder: 22,
+  },
+  {
+    slug: "highlighters",
+    parentSlug: "writing",
+    nameEn: "Highlighters",
+    nameAr: "أقلام تظليل",
+    descriptionEn: "Dual-tip pastel highlighters for studying and note organization.",
+    descriptionAr: "أقلام تظليل باستيل مزدوجة الرأس للدراسة وتنظيم الملاحظات.",
+    imageUrl: "/images/category-illustrations/writing.webp",
+    badgeEn: "Pastel",
+    badgeAr: "باستيل",
+    sortOrder: 23,
+  },
+
+  // 3. Bags subcategories
+  {
+    slug: "backpacks",
+    parentSlug: "bags",
+    nameEn: "Backpacks",
+    nameAr: "حقائب ظهر",
+    descriptionEn: "Ergonomic waterproof backpacks with laptop compartments.",
+    descriptionAr: "حقائب ظهر مريحة ومقاومة للماء مع جيب للحاسوب.",
+    imageUrl: "/images/category-illustrations/bags.webp",
+    badgeEn: "Ergonomic",
+    badgeAr: "مريح",
+    sortOrder: 31,
+  },
+  {
+    slug: "pencil-cases",
+    parentSlug: "bags",
+    nameEn: "Pencil Cases & Pouches",
+    nameAr: "مقلمات وحاويات",
+    descriptionEn: "Expandable standing pouches for pens, tech, and accessories.",
+    descriptionAr: "مقلمات قابلة للتوسع وقوفاً للأقلام والإكسسوارات التقنية.",
+    imageUrl: "/images/category-illustrations/bags.webp",
+    badgeEn: "Stand Design",
+    badgeAr: "تصميم قائم",
+    sortOrder: 32,
+  },
+  {
+    slug: "desk-organizers",
+    parentSlug: "bags",
+    nameEn: "Desk Organizers",
+    nameAr: "منظمات مكتبية",
+    descriptionEn: "Modular desktop organizer suites for documents and accessories.",
+    descriptionAr: "أنظمة تنظيم مكتبية معيارية للمستندات والإكسسوارات.",
+    imageUrl: "/images/category-illustrations/bags.webp",
+    badgeEn: "Modular",
+    badgeAr: "معيارية",
+    sortOrder: 33,
+  },
+
+  // 4. IT Peripherals subcategories
+  {
+    slug: "keyboards",
+    parentSlug: "it-peripherals",
+    nameEn: "Keyboards",
+    nameAr: "لوحات مفاتيح",
+    descriptionEn: "Wireless mechanical keyboards with tri-mode connectivity.",
+    descriptionAr: "لوحات مفاتيح ميكانيكية لاسلكية بثلاثية الاتصال.",
+    imageUrl: "/images/category-illustrations/it-accessories.webp",
+    badgeEn: "Mechanical",
+    badgeAr: "ميكانيكية",
+    sortOrder: 41,
+  },
+  {
+    slug: "mice",
+    parentSlug: "it-peripherals",
+    nameEn: "Mice",
+    nameAr: "فئران",
+    descriptionEn: "Ergonomic silent wireless mice with high-DPI sensors.",
+    descriptionAr: "فئران لاسلكية صامتة ومريحة بحساسات عالية الدقة.",
+    imageUrl: "/images/category-illustrations/it-accessories.webp",
+    badgeEn: "Silent Click",
+    badgeAr: "نقرات صامتة",
+    sortOrder: 42,
+  },
+  {
+    slug: "hubs-adapters",
+    parentSlug: "it-peripherals",
+    nameEn: "USB Hubs & Adapters",
+    nameAr: "موزعات ومحولات USB",
+    descriptionEn: "Multi-port aluminum USB-C hubs with HDMI, PD, and NVMe.",
+    descriptionAr: "موزعات USB-C ألمنيوم متعددة المنافذ مع HDMI وشحن سريع.",
+    imageUrl: "/images/category-illustrations/it-accessories.webp",
+    badgeEn: "10-in-1",
+    badgeAr: "10 في 1",
+    sortOrder: 43,
+  },
+
+  // 5. Ink & Consumables subcategories
+  {
+    slug: "toner-cartridges",
+    parentSlug: "ink-consumables",
+    nameEn: "Toner Cartridges",
+    nameAr: "خراطيش تونر",
+    descriptionEn: "High-yield laser toner cartridges with smart chips.",
+    descriptionAr: "خراطيش تونر ليزر عالية الإنتاجية مع شرائح ذكية.",
+    imageUrl: "/images/category-illustrations/ink-toner.webp",
+    badgeEn: "High Yield",
+    badgeAr: "إنتاجية عالية",
+    sortOrder: 51,
+  },
+  {
+    slug: "ink-refills",
+    parentSlug: "ink-consumables",
+    nameEn: "Ink Refills",
+    nameAr: "عبوات حبر",
+    descriptionEn: "Pigment ink refill bottles for EcoTank and continuous ink systems.",
+    descriptionAr: "عبوات حبر صبغي لأنظمة إيكو-تانك والأحبار المستمرة.",
+    imageUrl: "/images/category-illustrations/ink-toner.webp",
+    badgeEn: "CMYK",
+    badgeAr: "CMYK",
+    sortOrder: 52,
+  },
+  {
+    slug: "paper-reams",
+    parentSlug: "ink-consumables",
+    nameEn: "Paper Reams",
+    nameAr: "رزم ورق",
+    descriptionEn: "Ultra-white A4 paper for laser and inkjet printers.",
+    descriptionAr: "ورق A4 فائق البياض للطابعات الليزرية والحبرية.",
+    imageUrl: "/images/category-illustrations/ink-toner.webp",
+    badgeEn: "90 GSM",
+    badgeAr: "90 جرام",
+    sortOrder: 53,
+  },
+
+  // 6. Art & Drafting subcategories
+  {
+    slug: "art-markers",
+    parentSlug: "art-drafting",
+    nameEn: "Art Markers",
+    nameAr: "أقلام ماركر فنية",
+    descriptionEn: "Dual-tip alcohol markers for illustration and design.",
+    descriptionAr: "أقلام ماركر كحولية مزدوجة الرأس للرسوم والتصميم.",
+    imageUrl: "/images/category-illustrations/art-drafting.webp",
+    badgeEn: "48 Colors",
+    badgeAr: "48 لوناً",
+    sortOrder: 61,
+  },
+  {
+    slug: "geometry-sets",
+    parentSlug: "art-drafting",
+    nameEn: "Geometry Sets",
+    nameAr: "أطقم هندسة",
+    descriptionEn: "Professional brass compass and drafting kits.",
+    descriptionAr: "أطقم فرجار ورسم هندسي احترافية من النحاس.",
+    imageUrl: "/images/category-illustrations/art-drafting.webp",
+    badgeEn: "9-Piece",
+    badgeAr: "9 قطع",
+    sortOrder: 62,
+  },
+  {
+    slug: "sketchpads",
+    parentSlug: "art-drafting",
+    nameEn: "Sketchpads",
+    nameAr: "كراسات رسم",
+    descriptionEn: "Heavy-weight watercolor and mixed media sketchpads.",
+    descriptionAr: "كراسات رسم ثقيلة للألوان المائية والتقنيات المختلطة.",
+    imageUrl: "/images/category-illustrations/art-drafting.webp",
+    badgeEn: "300 GSM",
+    badgeAr: "300 جرام",
+    sortOrder: 63,
+  },
+
+  // 7. Calculators & Desk Tech subcategories
+  {
+    slug: "scientific-calculators",
+    parentSlug: "calculators-tech",
+    nameEn: "Scientific Calculators",
+    nameAr: "آلات حاسبة علمية",
+    descriptionEn: "High-resolution scientific calculators with 552+ functions.",
+    descriptionAr: "آلات حاسبة علمية عالية الدقة بأكثر من 552 وظيفة.",
+    imageUrl: "/images/category-illustrations/calculators.webp",
+    badgeEn: "552 Functions",
+    badgeAr: "552 وظيفة",
+    sortOrder: 71,
+  },
+  {
+    slug: "desk-calculators",
+    parentSlug: "calculators-tech",
+    nameEn: "Desk Calculators",
+    nameAr: "آلات حاسبة مكتبية",
+    descriptionEn: "Mechanical-switch financial calculators for accounting desks.",
+    descriptionAr: "آلات حاسبة مالية بمفاتيح ميكانيكية لمكاتب المحاسبة.",
+    imageUrl: "/images/category-illustrations/calculators.webp",
+    badgeEn: "12-Digit",
+    badgeAr: "12 رقماً",
+    sortOrder: 72,
+  },
+  {
+    slug: "desk-lamps",
+    parentSlug: "calculators-tech",
+    nameEn: "Desk Lamps & Study Tech",
+    nameAr: "مصابيح مكتبية وتقنيات الدراسة",
+    descriptionEn: "Eye-care LED desk lamps with wireless charging and study timers.",
+    descriptionAr: "مصابيح LED مكتبية لحماية العين مع شحن لاسلكي ومؤقتات دراسة.",
+    imageUrl: "/images/category-illustrations/calculators.webp",
+    badgeEn: "CRI 95+",
+    badgeAr: "CRI 95+",
+    sortOrder: 73,
+  },
 ];
 
 export const INITIAL_PRODUCTS: NewProduct[] = [
@@ -105,6 +372,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "NB-ATELIER-01",
     categorySlug: "notebooks",
+    subcategorySlug: "dotted-journals",
     titleEn: "Kyoto Linen Hardcover Dotted Journal A5 (Set of 2)",
     titleAr: "دفتر كيوتو بغلافتان من الكتان منقط حجم A5 (طقم من قطعتين)",
     descriptionEn: "Thread-bound lay-flat A5 journals featuring 120gsm ivory Japanese acid-free paper. Zero bleed-through with fountain pens and markers, complete with dual ribbon bookmarks and expandable inner pocket.",
@@ -127,6 +395,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "NB-SPIRAL-02",
     categorySlug: "notebooks",
+    subcategorySlug: "grid-notebooks",
     titleEn: "Academic Pro B5 Twin-Wire Grid Notebook Pack (5 pcs)",
     titleAr: "مجموعة دفاتر أكاديمية B5 بسلك مزدوج مربعات (5 قطع)",
     descriptionEn: "Engineered for university lectures and STEM notes. Micro-perforated 100gsm sheets with smart margin rules and color-coded polypropylene waterproof covers.",
@@ -149,6 +418,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "NB-PLANNER-03",
     categorySlug: "notebooks",
+    subcategorySlug: "planners-organizers",
     titleEn: "Architect Weekly Desk Planner & Sticky Note Folio",
     titleAr: "منظم المكتب الأسبوعي وحافظة الملاحظات اللاصقة",
     descriptionEn: "Undated 52-week panoramic desk pad paired with 6 sizes of pastel architectural index tabs and grid sticky notes.",
@@ -173,6 +443,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "WR-FOUNT-01",
     categorySlug: "writing",
+    subcategorySlug: "fountain-pens",
     titleEn: "Meister Matte Black & Brass Fountain Pen (Fine Nib)",
     titleAr: "قلم حبر سائل مايستر أسود مطفي ونحاسي (ريشة دقيقة)",
     descriptionEn: "Balanced anodized aluminum barrel with a German iridium-tipped fine nib. Includes refillable piston converter and 2 archival midnight-blue ink cartridges.",
@@ -195,6 +466,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "WR-GEL-02",
     categorySlug: "writing",
+    subcategorySlug: "gel-rollers",
     titleEn: "Sakura Smooth-Flow 0.5mm Gel Roller Set (12 Colors)",
     titleAr: "طقم أقلام جل ساكورا سريعة الجفاف 0.5 ملم (12 لوناً)",
     descriptionEn: "Instant-dry pigment gel ink prevents smudging for both left-handed and right-handed writers. Ergonomic silicone grip for marathon exam sessions.",
@@ -217,6 +489,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "WR-PASTEL-03",
     categorySlug: "writing",
+    subcategorySlug: "highlighters",
     titleEn: "Nordic Dual-Tip Chisel & Fine Pastel Highlighters (8 Pack)",
     titleAr: "مجموعة أقلام تظليل باستيل مزدوجة الرأس (8 ألوان)",
     descriptionEn: "Soft muted tones that highlight key study passages without fatiguing the eyes. Features a 4mm chisel tip and a 1mm underlining tip.",
@@ -241,6 +514,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "BG-PACK-01",
     categorySlug: "bags",
+    subcategorySlug: "backpacks",
     titleEn: "Oslo Ergonomic 26L Waterproof Scholar & Laptop Backpack",
     titleAr: "حقيبة ظهر أوسلو المريحة المقاومة للماء سعة 26 لتر مع جيب للحاسوب",
     descriptionEn: "Orthopedic breathable back support, dedicated 16-inch suspended laptop compartment, hidden anti-theft pocket, and water-repellent ballistic nylon.",
@@ -263,6 +537,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "BG-CASE-02",
     categorySlug: "bags",
+    subcategorySlug: "pencil-cases",
     titleEn: "Expandable Cordura Standing Pencil & Tech Pouch",
     titleAr: "مقلمة وحافظة تقنية قابلة للتوسيع من قماش كوردورا المتين",
     descriptionEn: "Holds up to 45 pens, a scientific calculator, USB cables, and power bank. Folds down into a magnetic standing desk caddy in seconds.",
@@ -285,6 +560,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "BG-TRAY-03",
     categorySlug: "bags",
+    subcategorySlug: "desk-organizers",
     titleEn: "Modular Walnut & Matte Steel Desktop Organizer Suite",
     titleAr: "طقم تنظيم المكتب المعياري من خشب الجوز والفولاذ المطفي",
     descriptionEn: "4-piece interlocking desk tray system for documents, pens, smartphones, and sticky notes with non-slip cork base.",
@@ -309,6 +585,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "IT-KEY-01",
     categorySlug: "it-peripherals",
+    subcategorySlug: "keyboards",
     titleEn: "KeyChronos Low-Profile Wireless Mechanical Keyboard (Tri-Mode)",
     titleAr: "لوحة مفاتيح ميكانيكية لاسلكية نحيفة كي-كرونوس (ثلاثية الاتصال)",
     descriptionEn: "Connect up to 3 devices via Bluetooth 5.2, 2.4GHz dongle, or USB-C. Hot-swappable tactile quiet switches with warm white backlight and Mac/Windows/Arabic keycap support.",
@@ -331,6 +608,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "IT-MOUSE-02",
     categorySlug: "it-peripherals",
+    subcategorySlug: "mice",
     titleEn: "ErgoFlow Master Silent Wireless Mouse (8000 DPI Sensor)",
     titleAr: "فأرة لاسلكية احترافية صامتة إيرغو-فلو (حساس 8000 DPI)",
     descriptionEn: "Sculpted thumb rest with electromagnetic MagSpeed scroll wheel and 95% quieter clicks. Tracks on glass and wood surfaces with USB-C quick charge.",
@@ -353,6 +631,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "IT-HUB-03",
     categorySlug: "it-peripherals",
+    subcategorySlug: "hubs-adapters",
     titleEn: "HyperDock 10-in-1 Aluminum USB-C Hub & 1TB NVMe Enclosure",
     titleAr: "موزع USB-C احترافي 10 في 1 من الألمنيوم مع منفذ HDMI 4K",
     descriptionEn: "Features 4K@60Hz HDMI, Gigabit Ethernet, 100W PD pass-through charging, SD/TF card readers, and 4 high-speed USB 3.2 ports.",
@@ -377,6 +656,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "INK-TONER-01",
     categorySlug: "ink-consumables",
+    subcategorySlug: "toner-cartridges",
     titleEn: "LaserJet Pro High-Yield Black Toner Cartridge (3,500 Pages)",
     titleAr: "خرطوشة تونر ليزر أسود عالية الإنتاجية (3500 صفحة)",
     descriptionEn: "Smart-chip equipped high-density monochrome laser toner producing razor-sharp text and technical diagrams without smudging.",
@@ -399,6 +679,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "INK-CMYK-02",
     categorySlug: "ink-consumables",
+    subcategorySlug: "ink-refills",
     titleEn: "EcoTank CMYK Pigment Refill Ink Multipack (4 × 100ml Bottles)",
     titleAr: "طقم عبوات حبر إيكو-تانك الأربعة CMYK (4 × 100 مل)",
     descriptionEn: "Spill-free auto-stop nozzles delivering up to 7,500 color pages and 6,000 black pages with fade-resistant archival ink.",
@@ -421,6 +702,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "INK-PAPER-03",
     categorySlug: "ink-consumables",
+    subcategorySlug: "paper-reams",
     titleEn: "Atelier Ultra-White 90gsm A4 Laser & Inkjet Paper Box (5 Reams / 2500 Sheets)",
     titleAr: "صندوق ورق A4 فائق البياض 90 جرام للطباعة الليزرية والحبرية (5 رزم / 2500 ورقة)",
     descriptionEn: "High-opacity CIE 168 whiteness paper engineered for jam-free high-speed duplex printing in schools, copy centers, and corporate offices.",
@@ -445,6 +727,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "ART-MARK-01",
     categorySlug: "art-drafting",
+    subcategorySlug: "art-markers",
     titleEn: "StudioPro 48-Color Dual-Tip Alcohol Art Markers in Carrying Case",
     titleAr: "حقيبة أقلام ماركر فنية مزدوجة الرأس 48 لوناً",
     descriptionEn: "Blendable alcohol-based ink with Japanese brush and broad chisel nibs for architecture rendering, illustration, and industrial design.",
@@ -467,6 +750,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "ART-GEOM-02",
     categorySlug: "art-drafting",
+    subcategorySlug: "geometry-sets",
     titleEn: "Precision Solid Brass & Steel Architecture Compass & Drafting Kit",
     titleAr: "طقم الهندسة والرسم التقني الاحترافي من النحاس والفولاذ",
     descriptionEn: "Micro-screw adjustment giant bow compass, extension beam, anodized aluminum scale ruler, and metal protractor in a shockproof tin case.",
@@ -489,6 +773,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "ART-SKETCH-03",
     categorySlug: "art-drafting",
+    subcategorySlug: "sketchpads",
     titleEn: "A4 Cold-Press 300gsm Watercolor & Mixed Media Pad (30 Sheets)",
     titleAr: "كراسة رسم مائي وفنون مختلطة A4 بوزن 300 جرام (30 لوحة)",
     descriptionEn: "100% cotton-blend textured cold-press sheets glued on all 4 sides to prevent warping under heavy washes.",
@@ -513,6 +798,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "CALC-SCI-01",
     categorySlug: "calculators-tech",
+    subcategorySlug: "scientific-calculators",
     titleEn: "GraphMaster FX-991EX High-Resolution Scientific Calculator (552 Functions)",
     titleAr: "آلة حاسبة علمية متطورة عالية الدقة (552 وظيفة حسابية)",
     descriptionEn: "Natural textbook display showing matrices, integrals, vectors, and spreadsheet calculations exactly as written in textbooks. Dual solar & battery powered.",
@@ -535,6 +821,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "CALC-DESK-02",
     categorySlug: "calculators-tech",
+    subcategorySlug: "desk-calculators",
     titleEn: "Tactile Mechanical-Switch 12-Digit Executive Financial Calculator",
     titleAr: "آلة حاسبة مكتبية مالية 12 رقماً بمفاتيح ميكانيكية مريحة",
     descriptionEn: "Tilted large LCD readout with crisp mechanical key switches, tax/margin keys, and brushed aluminum faceplate for accounting desks.",
@@ -557,6 +844,7 @@ export const INITIAL_PRODUCTS: NewProduct[] = [
   {
     sku: "CALC-LAMP-03",
     categorySlug: "calculators-tech",
+    subcategorySlug: "desk-lamps",
     titleEn: "Luminaire Eye-Care Architect LED Desk Lamp with Wireless Charger",
     titleAr: "مصباح مكتب LED لحماية العين مع قاعدة شحن لاسلكي للهاتف",
     descriptionEn: "Flicker-free CRI 95+ studio lighting with 5 color temperatures (2700K–6500K), Pomodoro 45-minute study timer, and 15W Qi wireless charging pad.",
@@ -819,6 +1107,12 @@ export async function ensureDatabaseSeeded() {
   // Migration: add is_hidden column if not exists (for existing DBs)
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false;`);
 
+  // Migration: add parent_slug to categories for subcategory support
+  await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_slug TEXT;`);
+
+  // Migration: add subcategory_slug to products
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory_slug TEXT;`);
+
   // Migration: editable homepage content (banner, texts & storefront photo)
   await pool.query(`
     ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS announcement_enabled BOOLEAN NOT NULL DEFAULT true;
@@ -859,6 +1153,14 @@ export async function ensureDatabaseSeeded() {
   if (catCount === 0) {
     await db.insert(categories).values(INITIAL_CATEGORIES);
   } else {
+    // Ensure subcategories are seeded (they may not exist if the DB was created before subcategory support)
+    const subcategories = INITIAL_CATEGORIES.filter(c => c.parentSlug);
+    for (const sub of subcategories) {
+      const existing = await db.select().from(categories).where(eq(categories.slug, sub.slug!)).limit(1);
+      if (existing.length === 0) {
+        await db.insert(categories).values(sub);
+      }
+    }
     // Upgrade category illustrative images to new high-quality (migrate old Pexels/cat-*.jpg)
     await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/notebooks.webp' WHERE slug='notebooks'`);
     await pool.query(`UPDATE categories SET image_url='/images/category-illustrations/writing.webp' WHERE slug='writing'`);
@@ -879,6 +1181,16 @@ export async function ensureDatabaseSeeded() {
         wholesalePrice: toLyd(product.wholesalePrice),
       }))
     );
+  } else {
+    // Backfill subcategorySlug on existing products
+    for (const product of INITIAL_PRODUCTS) {
+      if (product.subcategorySlug) {
+        await pool.query(
+          `UPDATE products SET subcategory_slug = $1 WHERE sku = $2 AND (subcategory_slug IS NULL OR subcategory_slug = '')`,
+          [product.subcategorySlug, product.sku]
+        );
+      }
+    }
   }
 
   const existingSettings = await db.select().from(storeSettings).limit(1);
