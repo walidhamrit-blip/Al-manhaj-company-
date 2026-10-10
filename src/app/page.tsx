@@ -1009,39 +1009,38 @@ export default function StorefrontPage() {
       </section>
 
       {/* =====================================================================
-          2. MYTEK-STYLE CATEGORY CARDS
+          2. MYTEK-STYLE DEPARTMENT TILES
+          Compact single row of tiles (the full department navigation now
+          lives in the vertical catalogue menu, so this strip stays light).
       ===================================================================== */}
       <section
         id="departments-section"
-        className="mx-auto w-full max-w-[1580px] scroll-mt-24 px-2 sm:px-3 lg:px-4 py-8 sm:py-12 bg-white"
+        className="mx-auto w-full max-w-[1580px] scroll-mt-24 px-2 sm:px-3 lg:px-4 py-6 sm:py-8 bg-white"
       >
-        <div className="mb-5 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-1">
+        <div className="mb-3 sm:mb-4 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-0.5">
               {lang === "ar" ? "تسوق حسب القسم" : "SHOP BY DEPARTMENT"}
             </span>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
+            <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">
               {t.categoriesTitle}
             </h2>
-            <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
-              {t.categoriesSubtitle}
-            </p>
           </div>
 
           <button
             type="button"
             onClick={() => handleSelectCategoryAndScroll("all")}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-2 text-[11px] font-bold transition hover:bg-gray-50 text-gray-700"
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-[11px] font-bold transition hover:bg-gray-50 text-gray-700"
           >
             <span>
               {t.allCategories} ({products.filter(p=>!p.isHidden).length})
             </span>
-            <ArrowRight className="h-3 w-3" />
+            <ArrowRight className={`h-3 w-3 ${isRtl ? "rotate-180" : ""}`} />
           </button>
         </div>
 
-        {/* Mytek-style Category Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        {/* Every department stays visible (no horizontal scrolling): 4 per row on phones, one row on desktop */}
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:grid-cols-7">
           {categories.map((cat) => {
             const countInCat = products.filter(
               (p) => !p.isHidden && p.categorySlug === cat.slug
@@ -1053,30 +1052,31 @@ export default function StorefrontPage() {
                 key={cat.id}
                 type="button"
                 onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                className="category-card-mytek group relative flex h-48 sm:h-56 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-start shadow-sm"
+                aria-pressed={isSelected}
+                className="category-card-mytek group relative flex flex-col items-center gap-1.5 rounded-lg border bg-white px-1.5 py-2 text-center shadow-sm sm:gap-2 sm:px-2 sm:py-3"
                 style={{
                   borderColor: isSelected ? '#E31837' : '#E0E0E0',
                   borderWidth: isSelected ? '2px' : '1px',
                 }}
               >
-                <CategoryImage
-                  slug={cat.slug}
-                  src={cat.imageUrl}
-                  alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                  className="h-[70%] w-full bg-gray-50 object-contain px-3 pt-3 transition-transform duration-300 group-hover:scale-105"
-                />
+                <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+                  <CategoryImage
+                    slug={cat.slug}
+                    src={cat.imageUrl}
+                    alt={lang === "ar" ? cat.nameAr : cat.nameEn}
+                    className="h-full w-full object-contain p-1 transition-transform duration-300 group-hover:scale-105"
+                  />
+                </span>
 
-                <div className="mt-auto border-t border-gray-100 px-3 py-2 bg-white">
-                  <h3 className="line-clamp-1 text-[11px] font-extrabold leading-snug text-gray-900 sm:text-xs">
-                    {lang === "ar" ? cat.nameAr : cat.nameEn}
-                  </h3>
-                  <span className="text-[9px] text-gray-500 font-medium">
-                    {countInCat} {t.itemsLabel}
-                  </span>
-                </div>
+                <span className="line-clamp-2 w-full text-[9px] font-extrabold leading-tight text-gray-900 sm:text-[11px]">
+                  {lang === "ar" ? cat.nameAr : cat.nameEn}
+                </span>
+                <span className="hidden text-[9px] font-medium text-gray-500 sm:block">
+                  {countInCat} {t.itemsLabel}
+                </span>
 
                 {isSelected && (
-                  <span className="absolute top-2 end-2 rounded-full px-2 py-0.5 text-[8px] font-bold text-white" style={{backgroundColor: '#E31837'}}>
+                  <span className="absolute top-1 end-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold text-white" style={{backgroundColor: '#E31837'}}>
                     ✓
                   </span>
                 )}
@@ -1352,8 +1352,9 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          {/* Keep every category visible without a horizontal scrolling strip. */}
-          <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3 xl:grid-cols-4">
+          {/* Keep every category visible without a horizontal scrolling strip:
+              compact chips that wrap onto new lines instead of tall grid cells. */}
+          <div className="flex flex-wrap gap-1.5 pt-1">
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
@@ -1371,9 +1372,9 @@ export default function StorefrontPage() {
                       color: currentTheme.colors.textPrimary,
                     }
               }
-              className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-bold transition hover:opacity-85"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-bold transition hover:opacity-85"
             >
-              <span className="min-w-0 flex-1 line-clamp-2">{t.allCategories}</span>
+              <span className="min-w-0 truncate">{t.allCategories}</span>
               <span className="shrink-0 tabular-nums opacity-75">
                 ({products.filter((product) => !product.isHidden).length})
               </span>
@@ -1403,9 +1404,9 @@ export default function StorefrontPage() {
                           color: currentTheme.colors.textPrimary,
                         }
                   }
-                  className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-semibold transition hover:opacity-85"
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 text-start text-[11px] font-semibold transition hover:opacity-85"
                 >
-                  <span className="min-w-0 flex-1 line-clamp-2">
+                  <span className="min-w-0 truncate">
                     {lang === "ar" ? cat.nameAr : cat.nameEn}
                   </span>
                   <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
