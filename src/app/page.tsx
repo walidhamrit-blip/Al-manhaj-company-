@@ -82,6 +82,13 @@ export default function StorefrontPage() {
         .sort((a, b) => a.sortOrder - b.sortOrder),
     [categories]
   );
+  // Sections de la page d'accueil (tuiles, carrousels, grille, pied de page) :
+  // uniquement les catégories cochées « Afficher sur la page d'accueil ».
+  // Le méga-menu et le tiroir catalogue reçoivent toujours la liste complète.
+  const homeCategories = useMemo(
+    () => topLevelCategories.filter((category) => category.showOnHome !== false),
+    [topLevelCategories]
+  );
   const productMatchesCategory = useCallback(
     (product: Product, categorySlug: string) => {
       const category = categoriesBySlug.get(categorySlug);
@@ -389,7 +396,7 @@ export default function StorefrontPage() {
   }, [products]);
 
   const categorySelections = useMemo(() => {
-    return topLevelCategories
+    return homeCategories
       .map((category) => ({
         category,
         items: products
@@ -401,7 +408,7 @@ export default function StorefrontPage() {
           .slice(0, 10),
       }))
       .filter((group) => group.items.length > 0);
-  }, [topLevelCategories, products, productMatchesCategory]);
+  }, [homeCategories, products, productMatchesCategory]);
 
   // Category selection handler: open the master catalog drawer on that department
   const handleOpenCatalog = (slug: string) => {
@@ -984,7 +991,7 @@ export default function StorefrontPage() {
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
-            {topLevelCategories.map((cat) => (
+            {homeCategories.map((cat) => (
               <button
                 key={`tile-${cat.slug}`}
                 type="button"
@@ -1086,7 +1093,7 @@ export default function StorefrontPage() {
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {topLevelCategories.map((cat) => {
+            {homeCategories.map((cat) => {
               const countInCat = products.filter(
                 (product) =>
                   !product.isHidden &&
@@ -1448,7 +1455,7 @@ export default function StorefrontPage() {
               {t.categoriesTitle}
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
-              {topLevelCategories.map((cat) => (
+              {homeCategories.map((cat) => (
                 <button
                   key={cat.slug}
                   type="button"

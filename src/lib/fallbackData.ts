@@ -1410,6 +1410,9 @@ export function hydrateFallbackStore() {
     categories: INITIAL_CATEGORIES.map((category, index) => ({
       ...category,
       id: index + 1,
+      parentSlug: category.parentSlug ?? null,
+      // Hors base de données : seuls les rayons principaux occupent la page d'accueil.
+      showOnHome: category.showOnHome ?? !category.parentSlug,
     })),
     products: INITIAL_PRODUCTS.map((product, index) => ({
       ...product,

@@ -173,6 +173,8 @@ export async function ensureDatabaseSeeded() {
 
   // Migration: add parent_slug to categories for subcategory support
   await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_slug TEXT;`);
+  // Migration: visibilité en page d'accueil (les sous-catégories héritent de « masqué » par défaut)
+  await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS show_on_home BOOLEAN NOT NULL DEFAULT true;`);
 
   // Migration: add subcategory_slug to products
   await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory_slug TEXT;`);
