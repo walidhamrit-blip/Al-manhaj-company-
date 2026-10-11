@@ -20,6 +20,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
 import { CategoryImage } from "@/components/CategoryImage";
+import { HScrollStrip } from "@/components/HScrollStrip";
 import { StoreImage } from "@/components/StoreImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
@@ -990,19 +991,21 @@ export default function StorefrontPage() {
         </section>
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
-          {/* Single-row strip that never wraps, whatever the breakpoint:
-              `grow basis-0` lets the tiles share the available width when they
-              all fit (no dead space on wide screens), while `min-w-*` floors
-              them so the row overflows and scrolls as soon as they don't — or
-              when a new category is added. Negative margins let the strip bleed
-              to the viewport edges while `px-*` keeps the first tile aligned. */}
-          <div className="no-scrollbar -mx-3 flex flex-nowrap gap-2 overflow-x-auto px-3 pb-1 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6">
+          {/* One line, always. `grow basis-0` lets the tiles share the width
+              when everything fits, while `min-w-*` floors each of them so the
+              10 departments overflow the 1760px container: the track scrolls
+              instead of shrinking the tiles into unreadable slivers. Bleed
+              margins and the edge fade come from HScrollStrip. */}
+          <HScrollStrip
+            ariaLabel={t.categoriesTitle}
+            className="-mx-3 gap-2 px-3 pb-1 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6"
+          >
             {homeCategories.map((cat) => (
               <button
                 key={`tile-${cat.slug}`}
                 type="button"
                 onClick={() => handleOpenCatalog(cat.slug)}
-                className="group flex min-w-[168px] max-w-[240px] basis-0 grow flex-col overflow-hidden border bg-white text-start hover:shadow-md"
+                className="group flex min-w-[152px] max-w-[240px] basis-0 grow flex-col overflow-hidden border bg-white text-start hover:shadow-md sm:min-w-[196px]"
                 style={{ borderColor: currentTheme.colors.border }}
               >
                 <div className="relative aspect-[16/9] overflow-hidden bg-white">
@@ -1018,7 +1021,7 @@ export default function StorefrontPage() {
                 </div>
               </button>
             ))}
-          </div>
+          </HScrollStrip>
         </section>
 
         <ProductCarousel
@@ -1098,7 +1101,10 @@ export default function StorefrontPage() {
               {t.seeMore}
             </button>
           </div>
-          <div className="no-scrollbar -mx-2 flex flex-nowrap gap-3 overflow-x-auto px-2 pb-1 sm:-mx-3 sm:px-3 lg:-mx-4 lg:px-4">
+          <HScrollStrip
+            ariaLabel={t.otherCategories}
+            className="-mx-2 gap-3 px-2 pb-1 sm:-mx-3 sm:px-3 lg:-mx-4 lg:px-4"
+          >
             {homeCategories.map((cat) => {
               const countInCat = products.filter(
                 (product) =>
@@ -1110,7 +1116,7 @@ export default function StorefrontPage() {
                   key={cat.slug}
                   type="button"
                   onClick={() => handleOpenCatalog(cat.slug)}
-                  className="group flex min-w-[236px] max-w-[340px] basis-0 grow items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
+                  className="group flex min-w-[244px] max-w-[340px] basis-0 grow items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
                   style={{ borderColor: currentTheme.colors.border }}
                 >
                   <CategoryImage
@@ -1130,7 +1136,7 @@ export default function StorefrontPage() {
                 </button>
               );
             })}
-          </div>
+          </HScrollStrip>
         </section>
 
       {/* =====================================================================
