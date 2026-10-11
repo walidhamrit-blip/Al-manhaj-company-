@@ -187,6 +187,25 @@ export function formatPrice(amount: number, lang: Language): string {
   return lang === "ar" ? `${value} د.ل` : `${value} LYD`;
 }
 
+/**
+ * Hero/banner hooks are bilingual (badge + title + subtitle + CTA per language)
+ * and the artwork is composed for the left-to-right reading order: the calm
+ * area of the picture — the one the dark scrim darkens — sits on the left.
+ * In Arabic the copy is aligned to the right, so the picture is mirrored
+ * horizontally; the headline then lands on that calm area instead of running
+ * over the products, and the gradient is flipped to match (see below).
+ */
+export function bannerImageClass(lang: Language, base: string): string {
+  return lang === "ar" ? `${base} -scale-x-100` : base;
+}
+
+/** Mirrors the banner scrim (dark side follows the text side). */
+export function bannerScrimClass(lang: Language, stops: string): string {
+  return lang === "ar"
+    ? `absolute inset-0 bg-gradient-to-l ${stops}`
+    : `absolute inset-0 bg-gradient-to-r ${stops}`;
+}
+
 export const UI_TEXT = {
   en: {
     masterCatalog: "Catalog",
