@@ -1,5 +1,44 @@
 # Guide Déploiement Store Arena - Next.js + PostgreSQL vers Github + Cloudflare
 
+## 🚨 ÉTAT ACTUEL DU DÉPLOIEMENT (à lire en premier)
+
+Le projet Cloudflare Pages lié à ce dépôt **échoue à chaque build** : le check
+« Cloudflare Pages » est en échec sur `main` et sur toutes les pull requests
+(le rapport GitHub indique `Status: 🚫 Build failed`).
+
+**Pourquoi :** le projet Cloudflare est configuré avec la chaîne documentée plus
+bas (`npx @cloudflare/next-on-pages@1` → `.vercel/output/static`), or
+`@cloudflare/next-on-pages` ne supporte pas **Next.js 16** (utilisé par ce
+dépôt, `next@16.4.0`) et l'adaptateur n'est pas installé dans `package.json`.
+**Conséquence :** le site Cloudflare ne se met jamais à jour — il affiche
+l'ancienne version du store, même quand `main` contient des correctifs.
+
+**Vercel, en revanche, build correctement** (`Vercel` = pass sur chaque commit) :
+c'est aujourd'hui le seul déploiement à jour.
+
+### Deux options
+
+**Option A — garder Vercel comme seul déploiement (recommandé, 2 min)**
+1. Cloudflare dashboard > Workers & Pages > `al-manhaj-company` > Settings >
+   *Builds & deployments* : désactivez le déploiement automatique du dépôt
+   (ou supprimez le projet), pour ne plus avoir de check en échec.
+2. Vérifiez sur Vercel que la variable `DATABASE_URL` (Neon) est bien définie en
+   Production **et** en Preview, puis redéployez `main`.
+
+**Option B — rester sur Cloudflare (migration à faire)**
+`@opennextjs/cloudflare` supporte Next.js 16 (`peerDependencies: next >=16.3.8`) :
+1. `npm i -D @opennextjs/cloudflare wrangler` + `open-next.config.ts`,
+   `wrangler.jsonc` avec `main = ".open-next/worker.js"` et
+   `compatibility_flags = ["nodejs_compat"]`.
+2. Passer le projet Cloudflare en **Worker** (et non Pages) avec la commande
+   `npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy`.
+3. La base `pg` (node-postgres) ne peut pas ouvrir de connexion TCP telle quelle
+   depuis un Worker : il faut **Hyperdrive** (pooler Cloudflare) et utiliser sa
+   chaîne de connexion comme `DATABASE_URL` (ou le driver Neon HTTP).
+Tant que ces 3 points ne sont pas faits côté dashboard, gardez l'option A.
+
+---
+
 ## ⚠️ DIAGNOSTIC DE TON PROJET
 
 Ton `package.json` indique :
