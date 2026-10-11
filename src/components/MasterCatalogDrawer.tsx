@@ -16,7 +16,6 @@ import {
   BookOpen,
   Layers,
   ShoppingBag,
-  ArrowUpRight,
   Package,
   CheckCircle2,
 } from "lucide-react";
@@ -40,7 +39,12 @@ interface MasterCatalogDrawerProps {
   lang: Language;
   theme: ThemeConfig;
   currencySymbol: string;
-  onSelectCategory: (slug: string) => void;
+  // Controlled from the page: the header search bar and the category tiles
+  // drive the same search / department state as the drawer itself.
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
+  activeDeptSlug: string;
+  onActiveDeptSlugChange: (slug: string) => void;
   onAddToCart: (product: Product, qty: number) => void;
   onQuickView: (product: Product) => void;
 }
@@ -53,13 +57,14 @@ export function MasterCatalogDrawer({
   lang,
   theme,
   currencySymbol,
-  onSelectCategory,
+  searchQuery,
+  onSearchQueryChange,
+  activeDeptSlug,
+  onActiveDeptSlugChange,
   onAddToCart,
   onQuickView,
 }: MasterCatalogDrawerProps) {
   const t = UI_TEXT[lang];
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeDeptSlug, setActiveDeptSlug] = useState<string>("all");
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
   const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
   const categoriesBySlug = useMemo(
@@ -174,7 +179,7 @@ export function MasterCatalogDrawer({
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => onSearchQueryChange(e.target.value)}
                 placeholder={t.searchPlaceholder}
                 style={{
                   backgroundColor: theme.colors.bgSecondary,
@@ -190,7 +195,7 @@ export function MasterCatalogDrawer({
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
             <button
               type="button"
-              onClick={() => setActiveDeptSlug("all")}
+              onClick={() => onActiveDeptSlugChange("all")}
               aria-pressed={activeDeptSlug === "all"}
               style={
                 activeDeptSlug === "all"
@@ -223,7 +228,7 @@ export function MasterCatalogDrawer({
                 <button
                   key={cat.slug}
                   type="button"
-                  onClick={() => setActiveDeptSlug(cat.slug)}
+                  onClick={() => onActiveDeptSlugChange(cat.slug)}
                   aria-pressed={isSelected}
                   style={
                     isSelected
@@ -314,25 +319,6 @@ export function MasterCatalogDrawer({
                       </p>
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectCategory(category.slug);
-                      onClose();
-                    }}
-                    style={{
-                      color: theme.colors.accentPrimary,
-                    }}
-                    className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold hover:underline"
-                  >
-                    <span>
-                      {lang === "ar"
-                        ? "عرض القسم في المتجر"
-                        : "Filter Store by Department"}
-                    </span>
-                    <ArrowUpRight className="h-4 w-4" />
-                  </button>
                 </div>
 
                 {/* Detailed Item Rows */}

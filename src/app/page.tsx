@@ -10,7 +10,6 @@ import {
   type ThemeId,
 } from "@/lib/i18n-themes";
 import { hydrateFallbackStore } from "@/lib/fallbackData";
-import { CATALOG_DEPARTMENTS } from "@/lib/catalog-tree";
 import {
   getProductParentSlug,
   getProductSubcategorySlug,
@@ -36,7 +35,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
-  SlidersHorizontal,
   MessageCircle,
   Check,
   ArrowRight,
@@ -45,12 +43,9 @@ import {
   MapPin,
   Clock,
   Building2,
-  RotateCcw,
-  Menu,
   Truck,
   Headphones,
   CreditCard,
-  ChevronDown,
 } from "lucide-react";
 
 export default function StorefrontPage() {
@@ -62,7 +57,6 @@ export default function StorefrontPage() {
   // Visual Theme state (7 curated e-commerce themes)
   const [themeId, setThemeId] = useState<ThemeId>("cyber");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-  const [isCatNavOpen, setIsCatNavOpen] = useState(false);
   const currentTheme = useMemo(
     () => THEMES.find((th) => th.id === themeId) || THEMES[0],
     [themeId]
@@ -72,7 +66,6 @@ export default function StorefrontPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<StoreSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const categoriesBySlug = useMemo(
     () => new Map(categories.map((category) => [category.slug, category])),
     [categories]
@@ -97,14 +90,10 @@ export default function StorefrontPage() {
   // Hero Carousel state
   const [heroIndex, setHeroIndex] = useState(0);
 
-  // Search & Filter states
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  // Search state — shared by the header search bar and the master catalog drawer
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [maxPrice, setMaxPrice] = useState<number>(2000);
-  const [onlyPromo, setOnlyPromo] = useState<boolean>(false);
-  const [sortBy, setSortBy] = useState<
-    "featured" | "price-asc" | "price-desc" | "stock"
-  >("featured");
+  // Department highlighted when the master catalog drawer opens
+  const [catalogDeptSlug, setCatalogDeptSlug] = useState<string>("all");
 
   // Wholesale Interactive Estimator states
   const [wholesaleProductId, setWholesaleProductId] = useState<number>(0);
@@ -177,11 +166,6 @@ export default function StorefrontPage() {
       }
       if (nextProducts.length > 0) {
         setWholesaleProductId((prev) => prev || nextProducts[0].id);
-        const highest = Math.max(
-          ...nextProducts.map((p: Product) => Number(p.price) || 100),
-          120
-        );
-        setMaxPrice(Math.ceil(highest + 20));
       }
     } catch (err) {
       console.error("Failed to fetch store data, using seed fallback:", err);
@@ -194,8 +178,6 @@ export default function StorefrontPage() {
           setWholesaleProductId((prev) => prev || fallback.products[0].id);
         }
       } catch {}
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -386,86 +368,16 @@ export default function StorefrontPage() {
       .filter((group) => group.items.length > 0);
   }, [topLevelCategories, products, productMatchesCategory]);
 
-  // Highest product price for filter slider max
-  const highestCatalogPrice = useMemo(() => {
-    if (products.length === 0) return 2000;
-    return Math.ceil(
-      Math.max(...products.map((p) => Number(p.price) || 50), 100)
-    );
-  }, [products]);
-
-  // Filtered & Sorted Products for the main catalog (hidden products excluded from storefront)
-  const filteredProducts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    const list = products.filter((p) => {
-      if (p.isHidden) return false;
-      if (
-        selectedCategory !== "all" &&
-        !productMatchesCategory(p, selectedCategory)
-      ) {
-        return false;
-      }
-      if (Number(p.price) > maxPrice) {
-        return false;
-      }
-      if (onlyPromo && !p.isPromotion) {
-        return false;
-      }
-      if (q) {
-        const match =
-          p.titleEn.toLowerCase().includes(q) ||
-          p.titleAr.toLowerCase().includes(q) ||
-          p.descriptionEn.toLowerCase().includes(q) ||
-          p.descriptionAr.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q) ||
-          p.specsEn.toLowerCase().includes(q) ||
-          p.specsAr.toLowerCase().includes(q);
-        if (!match) return false;
-      }
-      return true;
-    });
-
-    return [...list].sort((a, b) => {
-      if (sortBy === "price-asc") return Number(a.price) - Number(b.price);
-      if (sortBy === "price-desc") return Number(b.price) - Number(a.price);
-      if (sortBy === "stock") return b.stock - a.stock;
-      return Number(b.isFeatured) - Number(a.isFeatured);
-    });
-  }, [
-    products,
-    selectedCategory,
-    maxPrice,
-    onlyPromo,
-    searchQuery,
-    sortBy,
-    productMatchesCategory,
-  ]);
-
-  // Keep every product under its parent category in the complete catalog.
-  const catalogGroups = useMemo(() => {
-    return topLevelCategories
-      .map((category) => ({
-        category,
-        items: filteredProducts.filter((product) =>
-          productMatchesCategory(product, category.slug)
-        ),
-      }))
-      .filter((group) => group.items.length > 0);
-  }, [topLevelCategories, filteredProducts, productMatchesCategory]);
-
-  // Category selection handler that smoothly scrolls to the catalog section
-  const handleSelectCategoryAndScroll = (slug: string) => {
-    setSelectedCategory(slug);
-    const el = document.getElementById("catalog-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
+  // Category selection handler: open the master catalog drawer on that department
+  const handleOpenCatalog = (slug: string) => {
+    setCatalogDeptSlug(slug);
+    setIsCatalogOpen(true);
   };
 
   const handleSearchSubmit = (event?: React.FormEvent) => {
     event?.preventDefault();
-    setSelectedCategory("all");
-    document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" });
+    setCatalogDeptSlug("all");
+    setIsCatalogOpen(true);
   };
 
   // Wholesale Calculator Logic
@@ -879,98 +791,22 @@ export default function StorefrontPage() {
           style={{ backgroundColor: currentTheme.colors.accentPrimary }}
         >
           <div className="mx-auto flex max-w-[1760px] items-stretch gap-0 px-1 sm:px-2">
-            <button
-              type="button"
-              onClick={() => setIsCatNavOpen((open) => !open)}
-              className="flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-extrabold uppercase tracking-wide hover:bg-black/15"
-            >
-              <Menu className="h-4 w-4" />
-              <span className="hidden sm:inline">{t.allDepartments}</span>
-              <ChevronDown className={`h-3.5 w-3.5 transition ${isCatNavOpen ? "rotate-180" : ""}`} />
-            </button>
-            <div className="hidden md:flex min-w-0 flex-1 items-center overflow-x-auto no-scrollbar">
-              {topLevelCategories.map((cat) => (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                  className="shrink-0 px-3 py-2.5 text-[13px] font-semibold hover:bg-black/15"
-                >
-                  {lang === "ar" ? cat.nameAr : cat.nameEn}
-                </button>
-              ))}
-            </div>
             <a
               href="/magasin"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
             >
               <MapPin className="h-4 w-4" />
               {t.ourStore}
             </a>
             <button
               type="button"
-              onClick={() => setIsCatalogOpen(true)}
-              className="ms-auto hidden sm:flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+              onClick={() => handleOpenCatalog("all")}
+              className="ms-auto flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
             >
               <BookOpen className="h-4 w-4" />
               {t.masterCatalog}
             </button>
           </div>
-          <div className="flex md:hidden overflow-x-auto no-scrollbar border-t border-white/20">
-            <a href="/magasin" className="shrink-0 px-3 py-2 text-[12px] font-semibold">
-              {t.ourStore}
-            </a>
-            {topLevelCategories.map((cat) => (
-              <button
-                key={`mnav-${cat.slug}`}
-                type="button"
-                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
-                className="shrink-0 px-3 py-2 text-[12px] font-semibold"
-              >
-                {lang === "ar" ? cat.nameAr : cat.nameEn}
-              </button>
-            ))}
-          </div>
-          {isCatNavOpen && (
-            <div className="border-t border-white/20 bg-white text-neutral-900 shadow-lg">
-              <div className="mx-auto grid max-w-[1760px] grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCatNavOpen(false);
-                    handleSelectCategoryAndScroll("all");
-                  }}
-                  className="px-3 py-2 text-start text-sm font-bold hover:bg-neutral-100"
-                >
-                  {t.allCategories}
-                </button>
-                {CATALOG_DEPARTMENTS.map((dept) => (
-                  <div key={dept.slug} className="px-2">
-                    <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-[#E30613]">
-                      {lang === "ar" ? dept.nameAr : dept.nameEn}
-                    </p>
-                    {dept.children.map((childSlug) => {
-                      const cat = categories.find((c) => c.slug === childSlug);
-                      if (!cat) return null;
-                      return (
-                        <button
-                          key={`nav-${cat.slug}`}
-                          type="button"
-                          onClick={() => {
-                            setIsCatNavOpen(false);
-                            handleSelectCategoryAndScroll(cat.slug);
-                          }}
-                          className="block w-full px-1 py-1.5 text-start text-sm font-medium hover:bg-neutral-100"
-                        >
-                          {lang === "ar" ? cat.nameAr : cat.nameEn}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </nav>
       </header>
 
@@ -1000,7 +836,7 @@ export default function StorefrontPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      handleSelectCategoryAndScroll(currentHero.targetCategory || "all")
+                      handleOpenCatalog(currentHero.targetCategory || "all")
                     }
                     className="inline-flex items-center gap-2 px-4 py-2 text-xs font-extrabold text-white"
                     style={{ backgroundColor: currentTheme.colors.accentPrimary }}
@@ -1060,7 +896,7 @@ export default function StorefrontPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => handleSelectCategoryAndScroll("it-peripherals")}
+                onClick={() => handleOpenCatalog("it-peripherals")}
                 className="relative h-[140px] overflow-hidden sm:h-[180px] lg:h-[200px] text-start"
               >
                 <StoreImage
@@ -1107,7 +943,7 @@ export default function StorefrontPage() {
               <button
                 key={`tile-${cat.slug}`}
                 type="button"
-                onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                onClick={() => handleOpenCatalog(cat.slug)}
                 className="group overflow-hidden border bg-white text-start hover:shadow-md"
                 style={{ borderColor: currentTheme.colors.border }}
               >
@@ -1137,10 +973,7 @@ export default function StorefrontPage() {
           cart={cart}
           onAddToCart={handleAddToCart}
           onQuickView={setQuickViewProduct}
-          onSeeMore={() => {
-            setOnlyPromo(true);
-            handleSelectCategoryAndScroll("all");
-          }}
+          onSeeMore={() => handleOpenCatalog("all")}
         />
 
         {categorySelections.slice(0, 4).map((group, index) => (
@@ -1187,7 +1020,7 @@ export default function StorefrontPage() {
               cart={cart}
               onAddToCart={handleAddToCart}
               onQuickView={setQuickViewProduct}
-              onSeeMore={() => handleSelectCategoryAndScroll(group.category.slug)}
+              onSeeMore={() => handleOpenCatalog(group.category.slug)}
             />
           </div>
         ))}
@@ -1200,7 +1033,7 @@ export default function StorefrontPage() {
             <h2 className="text-lg font-bold sm:text-xl">{t.otherCategories}</h2>
             <button
               type="button"
-              onClick={() => handleSelectCategoryAndScroll("all")}
+              onClick={() => handleOpenCatalog("all")}
               className="text-xs font-semibold hover:underline sm:text-sm"
               style={{ color: currentTheme.colors.accentPrimary }}
             >
@@ -1218,7 +1051,7 @@ export default function StorefrontPage() {
                 <button
                   key={cat.slug}
                   type="button"
-                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                  onClick={() => handleOpenCatalog(cat.slug)}
                   className="group flex items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
                   style={{ borderColor: currentTheme.colors.border }}
                 >
@@ -1241,330 +1074,6 @@ export default function StorefrontPage() {
             })}
           </div>
         </section>
-
-      {/* =====================================================================
-          5. COMPLETE STORE CATALOG WITH SEARCH BAR & ADVANCED FILTERS
-      ===================================================================== */}
-      <section
-        id="catalog-section"
-        className="mx-auto w-full max-w-[1760px] scroll-mt-36 px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
-      >
-        <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-            {t.allProductsTitle}
-          </h2>
-          <p
-            style={{ color: currentTheme.colors.textSecondary }}
-            className="text-xs sm:text-sm mt-1"
-          >
-            {t.showingItems} <strong>{filteredProducts.length}</strong>{" "}
-            {t.itemsLabel} • {t.swipePhotosHint}
-          </p>
-        </div>
-
-        {/* Interactive Filter & Search Toolbar */}
-        <div
-          style={{
-            backgroundColor: currentTheme.colors.bgElevated,
-            borderColor: currentTheme.colors.border,
-          }}
-          className="mb-8 rounded-none border p-4 sm:p-5 shadow-sm space-y-4"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-            {/* Search Input */}
-            <div className="md:col-span-5 relative">
-              <Search
-                style={{ color: currentTheme.colors.textSecondary }}
-                className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4"
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t.searchPlaceholder}
-                style={{
-                  backgroundColor: currentTheme.colors.bgSecondary,
-                  borderColor: currentTheme.colors.border,
-                  color: currentTheme.colors.textPrimary,
-                }}
-                className="w-full rounded-none border py-2.5 ps-10 pe-4 text-sm outline-none focus:ring-2"
-              />
-            </div>
-
-            {/* Max Price Range Filter */}
-            <div className="md:col-span-3 flex flex-col">
-              <div className="flex items-center justify-between text-xs font-bold mb-1">
-                <span className="inline-flex items-center gap-1">
-                  <SlidersHorizontal className="h-3.5 w-3.5" />
-                  {t.filterByPrice}
-                </span>
-                <span
-                  style={{ color: currentTheme.colors.accentPrimary }}
-                  className="tabular-nums font-extrabold"
-                >
-                  {formatPrice(maxPrice, lang)}
-                </span>
-              </div>
-              <input
-                type="range"
-                min={10}
-                max={highestCatalogPrice}
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-current cursor-pointer"
-              />
-            </div>
-
-            {/* Sort Selector */}
-            <div className="md:col-span-2">
-              <select
-                value={sortBy}
-                onChange={(e) =>
-                  setSortBy(
-                    e.target.value as
-                      | "featured"
-                      | "price-asc"
-                      | "price-desc"
-                      | "stock"
-                  )
-                }
-                style={{
-                  backgroundColor: currentTheme.colors.bgSecondary,
-                  borderColor: currentTheme.colors.border,
-                  color: currentTheme.colors.textPrimary,
-                }}
-                className="w-full rounded-none border px-3 py-2.5 text-xs font-bold outline-none"
-              >
-                <option value="featured">{t.sortFeatured}</option>
-                <option value="price-asc">{t.sortPriceAsc}</option>
-                <option value="price-desc">{t.sortPriceDesc}</option>
-                <option value="stock">{t.sortStock}</option>
-              </select>
-            </div>
-
-            {/* Promotions Toggle & Reset */}
-            <div className="md:col-span-2 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setOnlyPromo((prev) => !prev)}
-                style={
-                  onlyPromo
-                    ? {
-                        backgroundColor: currentTheme.colors.accentPrimary,
-                        color: "#FFFFFF",
-                      }
-                    : {
-                        backgroundColor: currentTheme.colors.bgSecondary,
-                        color: currentTheme.colors.textPrimary,
-                      }
-                }
-                className="flex-1 rounded-none px-3 py-2.5 text-xs font-bold transition"
-              >
-                {t.onlyPromotions}
-              </button>
-
-              {(selectedCategory !== "all" ||
-                searchQuery ||
-                onlyPromo ||
-                maxPrice < highestCatalogPrice) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCategory("all");
-                    setSearchQuery("");
-                    setOnlyPromo(false);
-                    setMaxPrice(highestCatalogPrice);
-                  }}
-                  style={{
-                    backgroundColor: currentTheme.colors.bgSecondary,
-                    color: currentTheme.colors.textPrimary,
-                  }}
-                  title={t.resetFilters}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none transition hover:opacity-80"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Keep every category visible without a horizontal scrolling strip. */}
-          <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3 xl:grid-cols-4">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("all")}
-              aria-pressed={selectedCategory === "all"}
-              style={
-                selectedCategory === "all"
-                  ? {
-                      backgroundColor: currentTheme.colors.accentPrimary,
-                      borderColor: currentTheme.colors.accentPrimary,
-                      color: "#FFFFFF",
-                    }
-                  : {
-                      backgroundColor: currentTheme.colors.bgSecondary,
-                      borderColor: currentTheme.colors.border,
-                      color: currentTheme.colors.textPrimary,
-                    }
-              }
-              className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-bold transition hover:opacity-85"
-            >
-              <span className="min-w-0 flex-1 line-clamp-2">{t.allCategories}</span>
-              <span className="shrink-0 tabular-nums opacity-75">
-                ({products.filter((product) => !product.isHidden).length})
-              </span>
-            </button>
-
-            {categories.map((cat) => {
-              const countInCat = products.filter(
-                (product) =>
-                  !product.isHidden &&
-                  productMatchesCategory(product, cat.slug)
-              ).length;
-              const active = selectedCategory === cat.slug;
-              return (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  aria-pressed={active}
-                  style={
-                    active
-                      ? {
-                          backgroundColor: currentTheme.colors.accentPrimary,
-                          borderColor: currentTheme.colors.accentPrimary,
-                          color: "#FFFFFF",
-                        }
-                      : {
-                          backgroundColor: currentTheme.colors.bgSecondary,
-                          borderColor: currentTheme.colors.border,
-                          color: currentTheme.colors.textPrimary,
-                        }
-                  }
-                  className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start text-xs font-semibold transition hover:opacity-85"
-                >
-                  <span className="min-w-0 flex-1 line-clamp-2">
-                    {lang === "ar" ? cat.nameAr : cat.nameEn}
-                  </span>
-                  <span className="shrink-0 tabular-nums opacity-75">({countInCat})</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        {isLoading ? (
-          <div className="flex flex-col gap-3 sm:gap-4">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <div
-                key={n}
-                style={{ backgroundColor: currentTheme.colors.bgSecondary }}
-                className="h-44 sm:h-52 rounded-2xl animate-pulse"
-              />
-            ))}
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div
-            style={{
-              backgroundColor: currentTheme.colors.bgElevated,
-              borderColor: currentTheme.colors.border,
-            }}
-            className="rounded-none border p-12 text-center space-y-3"
-          >
-            <p className="text-lg font-bold">
-              {lang === "ar"
-                ? "لم يتم العثور على منتجات مطابقة للفلاتر المحددة"
-                : "No products match your active filters"}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategory("all");
-                setSearchQuery("");
-                setOnlyPromo(false);
-                setMaxPrice(highestCatalogPrice);
-              }}
-              style={{
-                backgroundColor: currentTheme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="inline-flex items-center gap-2 rounded-none px-5 py-2.5 text-xs font-extrabold"
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span>{t.resetFilters}</span>
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {catalogGroups.map(({ category, items: categoryProducts }) => (
-              <section
-                key={category.slug}
-                id={`catalog-category-${category.slug}`}
-                className="scroll-mt-36 space-y-3 sm:space-y-4"
-              >
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="flex items-center justify-between gap-3 rounded-2xl border p-3 sm:p-4"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <CategoryImage
-                      slug={category.slug}
-                      src={category.imageUrl}
-                      alt={lang === "ar" ? category.nameAr : category.nameEn}
-                      className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain p-1"
-                    />
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-extrabold sm:text-base">
-                        {lang === "ar" ? category.nameAr : category.nameEn}
-                      </h3>
-                      <p
-                        style={{ color: currentTheme.colors.textSecondary }}
-                        className="line-clamp-1 text-xs"
-                      >
-                        {lang === "ar" ? category.descriptionAr : category.descriptionEn}
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    style={{
-                      backgroundColor: currentTheme.colors.badgeBg,
-                      color: currentTheme.colors.badgeText,
-                    }}
-                    className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:text-xs"
-                  >
-                    {categoryProducts.length} {t.itemsLabel}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-3">
-                  {categoryProducts.map((product) => {
-                    const inCart =
-                      cart.find((item) => item.product.id === product.id)?.quantity || 0;
-                    return (
-                      <ProductCard
-                        key={product.sku}
-                        product={product}
-                        category={category}
-                        lang={lang}
-                        theme={currentTheme}
-                        currencySymbol={currencySymbol}
-                        cartQty={inCart}
-                        onAddToCart={handleAddToCart}
-                        onQuickView={setQuickViewProduct}
-                        layout="compact"
-                      />
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
-        )}
-      </section>
 
       {/* =====================================================================
           6. DEDICATED WHOLESALE & B2B BULK ORDERING SECTION
@@ -1898,7 +1407,7 @@ export default function StorefrontPage() {
                 <button
                   key={cat.slug}
                   type="button"
-                  onClick={() => handleSelectCategoryAndScroll(cat.slug)}
+                  onClick={() => handleOpenCatalog(cat.slug)}
                   className="text-start hover:underline truncate"
                 >
                   • {lang === "ar" ? cat.nameAr : cat.nameEn}
@@ -2086,7 +1595,10 @@ export default function StorefrontPage() {
         lang={lang}
         theme={currentTheme}
         currencySymbol={currencySymbol}
-        onSelectCategory={handleSelectCategoryAndScroll}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        activeDeptSlug={catalogDeptSlug}
+        onActiveDeptSlugChange={setCatalogDeptSlug}
         onAddToCart={handleAddToCart}
         onQuickView={(prod) => {
           setIsCatalogOpen(false);
