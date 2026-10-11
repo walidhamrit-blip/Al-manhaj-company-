@@ -5,6 +5,7 @@ import type {
   Category,
   HeroSlide,
   LandscapeBannerConfig,
+  MidBannerSlide,
   Product,
   StoreSettings,
 } from "@/db/schema";
@@ -628,6 +629,56 @@ export function AdminDashboardModal({
     patchSettings({
       landscapeBanner: { ...landscapeBannerForm, ...patch },
     });
+
+  /* -------------------------------------------------------------------------
+     Between-section image banners (the sliding strip under the categories)
+     Same shape as a hero slide on purpose, so every field below already has
+     its counterpart in the slideshow editor above.
+  ------------------------------------------------------------------------- */
+
+  const midBanners: MidBannerSlide[] = Array.isArray(settingsForm?.midBanners)
+    ? settingsForm.midBanners
+    : [];
+
+  const setMidBanners = (banners: MidBannerSlide[]) =>
+    patchSettings({ midBanners: banners });
+
+  const updateMidBanner = (index: number, patch: Partial<MidBannerSlide>) =>
+    setMidBanners(
+      midBanners.map((banner, i) =>
+        i === index ? { ...banner, ...patch } : banner
+      )
+    );
+
+  const addMidBanner = () =>
+    setMidBanners([
+      ...midBanners,
+      {
+        id: `mid-banner-${Date.now()}`,
+        imageUrl: "/images/hero-backtoschool.jpg",
+        badgeEn: "",
+        badgeAr: "",
+        titleEn: "",
+        titleAr: "",
+        subtitleEn: "",
+        subtitleAr: "",
+        ctaEn: "",
+        ctaAr: "",
+        targetCategory: categories[0]?.slug ?? "",
+      },
+    ]);
+
+  const removeMidBanner = (index: number) =>
+    setMidBanners(midBanners.filter((_, i) => i !== index));
+
+  const moveMidBanner = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= midBanners.length) return;
+    const next = [...midBanners];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    setMidBanners(next);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
@@ -2220,7 +2271,178 @@ export function AdminDashboardModal({
                     </button>
                   </PanelSection>
 
-                  {/* --- 4. Wide panoramic banner --- */}
+                  {/* --- 4. Between-section image banners (sliding strip) --- */}
+                  <PanelSection
+                    title={t.homepageMidBanners}
+                    hint={t.homepageMidBannersHint}
+                    icon={<Images className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    {midBanners.length === 0 ? (
+                      <p
+                        style={{ color: theme.colors.textSecondary }}
+                        className="text-xs"
+                      >
+                        {isAr
+                          ? "لا توجد بانات: القسم مخفي تماماً في الصفحة الرئيسية."
+                          : "No banners: the strip is hidden entirely on the homepage."}
+                      </p>
+                    ) : null}
+
+                    {midBanners.map((banner, index) => (
+                      <div
+                        key={banner.id || `mid-${index}`}
+                        style={{
+                          backgroundColor: theme.colors.bgElevated,
+                          borderColor: theme.colors.border,
+                        }}
+                        className="space-y-3 rounded-xl border p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-extrabold uppercase tracking-widest">
+                            {t.homepageMidBanner} {index + 1}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => moveMidBanner(index, -1)}
+                              disabled={index === 0}
+                              title={t.homepageMoveUp}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveMidBanner(index, 1)}
+                              disabled={index === midBanners.length - 1}
+                              title={t.homepageMoveDown}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeMidBanner(index)}
+                              title={isAr ? "حذف البان" : "Delete banner"}
+                              className="rounded-lg bg-red-600 p-1.5 text-white transition hover:bg-red-500"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <ImageUploadField
+                          label={
+                            isAr
+                              ? `صورة البان ${index + 1}`
+                              : `Banner ${index + 1} photo`
+                          }
+                          value={banner.imageUrl}
+                          onChange={(url) => updateMidBanner(index, { imageUrl: url })}
+                          adminToken={adminToken}
+                          lang={lang}
+                          theme={theme}
+                          required
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageBadgeText} (EN)`}
+                          labelAr={`${t.homepageBadgeText} (AR)`}
+                          valueEn={banner.badgeEn}
+                          valueAr={banner.badgeAr}
+                          onChangeEn={(v) => updateMidBanner(index, { badgeEn: v })}
+                          onChangeAr={(v) => updateMidBanner(index, { badgeAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageTitle} (EN)`}
+                          labelAr={`${t.homepageTitle} (AR)`}
+                          valueEn={banner.titleEn}
+                          valueAr={banner.titleAr}
+                          onChangeEn={(v) => updateMidBanner(index, { titleEn: v })}
+                          onChangeAr={(v) => updateMidBanner(index, { titleAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageDescription} (EN)`}
+                          labelAr={`${t.homepageDescription} (AR)`}
+                          valueEn={banner.subtitleEn}
+                          valueAr={banner.subtitleAr}
+                          onChangeEn={(v) => updateMidBanner(index, { subtitleEn: v })}
+                          onChangeAr={(v) => updateMidBanner(index, { subtitleAr: v })}
+                          theme={theme}
+                          textarea
+                        />
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <TextField
+                            label={`${t.homepageCtaText} (EN)`}
+                            value={banner.ctaEn}
+                            onChange={(v) => updateMidBanner(index, { ctaEn: v })}
+                            theme={theme}
+                          />
+                          <TextField
+                            label={`${t.homepageCtaText} (AR)`}
+                            value={banner.ctaAr}
+                            onChange={(v) => updateMidBanner(index, { ctaAr: v })}
+                            theme={theme}
+                            rtl
+                          />
+                          <div>
+                            <label className="mb-1 block text-xs font-bold">
+                              {t.homepageTargetCategory}
+                            </label>
+                            <select
+                              value={banner.targetCategory}
+                              onChange={(e) =>
+                                updateMidBanner(index, {
+                                  targetCategory: e.target.value,
+                                })
+                              }
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                                color: theme.colors.textPrimary,
+                              }}
+                              className="w-full rounded-xl border px-3 py-2 text-sm"
+                            >
+                              {categories.map((cat) => (
+                                <option key={cat.id} value={cat.slug}>
+                                  {isAr ? cat.nameAr : cat.nameEn}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addMidBanner}
+                      style={{
+                        backgroundColor: theme.colors.bgElevated,
+                        borderColor: theme.colors.border,
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-extrabold transition hover:opacity-80"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>{t.homepageAddMidBanner}</span>
+                    </button>
+                  </PanelSection>
+
+                  {/* --- 5. Wide panoramic banner --- */}
                   <PanelSection
                     title={t.homepageBanner}
                     hint={
@@ -2283,7 +2505,7 @@ export function AdminDashboardModal({
                     />
                   </PanelSection>
 
-                  {/* --- 5. Legal & compliance footer bar (CBL / Mawthooq / registry) --- */}
+                  {/* --- 6. Legal & compliance footer bar (CBL / Mawthooq / registry) --- */}
                   <PanelSection
                     title={t.homepageCompliance}
                     hint={t.homepageComplianceHint}

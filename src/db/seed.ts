@@ -215,6 +215,11 @@ export async function ensureDatabaseSeeded() {
     ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS payment_providers_url TEXT NOT NULL DEFAULT 'https://cbl.gov.ly/electronic-payment/';
   `);
 
+  // Migration: bannières images défilantes entre les sections de la page d'accueil.
+  // Nullable sans valeur par défaut : le backfill plus bas ne remplit que les
+  // lignes vides, ce qui injecte les 2 bannières de démarrage une seule fois.
+  await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS mid_banners JSONB;`);
+
   const [{ value: catCount }] = await db.select({ value: count() }).from(categories);
   if (catCount === 0) {
     await db.insert(categories).values(INITIAL_CATEGORIES);

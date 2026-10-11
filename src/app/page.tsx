@@ -11,7 +11,7 @@ import {
   type Language,
   type ThemeId,
 } from "@/lib/i18n-themes";
-import { hydrateFallbackStore } from "@/lib/fallbackData";
+import { hydrateFallbackStore, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
 import {
   getProductParentSlug,
   getProductSubcategorySlug,
@@ -20,6 +20,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
 import { CategoryImage } from "@/components/CategoryImage";
+import { HScrollStrip } from "@/components/HScrollStrip";
+import { SectionBannerCarousel } from "@/components/SectionBannerCarousel";
 import { StoreImage } from "@/components/StoreImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
@@ -373,6 +375,20 @@ export default function StorefrontPage() {
         targetCategory: "notebooks",
       },
     ];
+  }, [settings]);
+
+  // Bannières entre les sections, lues des réglages sinon du seed.
+  // Le repli ne s'applique QUE quand le champ est absent (base pas encore semée) :
+  // un tableau vide est un choix de l'administrateur, la section doit alors
+  // disparaître au prochain démarrage à froid plutôt que de se repeupler.
+  const midBanners = useMemo(() => {
+    const raw = settings?.midBanners;
+    if (Array.isArray(raw)) {
+      return raw.filter((banner) => Boolean(banner?.imageUrl?.trim()));
+    }
+    return (INITIAL_STORE_SETTINGS.midBanners ?? []).filter((banner) =>
+      Boolean(banner?.imageUrl?.trim())
+    );
   }, [settings]);
 
   // Auto-advance Hero Carousel every 6 seconds
@@ -990,13 +1006,21 @@ export default function StorefrontPage() {
         </section>
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
+          {/* One line, always. `grow basis-0` lets the tiles share the width
+              when everything fits, while `min-w-*` floors each of them so the
+              10 departments overflow the 1760px container: the track scrolls
+              instead of shrinking the tiles into unreadable slivers. Bleed
+              margins and the edge fade come from HScrollStrip. */}
+          <HScrollStrip
+            ariaLabel={t.categoriesTitle}
+            className="-mx-3 gap-2 px-3 pb-1 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6"
+          >
             {homeCategories.map((cat) => (
               <button
                 key={`tile-${cat.slug}`}
                 type="button"
                 onClick={() => handleOpenCatalog(cat.slug)}
-                className="group overflow-hidden border bg-white text-start hover:shadow-md"
+                className="group flex min-w-[152px] max-w-[240px] basis-0 grow flex-col overflow-hidden border bg-white text-start hover:shadow-md sm:min-w-[196px]"
                 style={{ borderColor: currentTheme.colors.border }}
               >
                 <div className="relative aspect-[16/9] overflow-hidden bg-white">
@@ -1007,13 +1031,25 @@ export default function StorefrontPage() {
                     className="h-full w-full object-contain p-2 transition group-hover:scale-105"
                   />
                 </div>
-                <div className="border-t px-2 py-2 text-center text-[11px] font-bold leading-tight sm:text-xs" style={{ borderColor: currentTheme.colors.border }}>
+                <div className="mt-auto border-t px-2 py-2 text-center text-[11px] font-bold leading-tight sm:text-xs" style={{ borderColor: currentTheme.colors.border }}>
                   {lang === "ar" ? cat.nameAr : cat.nameEn}
                 </div>
               </button>
             ))}
-          </div>
+          </HScrollStrip>
         </section>
+
+        {/* Bannières images défilantes, entre les tuiles de catégories et les
+            carrousels produits. Rendues seulement si l'admin en laisse au moins
+            une : un tableau vide cache la section entière. */}
+        {midBanners.length > 0 && (
+          <SectionBannerCarousel
+            banners={midBanners}
+            lang={lang}
+            theme={currentTheme}
+            onOpenCatalog={handleOpenCatalog}
+          />
+        )}
 
         <ProductCarousel
           title={t.dealsTitle}
@@ -1092,7 +1128,10 @@ export default function StorefrontPage() {
               {t.seeMore}
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <HScrollStrip
+            ariaLabel={t.otherCategories}
+            className="-mx-2 gap-3 px-2 pb-1 sm:-mx-3 sm:px-3 lg:-mx-4 lg:px-4"
+          >
             {homeCategories.map((cat) => {
               const countInCat = products.filter(
                 (product) =>
@@ -1104,7 +1143,7 @@ export default function StorefrontPage() {
                   key={cat.slug}
                   type="button"
                   onClick={() => handleOpenCatalog(cat.slug)}
-                  className="group flex items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
+                  className="group flex min-w-[244px] max-w-[340px] basis-0 grow items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
                   style={{ borderColor: currentTheme.colors.border }}
                 >
                   <CategoryImage
@@ -1124,7 +1163,7 @@ export default function StorefrontPage() {
                 </button>
               );
             })}
-          </div>
+          </HScrollStrip>
         </section>
 
       {/* =====================================================================

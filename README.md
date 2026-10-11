@@ -1,11 +1,11 @@
-# Mon Store Arena - Prêt pour Github + Cloudflare
+# Mon Store Arena - Next.js + PostgreSQL, déployé sur Vercel
 
 ## Déploiement en 3 étapes
-1. `git init && git add . && git commit -m "init" && git push`
-2. Sur Cloudflare Pages > Connect to Git > Build: `npm run build` | Output: `.next`
-3. Ajouter la variable `DATABASE_URL` dans Cloudflare > Settings > Environment variables
+1. Importe le dépôt sur Vercel : framework `Next.js` détecté automatiquement, build par défaut, **laisse l'output directory vide**.
+2. Déclare `DATABASE_URL` (Neon) en **Production _et_ Preview** — sinon l'aperçu tourne sur le catalogue de seed sans rien te dire.
+3. Définis aussi `ADMIN_PASSWORD` et `ADMIN_SESSION_TOKEN` : en leur absence le panneau admin retombe sur son mot de passe de développement.
 
-Voir GUIDE_DEPLOIEMENT_GITHUB_CLOUDFLARE.md pour le détail.
+Voir `GUIDE_DEPLOIEMENT_VERCEL.md` pour le détail, les contrôles à faire après un déploiement et les pièges connus (cold start Neon, enregistrement muet, domaine).
 
 ## Suivi des commandes
 - À la validation du panier, le site enregistre la commande dans PostgreSQL puis ouvre WhatsApp avec sa référence de suivi.
