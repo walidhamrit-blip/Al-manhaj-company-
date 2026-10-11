@@ -47,6 +47,8 @@ export const categories = pgTable("categories", {
   badgeEn: text("badge_en").notNull().default("Collection"),
   badgeAr: text("badge_ar").notNull().default("مجموعة"),
   sortOrder: integer("sort_order").notNull().default(0),
+  /** Afficher cette catégorie dans les sections de la page d'accueil (tuiles, carrousels, pied de page). */
+  showOnHome: boolean("show_on_home").notNull().default(true),
 });
 
 export const products = pgTable("products", {

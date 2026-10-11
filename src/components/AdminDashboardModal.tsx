@@ -499,6 +499,8 @@ export function AdminDashboardModal({
       badgeEn: "Collection",
       badgeAr: "مجموعة",
       sortOrder: categories.length + 1,
+      parentSlug: null,
+      showOnHome: true,
     } as any);
     setIsCreatingCategory(true);
   };
@@ -1669,6 +1671,73 @@ export function AdminDashboardModal({
                         </div>
                       </div>
 
+                      <div>
+                        <label className="block text-xs font-bold mb-1">
+                          {isAr ? "القسم الرئيسي (اختياري)" : "Parent category (optional)"}
+                        </label>
+                        <select
+                          value={editingCategory.parentSlug ?? ""}
+                          onChange={(e) => {
+                            const parentSlug = e.target.value || null;
+                            setEditingCategory({
+                              ...editingCategory,
+                              parentSlug,
+                              // Une sous-catégorie est masquée de l'accueil par défaut ;
+                              // l'administrateur peut toujours la réactiver via la case ci-dessous.
+                              showOnHome: parentSlug ? false : editingCategory.showOnHome ?? true,
+                            });
+                          }}
+                          style={{
+                            backgroundColor: theme.colors.bgSecondary,
+                            borderColor: theme.colors.border,
+                            color: theme.colors.textPrimary,
+                          }}
+                          className="w-full rounded-xl border px-3 py-2 text-sm"
+                        >
+                          <option value="">
+                            {isAr ? "— قسم رئيسي (بدون أب) —" : "— Main department (no parent) —"}
+                          </option>
+                          {categories
+                            .filter((c) => !c.parentSlug && c.slug !== editingCategory.slug)
+                            .sort((a, b) => a.sortOrder - b.sortOrder)
+                            .map((c) => (
+                              <option key={c.slug} value={c.slug}>
+                                {isAr ? c.nameAr : c.nameEn}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      <label
+                        className="flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-sm"
+                        style={{
+                          borderColor: editingCategory.showOnHome !== false ? theme.colors.accentPrimary : theme.colors.border,
+                          backgroundColor: theme.colors.bgSecondary,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={editingCategory.showOnHome !== false}
+                          onChange={(e) =>
+                            setEditingCategory({
+                              ...editingCategory,
+                              showOnHome: e.target.checked,
+                            })
+                          }
+                          className="mt-0.5 h-4 w-4 accent-current"
+                        />
+                        <span>
+                          <span className="block font-bold">
+                            {isAr ? "إظهار في الصفحة الرئيسية" : "Show on the home page"}
+                          </span>
+                          <span className="block text-xs opacity-75">
+                            {isAr
+                              ? "عند إلغاء التحديد يبقى القسم متاحاً في قائمة « الأقسام » وفي الكتالوج فقط، دون إثقال الصفحة الرئيسية."
+                              : "When unchecked, the category stays available in the « Departments » menu and the catalog only, without cluttering the home page."}
+                          </span>
+                        </span>
+                      </label>
+
                       <ImageUploadField
                         label={isAr ? "صورة القسم" : "Category Image"}
                         value={editingCategory.imageUrl}
@@ -1790,6 +1859,28 @@ export function AdminDashboardModal({
                                 {cat.nameEn}
                               </h4>
                               <p className="text-xs opacity-80">{cat.nameAr}</p>
+                              <div className="mt-1 flex flex-wrap gap-1 text-[10px] font-bold">
+                                {cat.parentSlug && (
+                                  <span className="rounded-full border px-2 py-0.5" style={{ borderColor: theme.colors.border }}>
+                                    {isAr ? "فرعي من: " : "Sub of: "}
+                                    {(() => {
+                                      const parent = categories.find((c) => c.slug === cat.parentSlug);
+                                      return parent ? (isAr ? parent.nameAr : parent.nameEn) : cat.parentSlug;
+                                    })()}
+                                  </span>
+                                )}
+                                <span
+                                  className="rounded-full px-2 py-0.5"
+                                  style={{
+                                    backgroundColor: cat.showOnHome !== false ? theme.colors.badgeBg : "#fff1f2",
+                                    color: cat.showOnHome !== false ? theme.colors.badgeText : "#be123c",
+                                  }}
+                                >
+                                  {cat.showOnHome !== false
+                                    ? isAr ? "يظهر في الرئيسية" : "On home page"
+                                    : isAr ? "مخفي من الرئيسية" : "Hidden from home"}
+                                </span>
+                              </div>
                             </div>
                           </div>
                           <button

@@ -46,6 +46,7 @@ export async function PUT(request: NextRequest) {
         badgeAr: String(body.badgeAr ?? "مجموعة"),
         sortOrder: Number(body.sortOrder ?? 1),
         parentSlug: body.parentSlug !== undefined ? (body.parentSlug || null) : undefined,
+        showOnHome: body.showOnHome !== undefined ? Boolean(body.showOnHome) : undefined,
       } as any)
       .where(eq(categories.id, catId))
       .returning();
@@ -81,6 +82,9 @@ export async function POST(request: NextRequest) {
         badgeEn: String(body.badgeEn || "Collection"),
         badgeAr: String(body.badgeAr || "مجموعة"),
         sortOrder: Number(body.sortOrder ?? 99),
+        // Par défaut : une sous-catégorie n'encombre pas la page d'accueil.
+        showOnHome:
+          body.showOnHome !== undefined ? Boolean(body.showOnHome) : !body.parentSlug,
       })
       .returning();
 
