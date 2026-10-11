@@ -11,7 +11,7 @@ import {
   type Language,
   type ThemeId,
 } from "@/lib/i18n-themes";
-import { hydrateFallbackStore } from "@/lib/fallbackData";
+import { hydrateFallbackStore, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
 import {
   getProductParentSlug,
   getProductSubcategorySlug,
@@ -21,6 +21,7 @@ import { ProductCarousel } from "@/components/ProductCarousel";
 import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
 import { CategoryImage } from "@/components/CategoryImage";
 import { HScrollStrip } from "@/components/HScrollStrip";
+import { SectionBannerCarousel } from "@/components/SectionBannerCarousel";
 import { StoreImage } from "@/components/StoreImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
@@ -374,6 +375,20 @@ export default function StorefrontPage() {
         targetCategory: "notebooks",
       },
     ];
+  }, [settings]);
+
+  // Bannières entre les sections, lues des réglages sinon du seed.
+  // Le repli ne s'applique QUE quand le champ est absent (base pas encore semée) :
+  // un tableau vide est un choix de l'administrateur, la section doit alors
+  // disparaître au prochain démarrage à froid plutôt que de se repeupler.
+  const midBanners = useMemo(() => {
+    const raw = settings?.midBanners;
+    if (Array.isArray(raw)) {
+      return raw.filter((banner) => Boolean(banner?.imageUrl?.trim()));
+    }
+    return (INITIAL_STORE_SETTINGS.midBanners ?? []).filter((banner) =>
+      Boolean(banner?.imageUrl?.trim())
+    );
   }, [settings]);
 
   // Auto-advance Hero Carousel every 6 seconds
@@ -1023,6 +1038,18 @@ export default function StorefrontPage() {
             ))}
           </HScrollStrip>
         </section>
+
+        {/* Bannières images défilantes, entre les tuiles de catégories et les
+            carrousels produits. Rendues seulement si l'admin en laisse au moins
+            une : un tableau vide cache la section entière. */}
+        {midBanners.length > 0 && (
+          <SectionBannerCarousel
+            banners={midBanners}
+            lang={lang}
+            theme={currentTheme}
+            onOpenCatalog={handleOpenCatalog}
+          />
+        )}
 
         <ProductCarousel
           title={t.dealsTitle}

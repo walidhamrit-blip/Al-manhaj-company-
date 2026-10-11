@@ -1385,6 +1385,41 @@ export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
     ctaEn: "Open Full Master Catalog",
     ctaAr: "افتح الكتالوج الشامل",
   },
+  // ----- Bannières images défilantes entre les sections (modifiables depuis لوحة الإدارة) -----
+  // Deux bannières de démarrage : les textes sont courts volontairement, un
+  // champ laissé vide fait tomber tout le bloc de texte (bannière = photo seule).
+  midBanners: [
+    {
+      id: "mid-banner-1",
+      imageUrl: "/images/hero-backtoschool.jpg",
+      badgeEn: "Back-to-School Bulk Supply",
+      badgeAr: "تجهيز العودة المدرسية بالجملة",
+      titleEn: "Stock Every Desk Before the First Bell",
+      titleAr: "جهّز كل مقعد دراسي قبل انطلاق السنة",
+      subtitleEn:
+        "Notebooks, geometry sets, whiteboard markers and A4 boxes shipped in wholesale cartons — up to 30% off from 10 units per SKU.",
+      subtitleAr:
+        "دفاتر، أدوات هندسية، أقلام سبورة وصناديق ورق A4 بكميات الجملة — خصومات تصل إلى 30% ابتداءً من 10 قطع للصنف الواحد.",
+      ctaEn: "Browse School Packs",
+      ctaAr: "تصفح تجهيزات المدارس",
+      targetCategory: "school-essentials",
+    },
+    {
+      id: "mid-banner-2",
+      imageUrl: "/images/hero-it-tech.jpg",
+      badgeEn: "Office & Studio Tech",
+      badgeAr: "تقنية المكاتب والاستوديوهات",
+      titleEn: "Toners, Keyboards and Task Lighting, Tested In-House",
+      titleAr: "أحبار ولوحات مفاتيح وإضاءة مكاتب مختبَرة داخلياً",
+      subtitleEn:
+        "High-yield original toners, wireless keyboards, ergonomic mice and LED desk lamps — same-day delivery across Tripoli.",
+      subtitleAr:
+        "أحبار أصلية عالية الإنتاج، لوحات مفاتيح لاسلكية، فئران مريحة ومصابيح مكتبية LED — توصيل في نفس اليوم داخل طرابلس.",
+      ctaEn: "Open IT & Consumables",
+      ctaAr: "افتح التقنية والأحبار",
+      targetCategory: "it-peripherals",
+    },
+  ],
   // ----- Pied de page : barre légale (modifiable depuis لوحة الإدارة) -----
   complianceEnabled: true,
   complianceStatusEn:

@@ -23,6 +23,13 @@ export interface HeroSlide {
   targetCategory: string;
 }
 
+/**
+ * Bannière image pleine largeur affichée entre deux sections de la page
+ * d'accueil. Elle partage volontairement la forme d'un HeroSlide : image,
+ * accroche bilingue et CTA, donc le même éditeur dans le panneau d'admin.
+ */
+export type MidBannerSlide = HeroSlide;
+
 export interface LandscapeBannerConfig {
   imageUrl: string;
   badgeEn: string;
@@ -117,6 +124,14 @@ export const storeSettings = pgTable("store_settings", {
   wholesaleConditionsAr: text("wholesale_conditions_ar").notNull(),
   heroSlides: jsonb("hero_slides").$type<HeroSlide[]>().notNull(),
   landscapeBanner: jsonb("landscape_banner").$type<LandscapeBannerConfig>().notNull(),
+  /**
+   * Bannières images défilantes placées entre les sections de la page d'accueil.
+   * Colonne nullable volontairement : ensureDatabaseSeeded() ne remplit que les
+   * valeurs vides, donc une base déjà en place reçoit les bannières par défaut
+   * une seule fois et un panneau vidé de sa part n'est pas re-rempli à chaque
+   * démarrage à froid.
+   */
+  midBanners: jsonb("mid_banners").$type<MidBannerSlide[]>(),
   defaultTheme: text("default_theme").notNull().default("atelier"),
   // ----- Pied de page : barre légale (السجل التجاري / موثوق / طرق الدفع) -----
   complianceEnabled: boolean("compliance_enabled").notNull().default(true),
