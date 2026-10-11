@@ -9,7 +9,7 @@ import {
   getProductParentSlug,
   getProductSubcategorySlug,
 } from "@/lib/category-hierarchy";
-import { WholesalePriceDisclosure } from "@/components/WholesalePriceDisclosure";
+import { ProductTile } from "@/components/ProductTile";
 import {
   X,
   Search,
@@ -66,7 +66,6 @@ export function MasterCatalogDrawer({
 }: MasterCatalogDrawerProps) {
   const t = UI_TEXT[lang];
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
-  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
   const categoriesBySlug = useMemo(
     () => new Map(categories.map((category) => [category.slug, category])),
     [categories]
@@ -321,169 +320,19 @@ export function MasterCatalogDrawer({
                   </div>
                 </div>
 
-                {/* Detailed Item Rows */}
-                <div
-                  style={{ borderColor: theme.colors.border }}
-                  className="divide-y"
-                >
-                  {items.map((item) => {
-                    const img1 =
-                      Array.isArray(item.images) && item.images[0]
-                        ? item.images[0]
-                        : "/images/hero-stationery.jpg";
-                    const img2 =
-                      Array.isArray(item.images) && item.images[1]
-                        ? item.images[1]
-                        : null;
-
-                    return (
-                      <div
-                        key={item.sku}
-                        style={{ borderColor: theme.colors.border }}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 transition hover:bg-black/[0.02]"
-                      >
-                        <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                          {/* Dual Mini Thumbnails */}
-                          <div
-                            onClick={() => onQuickView(item)}
-                            className="cursor-pointer flex gap-1.5 shrink-0"
-                          >
-                            <ProductImage
-                              product={item}
-                              src={img1}
-                              alt={item.titleEn}
-                              className="h-16 w-16 rounded-xl object-cover border border-black/10"
-                            />
-                            {img2 && (
-                              <ProductImage
-                                product={item}
-                                src={img2}
-                                alt={item.titleEn}
-                                className="hidden md:block h-16 w-16 rounded-xl object-cover border border-black/10 opacity-90"
-                              />
-                            )}
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <span
-                                style={{
-                                  backgroundColor: theme.colors.bgSecondary,
-                                  color: theme.colors.textSecondary,
-                                }}
-                                className="rounded px-1.5 py-0.5 font-mono text-[10px] font-bold"
-                              >
-                                {item.sku}
-                              </span>
-                              <span className="text-[11px] font-semibold text-emerald-600">
-                                • {t.inStock}: {item.stock}
-                              </span>
-                            </div>
-
-                            <h4
-                              onClick={() => onQuickView(item)}
-                              className="cursor-pointer text-sm sm:text-base font-bold truncate hover:underline"
-                            >
-                              {lang === "ar" ? item.titleAr : item.titleEn}
-                            </h4>
-
-                            <p
-                              style={{ color: theme.colors.textSecondary }}
-                              className={`text-xs mt-0.5 ${expandedProductId === item.id ? "" : "line-clamp-1"}`}
-                            >
-                              {lang === "ar"
-                                ? item.descriptionAr
-                                : item.descriptionEn}
-                            </p>
-
-                            {expandedProductId === item.id && (item.specsEn || item.specsAr) && (
-                              <p
-                                style={{ color: theme.colors.accentPrimary }}
-                                className="text-[11px] font-medium mt-1"
-                              >
-                                {lang === "ar" ? item.specsAr : item.specsEn}
-                              </p>
-                            )}
-                            <button
-                              type="button"
-                              aria-expanded={expandedProductId === item.id}
-                              onClick={() =>
-                                setExpandedProductId((current) =>
-                                  current === item.id ? null : item.id
-                                )
-                              }
-                              style={{ color: theme.colors.accentPrimary }}
-                              className="mt-1 text-[11px] font-bold underline underline-offset-2"
-                            >
-                              {expandedProductId === item.id ? t.hideDetails : t.readDetails}
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Pricing & Direct Actions */}
-                        <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-dashed border-gray-200">
-                          <div className="w-full max-w-[210px] text-start sm:text-end">
-                            <span
-                              style={{ color: theme.colors.textSecondary }}
-                              className="text-[10px] font-semibold"
-                            >
-                              {t.retailPrice}
-                            </span>
-                            <div dir="ltr" className="text-sm sm:text-base font-extrabold tabular-nums">
-                              {formatPrice(item.price, lang)}
-                            </div>
-                            <div className="mt-1 sm:ms-auto sm:max-w-[210px]">
-                              <WholesalePriceDisclosure
-                                product={item}
-                                lang={lang}
-                                theme={theme}
-                                compact
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleQuickAdd(item, 1)}
-                              style={{
-                                backgroundColor:
-                                  addedProductId === item.id
-                                    ? "#059669"
-                                    : theme.colors.accentPrimary,
-                                color: "#FFFFFF",
-                              }}
-                              className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-bold shadow-sm transition hover:opacity-90"
-                            >
-                              {addedProductId === item.id ? (
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                              ) : (
-                                <ShoppingBag className="h-3.5 w-3.5" />
-                              )}
-                              <span>+1</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleQuickAdd(item, item.wholesaleMinQty)
-                              }
-                              style={{
-                                backgroundColor: theme.colors.bgSecondary,
-                                color: theme.colors.textPrimary,
-                                borderColor: theme.colors.border,
-                              }}
-                              className="inline-flex items-center gap-1 rounded-xl border px-2.5 py-2 text-xs font-bold transition hover:opacity-80"
-                              title={t.addWholesaleMin}
-                            >
-                              <Layers className="h-3.5 w-3.5" />
-                              <span>+{item.wholesaleMinQty}</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                {/* Square product tiles */}
+                <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 sm:p-4 xl:grid-cols-4">
+                  {items.map((item) => (
+                    <ProductTile
+                      key={item.sku}
+                      product={item}
+                      lang={lang}
+                      theme={theme}
+                      added={addedProductId === item.id}
+                      onOpen={onQuickView}
+                      onQuickAdd={(prod) => handleQuickAdd(prod, 1)}
+                    />
+                  ))}
                 </div>
               </div>
             ))

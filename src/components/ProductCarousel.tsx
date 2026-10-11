@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import type { Category, Product } from "@/db/schema";
 import { UI_TEXT, type Language, type ThemeConfig } from "@/lib/i18n-themes";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductTile } from "@/components/ProductTile";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProductCarouselProps {
@@ -86,23 +86,19 @@ export function ProductCarousel({
         className="flex gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth snap-x snap-mandatory"
       >
         {products.map((product) => {
-          const cat = categories.find((c) => c.slug === product.categorySlug);
           const inCart = cart.find((c) => c.product.id === product.id)?.quantity || 0;
           return (
             <div
               key={`carousel-${product.id ?? product.sku}`}
               className="w-[200px] sm:w-[230px] lg:w-[250px] shrink-0 snap-start"
             >
-              <ProductCard
+              <ProductTile
                 product={product}
-                category={cat}
                 lang={lang}
                 theme={theme}
-                currencySymbol={currencySymbol}
-                cartQty={inCart}
-                onAddToCart={onAddToCart}
-                onQuickView={onQuickView}
-                layout="compact"
+                added={inCart > 0}
+                onOpen={onQuickView}
+                onQuickAdd={(prod) => onAddToCart(prod, 1)}
               />
             </div>
           );
