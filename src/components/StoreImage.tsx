@@ -18,6 +18,7 @@ export function StoreImage({
   alt,
   className,
   fill = true,
+  loading = "lazy",
   onError,
 }: StoreImageProps) {
   const source = src?.trim() || "/images/hero-stationery.jpg";
@@ -26,7 +27,7 @@ export function StoreImage({
     <img
       src={source}
       alt={alt}
-      loading="lazy"
+      loading={loading}
       className={
         fill
           ? `absolute inset-0 h-full w-full ${className || "object-cover"}`
