@@ -3,49 +3,49 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Category, Product } from "@/db/schema";
-import { UI_TEXT, formatPrice, type Language } from "@/lib/i18n-themes";
+import {
+  UI_TEXT,
+  type Language,
+  type ThemeConfig,
+} from "@/lib/i18n-themes";
 import { CategoryImage } from "@/components/CategoryImage";
-import { ProductImage } from "@/components/ProductImage";
 import {
   getProductParentSlug,
   getProductSubcategorySlug,
 } from "@/lib/category-hierarchy";
 import {
   ArrowRight,
-  Check,
   ChevronDown,
   ChevronRight,
   LayoutGrid,
   Menu,
-  Percent,
-  ShoppingBag,
   X,
 } from "lucide-react";
 
 /**
- * Mytek-style vertical catalogue menu.
+ * "All departments" mega menu, mounted in the navigation strip.
  *
- * Desktop (lg+): a red "Master Catalog" trigger in the navigation strip opens,
- * on hover or click, a vertical list of departments that floats OVER the page
- * (absolute positioning) — it never pushes the homepage content. Hovering a
- * department opens a flyout with its products, like Mytek's mega menu.
+ * Desktop (lg+): a click on the trigger drops a panel over the page — a column
+ * listing the departments (first one selected on open), and, beside it, the
+ * sub-categories of the selected department laid out in columns, like Mytek's
+ * "TOUS NOS RAYONS". Nothing opens on hover: the department changes when it is
+ * clicked.
  *
- * Mobile / tablet: the same vertical list is rendered as an off-canvas drawer
- * (portal on <body>) with accordion departments.
+ * The panel only shows the tree (departments → sub-categories): no product
+ * photos, prices or buttons, so the whole catalogue stays readable. Departments
+ * that have no sub-categories list their product names as plain text links.
+ * Products are browsed in the catalogue drawer (a click on any entry).
+ *
+ * Mobile / tablet: the same tree is rendered as an off-canvas drawer (portal on
+ * <body>) with accordion departments.
  */
 
-const MYTEK_NAVY = "#1A1A2E";
-const MYTEK_RED = "#E31837";
-const MYTEK_RED_SOFT = "#FFF0F0";
-const HOVER_OPEN_DELAY_MS = 120;
-const HOVER_CLOSE_DELAY_MS = 220;
-const DESKTOP_HOVER_QUERY =
-  "(min-width: 1024px) and (hover: hover) and (pointer: fine)";
+const MENU_ID = "departments-mega-menu";
 const DESKTOP_QUERY = "(min-width: 1024px)";
-const FLYOUT_PRODUCT_LIMIT = 10;
-const MENU_ID = "catalog-vertical-menu";
+/** Departments without sub-categories list a few product names, not the whole shelf. */
+const PLAIN_PRODUCT_LIMIT = 12;
 
-interface CategoryGroup {
+interface DepartmentGroup {
   category: Category;
   items: Product[];
   subcategories: { category: Category; items: Product[] }[];
@@ -57,21 +57,11 @@ interface CatalogVerticalMenuProps {
   categories: Category[];
   products: Product[];
   lang: Language;
-  /** Filters the storefront by department and scrolls to the catalog grid. */
+  theme: ThemeConfig;
+  /** Filters the catalogue drawer on a department or sub-category slug. */
   onSelectCategory: (slug: string) => void;
-  /** Shows only promotional products in the storefront. */
-  onShowPromotions: () => void;
+  /** Opens a product from a department that has no sub-categories. */
   onQuickView: (product: Product) => void;
-  onAddToCart: (product: Product, qty: number) => void;
-}
-
-type TimerRef = React.MutableRefObject<number | null>;
-
-function clearTimer(timer: TimerRef) {
-  if (timer.current !== null) {
-    window.clearTimeout(timer.current);
-    timer.current = null;
-  }
 }
 
 function matches(query: string) {
@@ -84,24 +74,20 @@ export function CatalogVerticalMenu({
   categories,
   products,
   lang,
+  theme,
   onSelectCategory,
-  onShowPromotions,
   onQuickView,
-  onAddToCart,
 }: CatalogVerticalMenuProps) {
   const t = UI_TEXT[lang];
   const isRtl = lang === "ar";
 
   const rootRef = useRef<HTMLDivElement>(null);
   const mobilePanelRef = useRef<HTMLDivElement>(null);
-  const openTimer = useRef<number | null>(null);
-  const closeTimer = useRef<number | null>(null);
-  const addedTimer = useRef<number | null>(null);
 
-  // Desktop flyout department + mobile accordion department.
+  // Desktop column department + mobile accordion department (null = "follow the
+  // default", see `selectedSlug` below).
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
-  const [addedProductId, setAddedProductId] = useState<number | null>(null);
 
   const visibleProducts = useMemo(
     () => products.filter((product) => !product.isHidden),
@@ -109,71 +95,64 @@ export function CatalogVerticalMenu({
   );
 
   const categoriesBySlug = useMemo(
-    () =>
-      new Map<string, Category>(
-        categories.map((category) => [category.slug, category])
-      ),
+    () => new Map<string, Category>(categories.map((category) => [category.slug, category])),
     [categories]
   );
 
-  const topLevelCategories = useMemo(
+  const departments = useMemo(
     () =>
       [...categories]
-        .filter((c) => !c.parentSlug)
+        .filter((category) => !category.parentSlug)
         .sort((a, b) => a.sortOrder - b.sortOrder),
     [categories]
   );
 
   const subcategoriesByParent = useMemo(() => {
     const map = new Map<string, Category[]>();
-    for (const c of categories) {
-      if (c.parentSlug) {
-        const list = map.get(c.parentSlug) || [];
-        list.push(c);
-        map.set(c.parentSlug, list);
-      }
+    for (const category of categories) {
+      if (!category.parentSlug) continue;
+      const list = map.get(category.parentSlug) || [];
+      list.push(category);
+      map.set(category.parentSlug, list);
     }
-    // Sort subcategories within each parent
-    for (const [, subs] of map) {
-      subs.sort((a, b) => a.sortOrder - b.sortOrder);
-    }
+    for (const [, subs] of map) subs.sort((a, b) => a.sortOrder - b.sortOrder);
     return map;
   }, [categories]);
 
-  const groups = useMemo<CategoryGroup[]>(
+  const groups = useMemo<DepartmentGroup[]>(
     () =>
-      topLevelCategories.map((category) => {
-        const subs = subcategoriesByParent.get(category.slug) || [];
-        const subcategories = subs.map((sub) => ({
-          category: sub,
-          items: visibleProducts.filter(
-            (product) =>
-              getProductSubcategorySlug(product, categoriesBySlug) === sub.slug
-          ),
-        }));
+      departments.map((category) => {
+        const subcategories = (subcategoriesByParent.get(category.slug) || []).map(
+          (sub) => ({
+            category: sub,
+            items: visibleProducts.filter(
+              (product) =>
+                getProductSubcategorySlug(product, categoriesBySlug) === sub.slug
+            ),
+          })
+        );
         const items = visibleProducts.filter(
           (product) =>
             getProductParentSlug(product, categoriesBySlug) === category.slug
         );
         return { category, items, subcategories };
       }),
-    [topLevelCategories, subcategoriesByParent, visibleProducts, categoriesBySlug]
+    [departments, subcategoriesByParent, visibleProducts, categoriesBySlug]
   );
 
-  const promoCount = useMemo(
-    () => visibleProducts.filter((product) => product.isPromotion).length,
-    [visibleProducts]
-  );
+  // Until a department is clicked, the panel follows the first one: the side
+  // column is therefore filled as soon as the menu opens (and even in the
+  // server-rendered HTML), like Mytek's "Tous nos rayons".
+  const defaultSlug = groups[0]?.category.slug ?? null;
+  const selectedSlug = activeSlug ?? defaultSlug;
 
   const activeGroup =
-    groups.find((group) => group.category.slug === activeSlug) ?? null;
+    groups.find((group) => group.category.slug === selectedSlug) ?? null;
 
   // Every close path goes through here so hover/accordion state never leaks
   // into the next opening.
   const setOpen = useCallback(
     (next: boolean) => {
-      clearTimer(openTimer);
-      clearTimer(closeTimer);
       if (!next) {
         setActiveSlug(null);
         setExpandedSlug(null);
@@ -183,7 +162,7 @@ export function CatalogVerticalMenu({
     [onOpenChange]
   );
 
-  // Escape key + click outside (trigger, dropdown and mobile panel excluded).
+  // Escape key + click outside (trigger, panel and mobile drawer excluded).
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -214,44 +193,9 @@ export function CatalogVerticalMenu({
     };
   }, [isOpen]);
 
-  useEffect(
-    () => () => {
-      clearTimer(openTimer);
-      clearTimer(closeTimer);
-      clearTimer(addedTimer);
-    },
-    []
-  );
-
-  // Hover intent (desktop pointers only) — Mytek opens the menu on hover.
-  const handleMouseEnter = () => {
-    if (!matches(DESKTOP_HOVER_QUERY)) return;
-    clearTimer(closeTimer);
-    if (isOpen || openTimer.current !== null) return;
-    openTimer.current = window.setTimeout(() => {
-      openTimer.current = null;
-      onOpenChange(true);
-    }, HOVER_OPEN_DELAY_MS);
-  };
-
-  const handleMouseLeave = () => {
-    if (!matches(DESKTOP_HOVER_QUERY)) return;
-    clearTimer(openTimer);
-    if (!isOpen || closeTimer.current !== null) return;
-    closeTimer.current = window.setTimeout(() => {
-      closeTimer.current = null;
-      setOpen(false);
-    }, HOVER_CLOSE_DELAY_MS);
-  };
-
   const handleSelectCategory = (slug: string) => {
     setOpen(false);
     onSelectCategory(slug);
-  };
-
-  const handleShowPromotions = () => {
-    setOpen(false);
-    onShowPromotions();
   };
 
   const handleQuickView = (product: Product) => {
@@ -259,345 +203,204 @@ export function CatalogVerticalMenu({
     onQuickView(product);
   };
 
-  const handleQuickAdd = (product: Product) => {
-    onAddToCart(product, 1);
-    setAddedProductId(product.id);
-    clearTimer(addedTimer);
-    addedTimer.current = window.setTimeout(() => {
-      addedTimer.current = null;
-      setAddedProductId(null);
-    }, 900);
-  };
-
   const categoryName = (category: Category) =>
     lang === "ar" ? category.nameAr : category.nameEn;
+  const productName = (product: Product) =>
+    lang === "ar" ? product.titleAr : product.titleEn;
   const viewAllLabel = (count: number) =>
     t.catalogMenuViewAll.replace("{count}", String(count));
 
-  const renderProductRow = (product: Product) => {
-    const title = lang === "ar" ? product.titleAr : product.titleEn;
-    const image =
-      Array.isArray(product.images) && product.images[0]
-        ? product.images[0]
-        : "";
-    const hasDiscount =
-      typeof product.originalPrice === "number" &&
-      product.originalPrice > product.price;
-    const added = addedProductId === product.id;
-    const soldOut = product.stock <= 0;
+  const accentText = { color: theme.colors.accentPrimary };
+  const borderStyle = { borderColor: theme.colors.border };
 
-    return (
-      <div
-        key={product.id}
-        className="group flex items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-gray-50"
-      >
-        <button
-          type="button"
-          onClick={() => handleQuickView(product)}
-          className="flex min-w-0 flex-1 items-center gap-2.5 text-start"
-        >
-          <ProductImage
-            product={product}
-            src={image}
-            alt={title}
-            className="h-10 w-10 shrink-0 rounded-md border border-gray-200 bg-white object-cover"
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[11px] font-semibold text-gray-800 transition group-hover:text-red-600">
-              {title}
+  /** Sub-categories of a department: names only, in columns. */
+  const renderSubcategoryColumns = (group: DepartmentGroup) => (
+    <ul className="mt-3 columns-2 gap-x-6 gap-y-0.5 xl:columns-3">
+      {group.subcategories.map((sub) => (
+        <li key={sub.category.slug} className="break-inside-avoid">
+          <button
+            type="button"
+            onClick={() => handleSelectCategory(sub.category.slug)}
+            className="group flex w-full items-center justify-between gap-2 rounded px-1.5 py-1 text-start text-[11.5px] font-medium text-gray-600 transition hover:bg-neutral-50 hover:text-[color:var(--accent-primary)]"
+          >
+            <span className="min-w-0 truncate group-hover:underline">
+              {categoryName(sub.category)}
             </span>
-            <span className="flex items-center gap-1.5 text-[11px]">
-              <span
-                dir="ltr"
-                className="font-extrabold tabular-nums"
-                style={{ color: MYTEK_RED }}
-              >
-                {formatPrice(product.price, lang)}
+            <span className="shrink-0 text-[10px] tabular-nums text-gray-400">
+              {sub.items.length}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+
+  /** No sub-categories: plain product names, no photos or prices. */
+  const renderPlainProductColumns = (group: DepartmentGroup) => (
+    <>
+      <ul className="mt-3 columns-2 gap-x-6 gap-y-0.5 xl:columns-3">
+        {group.items.slice(0, PLAIN_PRODUCT_LIMIT).map((product) => (
+          <li key={product.sku} className="break-inside-avoid">
+            <button
+              type="button"
+              onClick={() => handleQuickView(product)}
+              className="group flex w-full items-start gap-1.5 rounded px-1.5 py-1 text-start text-[11.5px] font-medium text-gray-600 transition hover:bg-neutral-50 hover:text-[color:var(--accent-primary)]"
+            >
+              <span className="min-w-0 flex-1 truncate group-hover:underline">
+                {productName(product)}
               </span>
-              {hasDiscount && (
-                <span
-                  dir="ltr"
-                  className="text-[10px] tabular-nums text-gray-400 line-through"
-                >
-                  {formatPrice(product.originalPrice as number, lang)}
-                </span>
-              )}
-            </span>
-          </span>
-        </button>
-
+            </button>
+          </li>
+        ))}
+      </ul>
+      {group.items.length > PLAIN_PRODUCT_LIMIT && (
         <button
           type="button"
-          onClick={() => handleQuickAdd(product)}
-          disabled={soldOut}
-          aria-label={t.addToCart}
-          title={soldOut ? t.outOfStock : t.addToCart}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-gray-200 text-gray-600 transition hover:border-[#E31837] hover:bg-[#E31837] hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:bg-transparent disabled:hover:text-gray-600"
-          style={
-            added
-              ? {
-                  backgroundColor: "#059669",
-                  borderColor: "#059669",
-                  color: "#FFFFFF",
-                }
-              : undefined
-          }
+          onClick={() => handleSelectCategory(group.category.slug)}
+          className="mt-2 text-[11px] font-bold underline underline-offset-2"
+          style={accentText}
         >
-          {added ? (
-            <Check className="h-3.5 w-3.5" />
-          ) : (
-            <ShoppingBag className="h-3.5 w-3.5" />
+          {t.catalogMenuMore.replace(
+            "{count}",
+            String(group.items.length - PLAIN_PRODUCT_LIMIT)
           )}
         </button>
-      </div>
-    );
-  };
+      )}
+    </>
+  );
 
   const desktopDropdown = (
     <div
       id={MENU_ID}
       className="absolute start-0 top-full z-50 hidden items-stretch shadow-2xl lg:flex"
     >
-      {/* Vertical department list */}
-      <ul
-        role="menu"
-        aria-label={t.masterCatalog}
-        className="custom-scrollbar max-h-[72vh] w-72 shrink-0 overflow-y-auto border border-t-0 border-gray-200 bg-white py-1"
+      {/* Departments column */}
+      <div
+        className="flex w-72 shrink-0 flex-col border border-t-0"
+        style={{ ...borderStyle, backgroundColor: theme.colors.bgElevated }}
       >
-        <li>
-          <button
-            type="button"
-            role="menuitem"
-            onMouseEnter={() => setActiveSlug(null)}
-            onFocus={() => setActiveSlug(null)}
-            onClick={() => handleSelectCategory("all")}
-            className="flex w-full items-center gap-3 px-3 py-2.5 text-start text-xs font-extrabold text-gray-900 transition hover:bg-gray-50"
-          >
-            <span
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-              style={{ backgroundColor: MYTEK_RED_SOFT, color: MYTEK_RED }}
+        <div
+          className="flex items-center gap-2 border-b px-4 py-3"
+          style={borderStyle}
+        >
+          <Menu className="h-4 w-4" style={accentText} />
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-gray-900">
+            {t.allDepartments}
+          </span>
+        </div>
+
+        <ul
+          role="menu"
+          aria-label={t.allDepartments}
+          className="custom-scrollbar max-h-[62vh] overflow-y-auto py-1"
+        >
+          <li>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => handleSelectCategory("all")}
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-start text-xs font-extrabold text-gray-900 transition hover:bg-neutral-50"
             >
-              <LayoutGrid className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1 truncate">
-              {t.catalogMenuAllProducts}
-            </span>
-            <span className="text-[10px] tabular-nums text-gray-400">
-              {visibleProducts.length}
-            </span>
-          </button>
-        </li>
-
-        {groups.map(({ category, items }) => {
-          const active = activeSlug === category.slug;
-          const name = categoryName(category);
-          return (
-            <li key={category.slug}>
-              <button
-                type="button"
-                role="menuitem"
-                aria-haspopup="true"
-                aria-expanded={active}
-                onMouseEnter={() => setActiveSlug(category.slug)}
-                onFocus={() => setActiveSlug(category.slug)}
-                onClick={() => handleSelectCategory(category.slug)}
-                className="flex w-full items-center gap-3 px-3 py-2.5 text-start text-xs font-bold transition"
-                style={{
-                  backgroundColor: active ? MYTEK_RED_SOFT : "transparent",
-                  color: active ? MYTEK_RED : "#1A1A1A",
-                }}
-              >
-                <CategoryImage
-                  slug={category.slug}
-                  src={category.imageUrl}
-                  alt={name}
-                  className="h-8 w-8 shrink-0 rounded-md border border-gray-100 bg-gray-50 object-contain p-0.5"
-                />
-                <span className="min-w-0 flex-1 truncate">{name}</span>
-                <span className="text-[10px] tabular-nums text-gray-400">
-                  {items.length}
-                </span>
-                <ChevronRight
-                  className={`h-3.5 w-3.5 shrink-0 ${active ? "" : "text-gray-400"} ${isRtl ? "rotate-180" : ""}`}
-                />
-              </button>
-            </li>
-          );
-        })}
-
-        <li className="mt-1 border-t border-gray-100 pt-1">
-          <button
-            type="button"
-            role="menuitem"
-            onMouseEnter={() => setActiveSlug(null)}
-            onFocus={() => setActiveSlug(null)}
-            onClick={handleShowPromotions}
-            className="flex w-full items-center gap-3 px-3 py-2.5 text-start text-xs font-extrabold transition hover:bg-gray-50"
-            style={{ color: MYTEK_RED }}
-          >
-            <span
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white"
-              style={{ backgroundColor: MYTEK_RED }}
-            >
-              <Percent className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1 truncate">
-              {t.catalogMenuPromotions}
-            </span>
-            <span className="text-[10px] tabular-nums text-gray-400">
-              {promoCount}
-            </span>
-          </button>
-        </li>
-
-        <li className="px-3 pb-2 pt-1 text-[10px] text-gray-400">
-          {t.catalogMenuHint}
-        </li>
-      </ul>
-
-      {/* Flyout for the hovered department */}
-      {activeGroup && (
-        <div className="custom-scrollbar flex max-h-[72vh] w-[620px] overflow-y-auto border border-s-0 border-t-0 border-gray-200 bg-white xl:w-[760px]">
-          <div className="flex min-w-0 flex-1 flex-col p-5">
-            <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-3">
-              <div className="min-w-0">
-                <span
-                  className="text-[10px] font-bold uppercase tracking-wider"
-                  style={{ color: MYTEK_RED }}
-                >
-                  {lang === "ar"
-                    ? activeGroup.category.badgeAr
-                    : activeGroup.category.badgeEn}
-                </span>
-                <h3 className="text-base font-extrabold text-gray-900">
-                  {categoryName(activeGroup.category)}
-                </h3>
-                <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">
-                  {lang === "ar"
-                    ? activeGroup.category.descriptionAr
-                    : activeGroup.category.descriptionEn}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => handleSelectCategory(activeGroup.category.slug)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-[11px] font-extrabold text-white transition hover:opacity-90"
-                style={{ backgroundColor: MYTEK_RED }}
-              >
-                <span>{viewAllLabel(activeGroup.items.length)}</span>
-                <ArrowRight
-                  className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`}
-                />
-              </button>
-            </div>
-
-            {activeGroup.items.length === 0 ? (
-              <p className="py-8 text-center text-xs text-gray-500">
-                {t.catalogMenuEmpty}
-              </p>
-            ) : activeGroup.subcategories.length > 0 ? (
-              <div className="mt-3 space-y-4">
-                {activeGroup.subcategories.map((sub) => (
-                  <div key={sub.category.slug}>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectCategory(sub.category.slug)}
-                      className="mb-1.5 flex items-center gap-2 text-left transition hover:opacity-80"
-                    >
-                      <span
-                        className="text-[10px] font-extrabold uppercase tracking-wider"
-                        style={{ color: MYTEK_RED }}
-                      >
-                        {lang === "ar" ? sub.category.nameAr : sub.category.nameEn}
-                      </span>
-                      <span className="text-[10px] tabular-nums text-gray-400">
-                        ({sub.items.length})
-                      </span>
-                    </button>
-                    {sub.items.length === 0 ? (
-                      <p className="py-2 text-center text-[10px] text-gray-400">
-                        —
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                        {sub.items
-                          .slice(0, FLYOUT_PRODUCT_LIMIT)
-                          .map((product) => renderProductRow(product))}
-                      </div>
-                    )}
-                    {sub.items.length > FLYOUT_PRODUCT_LIMIT && (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectCategory(sub.category.slug)}
-                        className="mt-1 self-start text-[10px] font-bold underline underline-offset-2"
-                        style={{ color: MYTEK_RED }}
-                      >
-                        {t.catalogMenuMore.replace(
-                          "{count}",
-                          String(sub.items.length - FLYOUT_PRODUCT_LIMIT)
-                        )}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <>
-                <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-0.5">
-                  {activeGroup.items
-                    .slice(0, FLYOUT_PRODUCT_LIMIT)
-                    .map((product) => renderProductRow(product))}
-                </div>
-                {activeGroup.items.length > FLYOUT_PRODUCT_LIMIT && (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectCategory(activeGroup.category.slug)}
-                    className="mt-3 self-start text-[11px] font-bold underline underline-offset-2"
-                    style={{ color: MYTEK_RED }}
-                  >
-                    {t.catalogMenuMore.replace(
-                      "{count}",
-                      String(activeGroup.items.length - FLYOUT_PRODUCT_LIMIT)
-                    )}
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Mytek-style promotional column */}
-          <div className="hidden w-48 shrink-0 flex-col justify-between gap-4 border-s border-gray-100 bg-gray-50 p-4 xl:flex">
-            <CategoryImage
-              slug={activeGroup.category.slug}
-              src={activeGroup.category.imageUrl}
-              alt={categoryName(activeGroup.category)}
-              className="h-36 w-full rounded-lg bg-white object-cover shadow-sm"
-            />
-            <div className="space-y-2">
-              <span
-                className="inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold"
-                style={{ backgroundColor: MYTEK_RED_SOFT, color: MYTEK_RED }}
-              >
-                {lang === "ar"
-                  ? activeGroup.category.badgeAr
-                  : activeGroup.category.badgeEn}
+              <LayoutGrid className="h-4 w-4 shrink-0" style={accentText} />
+              <span className="min-w-0 flex-1 truncate">
+                {t.catalogMenuAllProducts}
               </span>
-              <p className="text-xs font-bold text-gray-900">
+              <span className="shrink-0 text-[10px] tabular-nums text-gray-400">
+                {visibleProducts.length}
+              </span>
+            </button>
+          </li>
+
+          {groups.map(({ category, items }) => {
+            const isActive = selectedSlug === category.slug;
+            const name = categoryName(category);
+            return (
+              <li key={category.slug}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  aria-haspopup="true"
+                  aria-expanded={isActive}
+                  onFocus={() => setActiveSlug(category.slug)}
+                  onClick={() => setActiveSlug(category.slug)}
+                  className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-start text-xs transition ${
+                    isActive
+                      ? "bg-neutral-50 font-extrabold"
+                      : "font-semibold hover:bg-neutral-50"
+                  }`}
+                  style={{ color: isActive ? theme.colors.accentPrimary : "#1A1A1A" }}
+                >
+                  <span className="min-w-0 flex-1 truncate">{name}</span>
+                  <span className="shrink-0 text-[10px] tabular-nums text-gray-400">
+                    {items.length}
+                  </span>
+                  <ChevronRight
+                    className={`h-3.5 w-3.5 shrink-0 ${isRtl ? "rotate-180" : ""} ${
+                      isActive ? "" : "text-gray-400"
+                    }`}
+                  />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Department detail: sub-categories (or plain product names) in columns */}
+      {activeGroup && (
+        <div
+          className="custom-scrollbar max-h-[62vh] w-[600px] overflow-y-auto border border-s-0 border-t-0 p-5 xl:w-[760px]"
+          style={{ ...borderStyle, backgroundColor: theme.colors.bgElevated }}
+        >
+          <div
+            className="flex flex-wrap items-baseline justify-between gap-2 border-b pb-2.5"
+            style={borderStyle}
+          >
+            <div className="min-w-0">
+              <h3 className="truncate text-sm font-extrabold text-gray-900">
+                {categoryName(activeGroup.category)}
+              </h3>
+              <p className="text-[10px] tabular-nums text-gray-400">
                 {activeGroup.items.length} {t.itemsLabel}
+                {activeGroup.subcategories.length > 0 && (
+                  <>
+                    {" · "}
+                    {activeGroup.subcategories.length} {t.catalogSubcategories}
+                  </>
+                )}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => handleSelectCategory(activeGroup.category.slug)}
+              className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold hover:underline"
+              style={accentText}
+            >
+              {viewAllLabel(activeGroup.items.length)}
+              <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
+            </button>
           </div>
+
+          {activeGroup.items.length === 0 && activeGroup.subcategories.length === 0 ? (
+            <p className="py-8 text-center text-xs text-gray-500">
+              {t.catalogMenuEmpty}
+            </p>
+          ) : activeGroup.subcategories.length > 0 ? (
+            renderSubcategoryColumns(activeGroup)
+          ) : (
+            renderPlainProductColumns(activeGroup)
+          )}
+
+          <p className="mt-4 border-t pt-2.5 text-[10px] text-gray-400" style={borderStyle}>
+            {t.catalogMenuHint}
+          </p>
         </div>
       )}
     </div>
   );
 
   const mobileDrawer = (
-    <div
-      className="fixed inset-0 z-50 flex lg:hidden"
-      dir={isRtl ? "rtl" : "ltr"}
-    >
+    <div className="fixed inset-0 z-50 flex lg:hidden" dir={isRtl ? "rtl" : "ltr"}>
       <div
         aria-hidden="true"
         onClick={() => setOpen(false)}
@@ -608,31 +411,27 @@ export function CatalogVerticalMenu({
         ref={mobilePanelRef}
         role="dialog"
         aria-modal="true"
-        aria-label={t.masterCatalog}
-        className="relative z-10 flex h-full w-[86vw] max-w-sm flex-col bg-white text-gray-900 shadow-2xl"
+        aria-label={t.allDepartments}
+        className="relative z-10 flex h-full w-[86vw] max-w-sm flex-col text-gray-900 shadow-2xl"
+        style={{ backgroundColor: theme.colors.bgElevated }}
       >
         <div
           className="flex items-center justify-between gap-3 px-4 py-3"
           style={{
-            backgroundColor: MYTEK_NAVY,
-            borderBottom: `3px solid ${MYTEK_RED}`,
+            backgroundColor: theme.colors.textPrimary,
+            borderBottom: `3px solid ${theme.colors.accentPrimary}`,
           }}
         >
           <div className="flex min-w-0 items-center gap-2.5 text-white">
             <span
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-              style={{ backgroundColor: MYTEK_RED }}
+              style={{ backgroundColor: theme.colors.accentPrimary }}
             >
               <Menu className="h-4 w-4" />
             </span>
-            <div className="min-w-0">
-              <h2 className="truncate text-sm font-extrabold">
-                {t.masterCatalog}
-              </h2>
-              <p className="truncate text-[10px] text-gray-400">
-                {visibleProducts.length} {t.itemsLabel}
-              </p>
-            </div>
+            <h2 className="min-w-0 truncate text-sm font-extrabold">
+              {t.allDepartments}
+            </h2>
           </div>
           <button
             type="button"
@@ -652,13 +451,11 @@ export function CatalogVerticalMenu({
           >
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-              style={{ backgroundColor: MYTEK_RED_SOFT, color: MYTEK_RED }}
+              style={{ color: theme.colors.accentPrimary, backgroundColor: "#F5F5F5" }}
             >
               <LayoutGrid className="h-4 w-4" />
             </span>
-            <span className="min-w-0 flex-1 truncate">
-              {t.catalogMenuAllProducts}
-            </span>
+            <span className="min-w-0 flex-1 truncate">{t.catalogMenuAllProducts}</span>
             <span className="text-[10px] tabular-nums text-gray-400">
               {visibleProducts.length}
             </span>
@@ -672,13 +469,9 @@ export function CatalogVerticalMenu({
                 <button
                   type="button"
                   aria-expanded={expanded}
-                  onClick={() =>
-                    setExpandedSlug(expanded ? null : category.slug)
-                  }
+                  onClick={() => setExpandedSlug(expanded ? null : category.slug)}
                   className="flex w-full items-center gap-3 px-4 py-3 text-start transition"
-                  style={{
-                    backgroundColor: expanded ? MYTEK_RED_SOFT : "transparent",
-                  }}
+                  style={{ backgroundColor: expanded ? "#F5F5F5" : "transparent" }}
                 >
                   <CategoryImage
                     slug={category.slug}
@@ -689,132 +482,112 @@ export function CatalogVerticalMenu({
                   <span className="min-w-0 flex-1">
                     <span
                       className="block truncate text-xs font-bold"
-                      style={{ color: expanded ? MYTEK_RED : "#1A1A1A" }}
+                      style={{ color: expanded ? theme.colors.accentPrimary : "#1A1A1A" }}
                     >
                       {name}
                     </span>
                     <span className="text-[10px] text-gray-500">
                       {items.length} {t.itemsLabel}
+                      {subcategories.length > 0 && (
+                        <> · {subcategories.length} {t.catalogSubcategories}</>
+                      )}
                     </span>
                   </span>
                   <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${
+                      expanded ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
                 {expanded && (
-                  <div className="bg-gray-50 px-3 pb-3 pt-1">
+                  <div className="bg-neutral-50 px-3 pb-3 pt-1">
                     {subcategories.length > 0 ? (
-                      <div className="space-y-1">
+                      <ul className="overflow-hidden rounded-md border border-gray-200 bg-white">
                         {subcategories.map((sub) => (
-                          <div key={sub.category.slug} className="rounded-md bg-white border border-gray-200 overflow-hidden">
+                          <li key={sub.category.slug} className="border-b border-gray-100 last:border-b-0">
                             <button
                               type="button"
                               onClick={() => handleSelectCategory(sub.category.slug)}
-                              className="flex w-full items-center justify-between px-3 py-2 text-start transition hover:bg-gray-50"
+                              className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-start transition hover:bg-neutral-50"
                             >
-                              <span className="text-[11px] font-bold" style={{ color: MYTEK_RED }}>
-                                {lang === "ar" ? sub.category.nameAr : sub.category.nameEn}
+                              <span
+                                className="min-w-0 truncate text-[11.5px] font-semibold text-gray-700"
+                              >
+                                {categoryName(sub.category)}
                               </span>
-                              <span className="text-[10px] tabular-nums text-gray-400">
+                              <span className="shrink-0 text-[10px] tabular-nums text-gray-400">
                                 {sub.items.length}
                               </span>
                             </button>
-                            {sub.items.length > 0 && (
-                              <div className="divide-y divide-gray-100 border-t border-gray-100">
-                                {sub.items.slice(0, 3).map((product) => renderProductRow(product))}
-                                {sub.items.length > 3 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSelectCategory(sub.category.slug)}
-                                    className="w-full px-3 py-1.5 text-start text-[10px] font-bold"
-                                    style={{ color: MYTEK_RED }}
-                                  >
-                                    {viewAllLabel(sub.items.length)}
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     ) : items.length === 0 ? (
                       <p className="py-3 text-center text-[11px] text-gray-500">
                         {t.catalogMenuEmpty}
                       </p>
                     ) : (
-                      <div className="divide-y divide-gray-100 rounded-md border border-gray-200 bg-white">
-                        {items.map((product) => renderProductRow(product))}
-                      </div>
+                      <ul className="overflow-hidden rounded-md border border-gray-200 bg-white">
+                        {items.slice(0, PLAIN_PRODUCT_LIMIT).map((product) => (
+                          <li
+                            key={product.sku}
+                            className="border-b border-gray-100 last:border-b-0"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleQuickView(product)}
+                              className="w-full px-3 py-2 text-start text-[11.5px] font-medium text-gray-700 transition hover:bg-neutral-50"
+                            >
+                              <span className="line-clamp-2">{productName(product)}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                     <button
                       type="button"
                       onClick={() => handleSelectCategory(category.slug)}
                       className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-[11px] font-extrabold text-white transition hover:opacity-90"
-                      style={{ backgroundColor: MYTEK_RED }}
+                      style={{ backgroundColor: theme.colors.accentPrimary }}
                     >
                       <span>{viewAllLabel(items.length)}</span>
-                      <ArrowRight
-                        className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`}
-                      />
+                      <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
                     </button>
                   </div>
                 )}
               </div>
             );
           })}
-
-          <button
-            type="button"
-            onClick={handleShowPromotions}
-            className="flex w-full items-center gap-3 px-4 py-3 text-start text-xs font-extrabold"
-            style={{ color: MYTEK_RED }}
-          >
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white"
-              style={{ backgroundColor: MYTEK_RED }}
-            >
-              <Percent className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1 truncate">
-              {t.catalogMenuPromotions}
-            </span>
-            <span className="text-[10px] tabular-nums text-gray-400">
-              {promoCount}
-            </span>
-          </button>
         </div>
+
+        <p className="border-t border-gray-100 px-4 py-3 text-[10px] text-gray-400">
+          {t.catalogMenuHint}
+        </p>
       </div>
     </div>
   );
 
   return (
-    <div
-      ref={rootRef}
-      className="relative shrink-0"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div ref={rootRef} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-controls={MENU_ID}
-        className="flex h-10 items-center gap-2 px-3 text-[11px] font-extrabold uppercase tracking-wide text-white transition hover:opacity-90 sm:px-4 sm:text-xs"
-        style={{ backgroundColor: MYTEK_RED }}
+        className="flex h-full items-center gap-2 px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-wide text-white transition hover:opacity-90 sm:px-4 sm:text-xs"
+        style={{ backgroundColor: theme.colors.textPrimary }}
       >
         <Menu className="h-4 w-4" />
-        <span>{t.masterCatalog}</span>
+        <span>{t.navDepartments}</span>
         <ChevronDown
           className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {isOpen && desktopDropdown}
-      {isOpen &&
-        typeof document !== "undefined" &&
-        createPortal(mobileDrawer, document.body)}
+      {isOpen && typeof document !== "undefined" && createPortal(mobileDrawer, document.body)}
     </div>
   );
 }

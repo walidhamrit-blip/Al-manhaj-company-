@@ -18,6 +18,7 @@ import {
 } from "@/lib/category-hierarchy";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
+import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
 import { CategoryImage } from "@/components/CategoryImage";
 import { StoreImage } from "@/components/StoreImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
@@ -59,6 +60,8 @@ export default function StorefrontPage() {
   // Visual Theme state (7 curated e-commerce themes)
   const [themeId, setThemeId] = useState<ThemeId>("cyber");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  // "All departments" mega menu in the navigation strip.
+  const [isDeptMenuOpen, setIsDeptMenuOpen] = useState(false);
   const currentTheme = useMemo(
     () => THEMES.find((th) => th.id === themeId) || THEMES[0],
     [themeId]
@@ -823,6 +826,16 @@ export default function StorefrontPage() {
           style={{ backgroundColor: currentTheme.colors.accentPrimary }}
         >
           <div className="mx-auto flex max-w-[1760px] items-stretch gap-0 px-1 sm:px-2">
+            <CatalogVerticalMenu
+              isOpen={isDeptMenuOpen}
+              onOpenChange={setIsDeptMenuOpen}
+              categories={categories}
+              products={products}
+              lang={lang}
+              theme={currentTheme}
+              onSelectCategory={handleOpenCatalog}
+              onQuickView={setQuickViewProduct}
+            />
             <a
               href="/magasin"
               className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
