@@ -990,13 +990,16 @@ export default function StorefrontPage() {
         </section>
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
+          {/* Single-row, horizontally scrollable strip: categories never wrap,
+              whatever the breakpoint. Negative margins let the tiles bleed to
+              the viewport edges while `px-*` keeps the first one aligned. */}
+          <div className="no-scrollbar -mx-3 flex flex-nowrap gap-2 overflow-x-auto px-3 pb-1 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6">
             {homeCategories.map((cat) => (
               <button
                 key={`tile-${cat.slug}`}
                 type="button"
                 onClick={() => handleOpenCatalog(cat.slug)}
-                className="group overflow-hidden border bg-white text-start hover:shadow-md"
+                className="group flex w-[42vw] min-w-[146px] max-w-[172px] shrink-0 flex-col overflow-hidden border bg-white text-start hover:shadow-md"
                 style={{ borderColor: currentTheme.colors.border }}
               >
                 <div className="relative aspect-[16/9] overflow-hidden bg-white">
@@ -1007,7 +1010,7 @@ export default function StorefrontPage() {
                     className="h-full w-full object-contain p-2 transition group-hover:scale-105"
                   />
                 </div>
-                <div className="border-t px-2 py-2 text-center text-[11px] font-bold leading-tight sm:text-xs" style={{ borderColor: currentTheme.colors.border }}>
+                <div className="mt-auto border-t px-2 py-2 text-center text-[11px] font-bold leading-tight sm:text-xs" style={{ borderColor: currentTheme.colors.border }}>
                   {lang === "ar" ? cat.nameAr : cat.nameEn}
                 </div>
               </button>
@@ -1092,7 +1095,7 @@ export default function StorefrontPage() {
               {t.seeMore}
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="no-scrollbar -mx-2 flex flex-nowrap gap-3 overflow-x-auto px-2 pb-1 sm:-mx-3 sm:px-3 lg:-mx-4 lg:px-4">
             {homeCategories.map((cat) => {
               const countInCat = products.filter(
                 (product) =>
@@ -1104,7 +1107,7 @@ export default function StorefrontPage() {
                   key={cat.slug}
                   type="button"
                   onClick={() => handleOpenCatalog(cat.slug)}
-                  className="group flex items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
+                  className="group flex w-[62vw] min-w-[200px] max-w-[280px] shrink-0 items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
                   style={{ borderColor: currentTheme.colors.border }}
                 >
                   <CategoryImage
