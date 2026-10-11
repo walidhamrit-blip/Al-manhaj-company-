@@ -990,16 +990,19 @@ export default function StorefrontPage() {
         </section>
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
-          {/* Single-row, horizontally scrollable strip: categories never wrap,
-              whatever the breakpoint. Negative margins let the tiles bleed to
-              the viewport edges while `px-*` keeps the first one aligned. */}
+          {/* Single-row strip that never wraps, whatever the breakpoint:
+              `grow basis-0` lets the tiles share the available width when they
+              all fit (no dead space on wide screens), while `min-w-*` floors
+              them so the row overflows and scrolls as soon as they don't — or
+              when a new category is added. Negative margins let the strip bleed
+              to the viewport edges while `px-*` keeps the first tile aligned. */}
           <div className="no-scrollbar -mx-3 flex flex-nowrap gap-2 overflow-x-auto px-3 pb-1 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6">
             {homeCategories.map((cat) => (
               <button
                 key={`tile-${cat.slug}`}
                 type="button"
                 onClick={() => handleOpenCatalog(cat.slug)}
-                className="group flex w-[42vw] min-w-[146px] max-w-[172px] shrink-0 flex-col overflow-hidden border bg-white text-start hover:shadow-md"
+                className="group flex min-w-[168px] max-w-[240px] basis-0 grow flex-col overflow-hidden border bg-white text-start hover:shadow-md"
                 style={{ borderColor: currentTheme.colors.border }}
               >
                 <div className="relative aspect-[16/9] overflow-hidden bg-white">
@@ -1107,7 +1110,7 @@ export default function StorefrontPage() {
                   key={cat.slug}
                   type="button"
                   onClick={() => handleOpenCatalog(cat.slug)}
-                  className="group flex w-[62vw] min-w-[200px] max-w-[280px] shrink-0 items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
+                  className="group flex min-w-[236px] max-w-[340px] basis-0 grow items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
                   style={{ borderColor: currentTheme.colors.border }}
                 >
                   <CategoryImage
