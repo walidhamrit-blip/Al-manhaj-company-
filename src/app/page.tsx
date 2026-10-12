@@ -22,6 +22,7 @@ import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
 import { CategoryImage } from "@/components/CategoryImage";
 import { HScrollStrip } from "@/components/HScrollStrip";
 import { SectionBannerCarousel } from "@/components/SectionBannerCarousel";
+import { ArticleBannerGrid } from "@/components/ArticleBannerGrid";
 import { StoreImage } from "@/components/StoreImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
@@ -387,6 +388,18 @@ export default function StorefrontPage() {
       return raw.filter((banner) => Boolean(banner?.imageUrl?.trim()));
     }
     return (INITIAL_STORE_SETTINGS.midBanners ?? []).filter((banner) =>
+      Boolean(banner?.imageUrl?.trim())
+    );
+  }, [settings]);
+
+  // Medium article/offer banners are a single editable list. An explicit empty
+  // list hides the section; only a missing field uses the seeded photos.
+  const articleBanners = useMemo(() => {
+    const raw = settings?.articleBanners;
+    if (Array.isArray(raw)) {
+      return raw.filter((banner) => Boolean(banner?.imageUrl?.trim()));
+    }
+    return (INITIAL_STORE_SETTINGS.articleBanners ?? []).filter((banner) =>
       Boolean(banner?.imageUrl?.trim())
     );
   }, [settings]);
@@ -965,7 +978,7 @@ export default function StorefrontPage() {
               <button
                 type="button"
                 onClick={() => handleOpenCatalog("it-peripherals")}
-                className="relative h-[140px] overflow-hidden sm:h-[180px] lg:h-[200px] text-start"
+                className="relative h-[160px] overflow-hidden sm:h-[210px] lg:h-[230px] text-start"
               >
                 <StoreImage
                   src="/images/new/hero-it-tech-01.jpg"
@@ -984,7 +997,7 @@ export default function StorefrontPage() {
               <button
                 type="button"
                 onClick={() => setIsCatalogOpen(true)}
-                className="relative h-[140px] overflow-hidden sm:h-[180px] lg:h-[200px] text-start"
+                className="relative h-[160px] overflow-hidden sm:h-[210px] lg:h-[230px] text-start"
               >
                 <StoreImage
                   src={landscapeBanner.imageUrl}
@@ -1116,6 +1129,14 @@ export default function StorefrontPage() {
               onQuickView={setQuickViewProduct}
               onSeeMore={() => handleOpenCatalog(group.category.slug)}
             />
+            {index === 1 && articleBanners.length > 0 && (
+              <ArticleBannerGrid
+                banners={articleBanners}
+                lang={lang}
+                theme={currentTheme}
+                onOpenCatalog={handleOpenCatalog}
+              />
+            )}
           </div>
         ))}
 
@@ -1403,7 +1424,7 @@ export default function StorefrontPage() {
       </section>
 
       <footer className="mt-auto bg-[#1a1a1a] py-10 text-white">
-        <div className="mx-auto max-w-[1760px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="mx-auto max-w-[1760px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
             <h3 className="text-lg font-black">
               {settings
@@ -1439,25 +1460,12 @@ export default function StorefrontPage() {
                 <span>{t.trackOrder}</span>
               </button>
             </div>
-          </div>
-
-          {/* Quick Departments */}
-          <div>
-            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
-              {t.categoriesTitle}
-            </h4>
-            <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
-              {homeCategories.map((cat) => (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  onClick={() => handleOpenCatalog(cat.slug)}
-                  className="text-start hover:underline truncate"
-                >
-                  • {lang === "ar" ? cat.nameAr : cat.nameEn}
-                </button>
-              ))}
-            </div>
+            <a
+              href="/magasin"
+              className="inline-flex pt-2 text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
+            >
+              {t.ourStore}
+            </a>
           </div>
 
           {/* Dynamic Contact Details from PostgreSQL */}
@@ -1511,18 +1519,6 @@ export default function StorefrontPage() {
             </div>
           </div>
 
-          <div>
-            <h4 className="text-sm font-extrabold uppercase tracking-wider mb-3">
-              {lang === "ar" ? "معلومات قانونية" : "Legal"}
-            </h4>
-            <div className="flex flex-col gap-2 text-xs font-semibold text-neutral-300">
-              <a href="/magasin" className="hover:text-white hover:underline">{t.ourStore}</a>
-              <a href="/privacy" className="hover:text-white hover:underline">{t.footerPrivacy}</a>
-              <a href="/terms" className="hover:text-white hover:underline">{t.footerTerms}</a>
-              <a href="/returns" className="hover:text-white hover:underline">{t.footerReturns}</a>
-              <a href={paymentProvidersUrl} target="_blank" rel="noopener" className="hover:text-white hover:underline">{t.footerPaymentProviders}</a>
-            </div>
-          </div>
         </div>
         {/* ===== CBL / Mawthooq Compliance Bar (editable from Admin) ===== */}
         {complianceEnabled && (

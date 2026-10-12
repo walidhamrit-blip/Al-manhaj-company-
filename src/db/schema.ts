@@ -30,6 +30,13 @@ export interface HeroSlide {
  */
 export type MidBannerSlide = HeroSlide;
 
+/**
+ * Bannières moyennes placées entre la deuxième et la troisième sélection de
+ * produits. Une seule liste regroupe les visuels éditoriaux et promotionnels;
+ * les champs de texte restent facultatifs pour autoriser les photos seules.
+ */
+export type ArticleBanner = HeroSlide;
+
 export interface LandscapeBannerConfig {
   imageUrl: string;
   badgeEn: string;
@@ -132,6 +139,8 @@ export const storeSettings = pgTable("store_settings", {
    * démarrage à froid.
    */
   midBanners: jsonb("mid_banners").$type<MidBannerSlide[]>(),
+  /** Medium image banners displayed between article selections on the homepage. */
+  articleBanners: jsonb("article_banners").$type<ArticleBanner[]>(),
   defaultTheme: text("default_theme").notNull().default("atelier"),
   // ----- Pied de page : barre légale (السجل التجاري / موثوق / طرق الدفع) -----
   complianceEnabled: boolean("compliance_enabled").notNull().default(true),

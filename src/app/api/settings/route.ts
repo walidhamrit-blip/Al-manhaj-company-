@@ -117,6 +117,9 @@ export async function PUT(request: NextRequest) {
         midBanners: Array.isArray(body.midBanners)
           ? body.midBanners
           : existing.midBanners,
+        articleBanners: Array.isArray(body.articleBanners)
+          ? body.articleBanners
+          : existing.articleBanners,
         defaultTheme: String(body.defaultTheme ?? existing.defaultTheme),
         // ----- Editable legal footer bar -----
         complianceEnabled:
