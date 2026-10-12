@@ -332,11 +332,25 @@ export function AdminDashboardModal({
         setIsAuthenticated(true);
         setAdminToken(String(data.token || ""));
         setSettingsForm(settings);
-      } else {
+      } else if (res.status === 503) {
         setAuthError(
           lang === "ar"
-            ? "كلمة المرور غير صحيحة. جرب: admin2026"
-            : "Invalid password. Try: admin2026"
+            ? "الوصول للإدارة غير مُهيأ: أضف ADMIN_PASSWORD إلى متغيرات البيئة (Production) على Vercel."
+            : "Admin access is not configured: set ADMIN_PASSWORD in the Vercel (Production) environment variables."
+        );
+      } else {
+        // Hardened message: never embed a password here. The demo hint comes
+        // from the API and only exists outside production, guarded by a literal
+        // BUILD_ENV comparison so SWC folds the branch away in production.
+        const demoHint =
+          process.env.BUILD_ENV !== "production" &&
+          typeof data.demoPassword === "string" &&
+          data.demoPassword
+            ? ` ${data.demoHint || "Demo password"}: ${data.demoPassword}`
+            : "";
+        setAuthError(
+          (lang === "ar" ? "كلمة المرور غير صحيحة." : "Invalid password.") +
+            demoHint
         );
       }
     } catch {
@@ -859,17 +873,26 @@ export function AdminDashboardModal({
                   {t.loginBtn}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => setPasswordInput("admin2026")}
-                  style={{
-                    backgroundColor: theme.colors.bgSecondary,
-                    color: theme.colors.textPrimary,
-                  }}
-                  className="w-full rounded-xl py-2.5 text-xs font-bold transition hover:opacity-80"
-                >
-                  {t.useDemoPassBtn}
-                </button>
+                {process.env.BUILD_ENV !== "production" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setPasswordInput("admin2026")}
+                      style={{
+                        backgroundColor: theme.colors.bgSecondary,
+                        color: theme.colors.textPrimary,
+                      }}
+                      className="w-full rounded-xl py-2.5 text-xs font-bold transition hover:opacity-80"
+                    >
+                      {t.useDemoPassBtn}
+                    </button>
+                    <p className="text-center text-[11px] font-semibold opacity-60">
+                      {isAr
+                        ? "كلمة المرور التجريبية (محلي / معاينة فقط): admin2026"
+                        : "Demo password (local & preview only): admin2026"}
+                    </p>
+                  </>
+                )}
               </div>
             </form>
           </div>

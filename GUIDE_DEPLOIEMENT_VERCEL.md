@@ -48,7 +48,7 @@ auquel cas l'aperçu tourne sur une base… inexistante.
 | Variable | Rôle |
 |---|---|
 | `DATABASE_URL` | Chaîne de connexion Neon. **Obligatoire.** |
-| `ADMIN_PASSWORD` | Mot de passe du panneau admin. **À définir absolument** : sans lui, `src/app/api/admin/auth/route.ts` retombe sur son repli de développement `admin2026`, connu et documenté dans l'interface elle-même. |
+| `ADMIN_PASSWORD` | Mot de passe du panneau admin. **À définir absolument en Production** : sans lui, `src/app/api/admin/auth/route.ts` est fail-closed et répond `503` — le panneau admin reste verrouillé (comportement voulu). Le repli de développement `admin2026` n'existe qu'en local et en preview. |
 | `ADMIN_SESSION_TOKEN` | Token de session admin. À définir aussi, sinon repli `atelier-admin-session-2026`. |
 
 ### Comment savoir si `DATABASE_URL` est bien branchée sur un environnement
@@ -152,10 +152,32 @@ vert sur la preview → relecture → fusion sur `main`, qui déclenche le dépl
 les enregistrements DNS à créer chez ton registrar (`A` `76.76.21.21` ou `CNAME`
 `cname.vercel-dns.com`) et gère le certificat tout seul.
 
-Tu peux garder **Cloudflare uniquement comme DNS/CDN devant Vercel** : chez le registrar,
-les nameservers Cloudflare, puis dans Cloudflare un enregistrement `CNAME` (proxy actif)
-vers le domaine Vercel, et *SSL/TLS → Full (strict)*. Le calcul ne se fait alors plus
-chez Cloudflare, seulement le cache et la protection.
+### Après suppression des projets Pages et Workers
+
+L'ancien hébergement Cloudflare Pages/Workers est supprimé : les enregistrements DNS
+qui pointaient encore vers `*.pages.dev` ou `*.workers.dev` sont désormais **orphelins**.
+Tant qu'ils subsistent, le domaine répond en **erreur 1016** (« origin DNS error ») :
+le DNS mène vers une origine qui n'existe plus.
+
+Check-list de bascule :
+
+1. **Revendique le domaine chez Vercel** : *Project → Settings → Domains → Add*.
+   Si Vercel indique que le domaine est déjà pris ou mal configuré, c'est souvent
+   l'un des enregistrements orphelins ci-dessous qui répond à sa place.
+2. **Supprime les enregistrements orphelins** chez le registrar / dans Cloudflare DNS :
+   tout `CNAME` ou `A` encore ciblé sur `*.pages.dev` / `*.workers.dev` (et les TXT
+   de vérification de domaine Cloudflare devenus inutiles). Ils maintiennent l'erreur
+   1016 et masquent le nouveau routage.
+3. Crée l'enregistrement que Vercel demande (`A` `76.76.21.21` ou `CNAME`
+   `cname.vercel-dns.com`) : Vercel émet et renouvelle le certificat tout seul.
+4. **Si Cloudflare reste uniquement comme DNS** : passe l'enregistrement du domaine en
+   **nuage gris** (*DNS only*). Le **nuage orange** (*Proxied*) réinterpose le proxy
+   Cloudflare devant Vercel (cache, redirections, validation de certificat) et casse
+   l'émission du certificat Vercel — tout le trafic doit finir sur Vercel.
+5. **Option la plus simple** : bascule les nameservers du domaine sur
+   `ns1.vercel-dns.com` et `ns2.vercel-dns.com` (*Vercel → Settings → Domains →
+   Nameservers*). Plus aucun enregistrement à maintenir chez l'ancien hébergeur :
+   Vercel gère le DNS et le certificat de bout en bout.
 
 ---
 
