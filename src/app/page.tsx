@@ -1013,6 +1013,12 @@ export default function StorefrontPage() {
               margins and the edge fade come from HScrollStrip. */}
           <HScrollStrip
             ariaLabel={t.categoriesTitle}
+            showArrows
+            arrowLabels={
+              lang === "ar"
+                ? { left: "تمرير إلى اليسار", right: "تمرير إلى اليمين" }
+                : { left: "Scroll left", right: "Scroll right" }
+            }
             className="-mx-3 gap-2 px-3 pb-1 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6"
           >
             {homeCategories.map((cat) => (
@@ -1112,59 +1118,6 @@ export default function StorefrontPage() {
             />
           </div>
         ))}
-
-        <section
-          id="departments-section"
-          className="mx-auto w-full max-w-[1760px] px-2 sm:px-3 lg:px-4 py-6"
-        >
-          <div className="mb-3 flex items-center justify-between border-b pb-2" style={{ borderColor: currentTheme.colors.border }}>
-            <h2 className="text-lg font-bold sm:text-xl">{t.otherCategories}</h2>
-            <button
-              type="button"
-              onClick={() => handleOpenCatalog("all")}
-              className="text-xs font-semibold hover:underline sm:text-sm"
-              style={{ color: currentTheme.colors.accentPrimary }}
-            >
-              {t.seeMore}
-            </button>
-          </div>
-          <HScrollStrip
-            ariaLabel={t.otherCategories}
-            className="-mx-2 gap-3 px-2 pb-1 sm:-mx-3 sm:px-3 lg:-mx-4 lg:px-4"
-          >
-            {homeCategories.map((cat) => {
-              const countInCat = products.filter(
-                (product) =>
-                  !product.isHidden &&
-                  productMatchesCategory(product, cat.slug)
-              ).length;
-              return (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  onClick={() => handleOpenCatalog(cat.slug)}
-                  className="group flex min-w-[244px] max-w-[340px] basis-0 grow items-center gap-3 border bg-white p-2 text-start hover:shadow-md"
-                  style={{ borderColor: currentTheme.colors.border }}
-                >
-                  <CategoryImage
-                    slug={cat.slug}
-                    src={cat.imageUrl}
-                    alt={lang === "ar" ? cat.nameAr : cat.nameEn}
-                    className="h-16 w-16 shrink-0 object-contain bg-white"
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-bold leading-snug line-clamp-2">
-                      {lang === "ar" ? cat.nameAr : cat.nameEn}
-                    </span>
-                    <span className="text-[11px] text-neutral-500">
-                      {countInCat} {t.itemsLabel}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-          </HScrollStrip>
-        </section>
 
       {/* =====================================================================
           6. DEDICATED WHOLESALE & B2B BULK ORDERING SECTION
