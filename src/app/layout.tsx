@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import BuildBadge from "@/components/BuildBadge";
 
 export const metadata: Metadata = {
   title: "شركة المنهج للقرطاسية | Al Manhaj Company for Stationery",
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         style={{ fontFamily: "'Inter','IBM Plex Sans Arabic',system-ui,sans-serif" }}
       >
         {children}
+        <BuildBadge />
       </body>
     </html>
   );

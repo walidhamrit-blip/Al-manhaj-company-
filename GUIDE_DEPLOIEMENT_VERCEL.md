@@ -182,6 +182,9 @@ Chaque build porte un tampon, écrit sur la balise `<html>` de chaque page :
 | `data-build-env` | `production` ou `preview` | `dev` |
 | `data-build-time` | l'horodatage UTC du build | l'horodatage du lancement |
 
+Hors production (preview, dev), un petit badge `preview · <sha>` s'affiche en bas à gauche
+de chaque page. Il disparaît en production et ne bloque aucun clic.
+
 Trois façons de le lire, de la plus rapide à la plus sûre :
 
 1. **Console du navigateur** (F12 → *Console*), sur la page du site :
