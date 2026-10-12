@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { storeSettings } from "@/db/schema";
 import { ensureDatabaseSeeded } from "@/db/seed";
 import { eq } from "drizzle-orm";
+import { limitHeroSlides } from "@/lib/homepage-slides";
 
 export const dynamic = "force-dynamic";
 
@@ -111,8 +112,8 @@ export async function PUT(request: NextRequest) {
           body.wholesaleConditionsAr ?? existing.wholesaleConditionsAr
         ),
         heroSlides: Array.isArray(body.heroSlides)
-          ? body.heroSlides
-          : existing.heroSlides,
+          ? limitHeroSlides(body.heroSlides)
+          : limitHeroSlides(existing.heroSlides),
         landscapeBanner: body.landscapeBanner ?? existing.landscapeBanner,
         midBanners: Array.isArray(body.midBanners)
           ? body.midBanners

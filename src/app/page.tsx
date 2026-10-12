@@ -12,6 +12,7 @@ import {
   type ThemeId,
 } from "@/lib/i18n-themes";
 import { hydrateFallbackStore, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
+import { limitHeroSlides } from "@/lib/homepage-slides";
 import {
   getProductParentSlug,
   getProductSubcategorySlug,
@@ -346,36 +347,16 @@ export default function StorefrontPage() {
     root.style.setProperty("--border-color", currentTheme.colors.border);
   }, [currentTheme]);
 
-  // Hero Slides from DB settings or fallback
+  // Show only banner images configured in the admin. If no settings have been
+  // loaded yet, use the same seeded slides that the admin editor starts with;
+  // an explicitly empty slide list must not reveal an uneditable fallback image.
   const heroSlides = useMemo(() => {
-    const fromDb =
-      settings?.heroSlides &&
-      Array.isArray(settings.heroSlides) &&
-      settings.heroSlides.length > 0
-        ? settings.heroSlides
-        : [];
-    // Filter out any slide that would duplicate the storefront background.
-    const filtered = fromDb.filter(
-      (slide) => slide?.imageUrl !== "/images/new/main-storefront-hq.jpg" && slide?.imageUrl !== "/images/almanhaj-storefront.jpg"
+    const configuredSlides = Array.isArray(settings?.heroSlides)
+      ? settings.heroSlides
+      : INITIAL_STORE_SETTINGS.heroSlides;
+    return limitHeroSlides(configuredSlides).filter(
+      (slide) => typeof slide?.imageUrl === "string" && slide.imageUrl.trim().length > 0
     );
-    if (filtered.length > 0) return filtered;
-    return [
-      {
-        id: "default-1",
-        imageUrl: "/images/hero-stationery.jpg",
-        badgeEn: "2026 Academic & Studio Collection",
-        badgeAr: "مجموعة الموسم الدراسي والاستوديو 2026",
-        titleEn: "Tactile Paper Goods & Precision Writing Tools",
-        titleAr: "قرطاسية فاخرة وأدوات كتابة وهندسة عالية الدقة",
-        subtitleEn:
-          "From 120gsm Japanese dotted notebooks to German-nib fountain pens — crafted for students, architects, and creators.",
-        subtitleAr:
-          "من الدفاتر اليابانية الفاخرة بوزن 120 جرام إلى أقلام الحبر السائل والأدوات الهندسية المصممة للطلاب والمبدعين.",
-        ctaEn: "Explore Stationery",
-        ctaAr: "استكشف القرطاسية",
-        targetCategory: "notebooks",
-      },
-    ];
   }, [settings]);
 
   // Bannières entre les sections, lues des réglages sinon du seed.
@@ -496,7 +477,8 @@ export default function StorefrontPage() {
     [cart]
   );
 
-  const currentHero = heroSlides[heroIndex % heroSlides.length] || heroSlides[0];
+  const currentHero =
+    heroSlides.length > 0 ? heroSlides[heroIndex % heroSlides.length] : null;
   const landscapeBanner = settings?.landscapeBanner || {
     imageUrl: "/images/landscape-banner.jpg",
     badgeEn: "THE COMPLETE STUDIO & OFFICE ECOSYSTEM",
@@ -892,7 +874,8 @@ export default function StorefrontPage() {
       </header>
 
       <main id="top" className="flex-1">
-        <section className="relative w-full overflow-hidden bg-black">
+        {currentHero && (
+          <section className="relative w-full overflow-hidden bg-black">
             <div className="relative h-[340px] w-full sm:h-[480px] lg:h-[560px] xl:h-[620px]">
               <StoreImage
                 src={currentHero.imageUrl}
@@ -971,7 +954,8 @@ export default function StorefrontPage() {
                 </>
               )}
             </div>
-        </section>
+          </section>
+        )}
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
             <div className="grid grid-cols-2 gap-3">

@@ -17,6 +17,7 @@ import {
   type ThemeConfig,
 } from "@/lib/i18n-themes";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { limitHeroSlides, MAX_HERO_SLIDES } from "@/lib/homepage-slides";
 import { StoreImage } from "@/components/StoreImage";
 import { OrdersAdminPanel } from "@/components/OrdersAdminPanel";
 import {
@@ -569,12 +570,10 @@ export function AdminDashboardModal({
     setSettingsForm((prev) => (prev ? { ...prev, ...patch } : prev));
   };
 
-  const homepageSlides: HeroSlide[] = Array.isArray(settingsForm?.heroSlides)
-    ? settingsForm.heroSlides
-    : [];
+  const homepageSlides: HeroSlide[] = limitHeroSlides(settingsForm?.heroSlides);
 
   const setHomepageSlides = (slides: HeroSlide[]) =>
-    patchSettings({ heroSlides: slides });
+    patchSettings({ heroSlides: limitHeroSlides(slides) });
 
   const updateSlide = (index: number, patch: Partial<HeroSlide>) => {
     setHomepageSlides(
@@ -583,10 +582,16 @@ export function AdminDashboardModal({
   };
 
   const addSlide = () => {
+    if (homepageSlides.length >= MAX_HERO_SLIDES) return;
+    const nextSlideNumber =
+      homepageSlides.reduce((max, slide) => {
+        const number = Number(slide.id.replace(/^slide-/, ""));
+        return Number.isFinite(number) ? Math.max(max, number) : max;
+      }, 0) + 1;
     setHomepageSlides([
       ...homepageSlides,
       {
-        id: `slide-${Date.now()}`,
+        id: `slide-${nextSlideNumber}`,
         imageUrl: "/images/new/hero-stationery-01.jpg",
         badgeEn: "",
         badgeAr: "",
@@ -2153,8 +2158,8 @@ export function AdminDashboardModal({
                     title={t.homepageSlides}
                     hint={
                       isAr
-                        ? "عدّل صور ونصوص كل شريحة، بدّل ترتيبها أو احذفها."
-                        : "Edit the photo and text of every slide, reorder or delete them."
+                        ? "أدر صور البانر الرئيسي هنا؛ يمكنك إضافة حتى 5 شرائح وترتيبها أو حذفها."
+                        : "Manage the main banner here: edit, reorder, or delete up to 5 slides."
                     }
                     icon={<Images className="h-4 w-4" />}
                     theme={theme}
@@ -2309,18 +2314,28 @@ export function AdminDashboardModal({
                       </div>
                     ))}
 
-                    <button
-                      type="button"
-                      onClick={addSlide}
-                      style={{
-                        backgroundColor: theme.colors.bgElevated,
-                        borderColor: theme.colors.border,
-                      }}
-                      className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-extrabold transition hover:opacity-80"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>{t.homepageAddSlide}</span>
-                    </button>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span
+                        style={{ color: theme.colors.textSecondary }}
+                        className="text-xs"
+                      >
+                        {homepageSlides.length}/{MAX_HERO_SLIDES} · {t.homepageSlidesLimit}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={addSlide}
+                        disabled={homepageSlides.length >= MAX_HERO_SLIDES}
+                        title={t.homepageSlidesLimit}
+                        style={{
+                          backgroundColor: theme.colors.bgElevated,
+                          borderColor: theme.colors.border,
+                        }}
+                        className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-extrabold transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span>{t.homepageAddSlide}</span>
+                      </button>
+                    </div>
                   </PanelSection>
 
                   {/* --- 4. Between-section image banners (sliding strip) --- */}
