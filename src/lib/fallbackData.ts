@@ -1420,6 +1420,36 @@ export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
       targetCategory: "it-peripherals",
     },
   ],
+  // Bannières moyennes articles/offres : photos seules par défaut; leur contenu
+  // éditorial et promotionnel reste regroupé dans une seule liste administrable.
+  articleBanners: [
+    {
+      id: "article-banner-1",
+      imageUrl: "/images/new/hero-bts-01.jpg",
+      badgeEn: "",
+      badgeAr: "",
+      titleEn: "",
+      titleAr: "",
+      subtitleEn: "",
+      subtitleAr: "",
+      ctaEn: "",
+      ctaAr: "",
+      targetCategory: "school-essentials",
+    },
+    {
+      id: "article-banner-2",
+      imageUrl: "/images/new/hero-it-tech-01.jpg",
+      badgeEn: "",
+      badgeAr: "",
+      titleEn: "",
+      titleAr: "",
+      subtitleEn: "",
+      subtitleAr: "",
+      ctaEn: "",
+      ctaAr: "",
+      targetCategory: "it-peripherals",
+    },
+  ],
   // ----- Pied de page : barre légale (modifiable depuis لوحة الإدارة) -----
   complianceEnabled: true,
   complianceStatusEn:

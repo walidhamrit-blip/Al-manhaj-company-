@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import type {
+  ArticleBanner,
   Category,
   HeroSlide,
   LandscapeBannerConfig,
@@ -678,6 +679,57 @@ export function AdminDashboardModal({
     const [moved] = next.splice(index, 1);
     next.splice(target, 0, moved);
     setMidBanners(next);
+  };
+
+  /* -------------------------------------------------------------------------
+     Medium article/offer banners (one editable list, with optional copy)
+  ------------------------------------------------------------------------- */
+
+  const articleBanners: ArticleBanner[] = Array.isArray(settingsForm?.articleBanners)
+    ? settingsForm.articleBanners
+    : [];
+
+  const setArticleBanners = (banners: ArticleBanner[]) =>
+    patchSettings({ articleBanners: banners });
+
+  const updateArticleBanner = (
+    index: number,
+    patch: Partial<ArticleBanner>
+  ) =>
+    setArticleBanners(
+      articleBanners.map((banner, i) =>
+        i === index ? { ...banner, ...patch } : banner
+      )
+    );
+
+  const addArticleBanner = () =>
+    setArticleBanners([
+      ...articleBanners,
+      {
+        id: `article-banner-${Date.now()}`,
+        imageUrl: "/images/new/hero-bts-01.jpg",
+        badgeEn: "",
+        badgeAr: "",
+        titleEn: "",
+        titleAr: "",
+        subtitleEn: "",
+        subtitleAr: "",
+        ctaEn: "",
+        ctaAr: "",
+        targetCategory: categories[0]?.slug ?? "",
+      },
+    ]);
+
+  const removeArticleBanner = (index: number) =>
+    setArticleBanners(articleBanners.filter((_, i) => i !== index));
+
+  const moveArticleBanner = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= articleBanners.length) return;
+    const next = [...articleBanners];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    setArticleBanners(next);
   };
 
   return (
@@ -2442,7 +2494,179 @@ export function AdminDashboardModal({
                     </button>
                   </PanelSection>
 
-                  {/* --- 5. Wide panoramic banner --- */}
+                  {/* --- 5. Medium article and offer banners --- */}
+                  <PanelSection
+                    title={
+                      isAr
+                        ? "لافتات متوسطة — المقالات والعروض"
+                        : "Medium banners — articles & offers"
+                    }
+                    hint={
+                      isAr
+                        ? "قائمة واحدة للصور التحريرية والعروض. تظهر بين الاختيار الثاني والثالث؛ اترك النص فارغاً لعرض الصورة وحدها."
+                        : "One shared list for editorial and offer artwork, shown between the second and third product selections. Leave the copy blank for a photo-only banner."
+                    }
+                    icon={<Images className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    {articleBanners.length === 0 && (
+                      <p style={{ color: theme.colors.textSecondary }} className="text-xs">
+                        {isAr
+                          ? "لا توجد لافتات؛ سيبقى هذا القسم مخفياً في الصفحة الرئيسية."
+                          : "No banners: this section stays hidden on the homepage."}
+                      </p>
+                    )}
+
+                    {articleBanners.map((banner, index) => (
+                      <div
+                        key={banner.id || `article-banner-${index}`}
+                        style={{
+                          backgroundColor: theme.colors.bgElevated,
+                          borderColor: theme.colors.border,
+                        }}
+                        className="space-y-3 rounded-xl border p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-extrabold uppercase tracking-widest">
+                            {isAr ? "لافتة" : "Banner"} {index + 1}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => moveArticleBanner(index, -1)}
+                              disabled={index === 0}
+                              title={isAr ? "تحريك إلى الأعلى" : "Move up"}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveArticleBanner(index, 1)}
+                              disabled={index === articleBanners.length - 1}
+                              title={isAr ? "تحريك إلى الأسفل" : "Move down"}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeArticleBanner(index)}
+                              title={isAr ? "حذف اللافتة" : "Delete banner"}
+                              className="rounded-lg bg-red-600 p-1.5 text-white transition hover:bg-red-500"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <ImageUploadField
+                          label={isAr ? `صورة اللافتة ${index + 1}` : `Banner ${index + 1} photo`}
+                          value={banner.imageUrl}
+                          onChange={(url) => updateArticleBanner(index, { imageUrl: url })}
+                          adminToken={adminToken}
+                          lang={lang}
+                          theme={theme}
+                          required
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageBadgeText} (EN)`}
+                          labelAr={`${t.homepageBadgeText} (AR)`}
+                          valueEn={banner.badgeEn}
+                          valueAr={banner.badgeAr}
+                          onChangeEn={(v) => updateArticleBanner(index, { badgeEn: v })}
+                          onChangeAr={(v) => updateArticleBanner(index, { badgeAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageTitle} (EN)`}
+                          labelAr={`${t.homepageTitle} (AR)`}
+                          valueEn={banner.titleEn}
+                          valueAr={banner.titleAr}
+                          onChangeEn={(v) => updateArticleBanner(index, { titleEn: v })}
+                          onChangeAr={(v) => updateArticleBanner(index, { titleAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageDescription} (EN)`}
+                          labelAr={`${t.homepageDescription} (AR)`}
+                          valueEn={banner.subtitleEn}
+                          valueAr={banner.subtitleAr}
+                          onChangeEn={(v) => updateArticleBanner(index, { subtitleEn: v })}
+                          onChangeAr={(v) => updateArticleBanner(index, { subtitleAr: v })}
+                          theme={theme}
+                          textarea
+                        />
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <TextField
+                            label={`${t.homepageCtaText} (EN)`}
+                            value={banner.ctaEn}
+                            onChange={(v) => updateArticleBanner(index, { ctaEn: v })}
+                            theme={theme}
+                          />
+                          <TextField
+                            label={`${t.homepageCtaText} (AR)`}
+                            value={banner.ctaAr}
+                            onChange={(v) => updateArticleBanner(index, { ctaAr: v })}
+                            theme={theme}
+                            rtl
+                          />
+                          <div>
+                            <label className="mb-1 block text-xs font-bold">
+                              {t.homepageTargetCategory}
+                            </label>
+                            <select
+                              value={banner.targetCategory}
+                              onChange={(e) =>
+                                updateArticleBanner(index, {
+                                  targetCategory: e.target.value,
+                                })
+                              }
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                                color: theme.colors.textPrimary,
+                              }}
+                              className="w-full rounded-xl border px-3 py-2 text-sm"
+                            >
+                              {categories.map((cat) => (
+                                <option key={cat.id} value={cat.slug}>
+                                  {isAr ? cat.nameAr : cat.nameEn}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addArticleBanner}
+                      style={{
+                        backgroundColor: theme.colors.bgElevated,
+                        borderColor: theme.colors.border,
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-extrabold transition hover:opacity-80"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>{isAr ? "إضافة لافتة" : "Add a banner"}</span>
+                    </button>
+                  </PanelSection>
+
+                  {/* --- 6. Wide panoramic banner --- */}
                   <PanelSection
                     title={t.homepageBanner}
                     hint={

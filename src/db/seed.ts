@@ -220,6 +220,11 @@ export async function ensureDatabaseSeeded() {
   // lignes vides, ce qui injecte les 2 bannières de démarrage une seule fois.
   await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS mid_banners JSONB;`);
 
+  // Bannières moyennes (articles et offres), affichées entre deux sélections
+  // de produits. La colonne nullable permet au backfill ci-dessous d'initialiser
+  // uniquement les anciennes lignes encore vides.
+  await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS article_banners JSONB;`);
+
   const [{ value: catCount }] = await db.select({ value: count() }).from(categories);
   if (catCount === 0) {
     await db.insert(categories).values(INITIAL_CATEGORIES);
