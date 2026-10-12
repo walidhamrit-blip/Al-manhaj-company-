@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
+// Build stamp: which deployment is being served. Evaluated once per build, so
+// every page of the same build carries the same values. Passed through the
+// `env` field below, which inlines these as literals on the server AND in the
+// client bundle (plain process.env.VERCEL_* is not exposed to the browser).
+const buildStamp = {
+  BUILD_SHA: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local",
+  BUILD_ENV: process.env.VERCEL_ENV ?? "dev",
+  BUILD_TIME: new Date().toISOString(),
+};
+
 const nextConfig: NextConfig = {
+  env: buildStamp,
   images: {
     unoptimized: process.env.NODE_ENV !== "production",
     remotePatterns: [

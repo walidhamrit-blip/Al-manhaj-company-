@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import BuildBadge from "@/components/BuildBadge";
 
 export const metadata: Metadata = {
   title: "شركة المنهج للقرطاسية | Al Manhaj Company for Stationery",
@@ -10,7 +11,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ar" suppressHydrationWarning>
+    // Server component on purpose: the build stamp travels in the RSC payload,
+    // no client code recomputes it, so server HTML and hydration always agree.
+    <html
+      lang="ar"
+      data-build-sha={process.env.BUILD_SHA ?? "local"}
+      data-build-env={process.env.BUILD_ENV ?? "dev"}
+      data-build-time={process.env.BUILD_TIME ?? ""}
+      suppressHydrationWarning
+    >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -26,6 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         style={{ fontFamily: "'Inter','IBM Plex Sans Arabic',system-ui,sans-serif" }}
       >
         {children}
+        <BuildBadge />
       </body>
     </html>
   );
