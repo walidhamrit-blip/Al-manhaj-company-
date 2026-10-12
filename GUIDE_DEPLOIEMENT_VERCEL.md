@@ -171,3 +171,28 @@ chez Cloudflare, seulement le cache et la protection.
   (à confirmer, confirmée, préparation, en livraison, livrée, annulée).
 
 Les variables optionnelles sont également documentées dans `env.example`.
+
+### 7.1 Est-ce bien le bon déploiement que je regarde ?
+
+Chaque build porte un tampon, écrit sur la balise `<html>` de chaque page :
+
+| Attribut | Valeur attendue sur Vercel | Valeur hors Vercel |
+| --- | --- | --- |
+| `data-build-sha` | les 7 premiers caractères du commit déployé | `local` |
+| `data-build-env` | `production` ou `preview` | `dev` |
+| `data-build-time` | l'horodatage UTC du build | l'horodatage du lancement |
+
+Trois façons de le lire, de la plus rapide à la plus sûre :
+
+1. **Console du navigateur** (F12 → *Console*), sur la page du site :
+   `document.documentElement.dataset` affiche `buildSha`, `buildEnv` et `buildTime`.
+2. **Code source** : Ctrl+U (ou clic droit → *Afficher le code source*), puis
+   chercher `data-build-sha`. Ce texte vient du serveur, sans JavaScript.
+3. **Onglet Réseau** (F12 → *Network*) : recharge la page, sélectionne la requête
+   du document, puis l'onglet *Réponse* / *Response* et cherche `data-build-sha`.
+
+Compare le `buildSha` au SHA du commit affiché dans Vercel
+(*Deployments → le déploiement → Source*). S'il ne correspond pas, tu regardes
+un ancien déploiement ou le cache de ton navigateur : recharge en forçant
+(Ctrl+Maj+R). Une preview de pull request doit afficher `buildEnv="preview"`,
+la production `buildEnv="production"`.
