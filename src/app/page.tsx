@@ -4,6 +4,7 @@ import { BrandRibbon } from "@/components/BrandRibbon";
 import { INITIAL_BRANDS, INITIAL_BRAND_SECTIONS, type Brand, type BrandSection } from "@/lib/brand-data";
 import { ribbonSections } from "@/lib/brand-ribbons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import type { Category, Product, StoreSettings } from "@/db/schema";
 import {
@@ -32,7 +33,6 @@ import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
-import { OrderTrackingSection, type OrderTrackingRequest } from "@/components/OrderTrackingSection";
 
 import {
   BookOpen,
@@ -130,27 +130,19 @@ export default function StorefrontPage() {
 
   // Shopping Cart state (persisted in localStorage)
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [trackingRequest, setTrackingRequest] =
-    useState<OrderTrackingRequest | null>(null);
 
-  // The same tracking area is available from navigation and order confirmation.
+  // The order-tracking section lives on the dedicated /vente-en-ligne page.
+  const router = useRouter();
   const goToOrderTracking = useCallback(
     (orderNumber?: string, phone?: string) => {
-      if (orderNumber && phone) {
-        setTrackingRequest({
-          orderNumber,
-          phone,
-          requestId: Date.now(),
-        });
-      }
       setIsCartOpen(false);
-      window.setTimeout(() => {
-        document
-          .getElementById("order-tracking")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 80);
+      const params = new URLSearchParams();
+      if (orderNumber) params.set("order", orderNumber);
+      if (phone) params.set("phone", phone);
+      const query = params.toString();
+      router.push(`/vente-en-ligne${query ? `?${query}` : ""}#order-tracking`);
     },
-    []
+    [router]
   );
 
   // Fetch live store data from PostgreSQL API
@@ -825,6 +817,13 @@ export default function StorefrontPage() {
               <Layers className="h-4 w-4" />
               {t.navWholesale}
             </Link>
+            <Link
+              href="/vente-en-ligne"
+              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {t.navOnlineSales}
+            </Link>
             <button
               type="button"
               onClick={() => handleOpenCatalog("all")}
@@ -1171,11 +1170,6 @@ export default function StorefrontPage() {
         </div>
       </section>
 
-      <OrderTrackingSection
-        lang={lang}
-        theme={currentTheme}
-        trackingRequest={trackingRequest}
-      />
       </main>
 
       <section className="border-y bg-white" style={{ borderColor: currentTheme.colors.border }}>
@@ -1257,6 +1251,12 @@ export default function StorefrontPage() {
                 className="inline-flex text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
               >
                 {t.navWholesale}
+              </Link>
+              <Link
+                href="/vente-en-ligne"
+                className="inline-flex text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
+              >
+                {t.navOnlineSales}
               </Link>
             </div>
           </div>
