@@ -285,6 +285,51 @@ export const UI_TEXT = {
     totalSavings: "Your Bulk Savings",
     addEstimateToCart: "Add This Bulk Quantity to Cart",
     inquireWholesaleWhatsApp: "Request Custom B2B Quote on WhatsApp",
+    wholesaleOpenPage: "Open the B2B wholesale page",
+    wholesaleOpenPageHint:
+      "Estimator, volume tiers, product ranges and a WhatsApp quote — all in one place.",
+    wholesaleRangesTitle: "Wholesale ranges",
+    wholesaleRangesDesc:
+      "Mix cartons across stationery, paper, ink, school kits and IT — one quote, one delivery.",
+    wholesaleStepsTitle: "How a wholesale order works",
+    wholesaleStep1Title: "1. Estimate",
+    wholesaleStep1Desc:
+      "Pick a product and quantity. Tiered pricing applies automatically from 10 units per SKU.",
+    wholesaleStep2Title: "2. Request a quote",
+    wholesaleStep2Desc:
+      "Send the estimate on WhatsApp. We confirm stock, mix and a pro-forma invoice.",
+    wholesaleStep3Title: "3. Confirm",
+    wholesaleStep3Desc: "Approve the quote. Pay on delivery or as agreed for institutions.",
+    wholesaleStep4Title: "4. Delivery",
+    wholesaleStep4Desc:
+      "Free delivery in Tripoli over 1,900 LYD. Pickup at Al Bivi, or shipping to other cities on request.",
+    wholesaleDeliveryTitle: "Delivery in Tripoli",
+    wholesaleDeliveryFree: "Free delivery in Tripoli on wholesale orders over 1,900 LYD.",
+    wholesaleDeliveryPickupTitle: "Showroom pickup",
+    wholesaleDeliveryPickup:
+      "Counter pickup at our Al Bivi showroom — Sat–Thu 09:00–21:00.",
+    wholesaleDeliveryCitiesTitle: "Other cities",
+    wholesaleDeliveryCities:
+      "Benghazi, Misrata and other cities: we arrange freight after the WhatsApp quote.",
+    wholesaleFaqTitle: "Wholesale FAQ",
+    wholesaleFaq1Q: "What is the minimum for wholesale pricing?",
+    wholesaleFaq1A:
+      "From 10 units per SKU (or the product’s own minimum). Higher tiers unlock at 50 and 200 units.",
+    wholesaleFaq2Q: "Can I mix several products in one order?",
+    wholesaleFaq2A:
+      "Yes. Mix notebooks, paper boxes, toners, bags and IT accessories in a single quote.",
+    wholesaleFaq3Q: "Do you issue invoices for schools and companies?",
+    wholesaleFaq3A:
+      "Yes. We send a pro-forma on WhatsApp, then a tax invoice with the delivery.",
+    wholesaleFaq4Q: "How do I pay?",
+    wholesaleFaq4A:
+      "Cash on delivery in Tripoli, or the method agreed on the quote (including licensed CBL providers when enabled).",
+    wholesaleFaq5Q: "Are the estimator prices final?",
+    wholesaleFaq5A:
+      "They are a live estimate from the catalogue. Stock, mix and freight are confirmed on WhatsApp before you pay.",
+    wholesaleAddedToCart: "Added to cart",
+    wholesaleAddedHint: "The bulk quantity is saved in your store cart.",
+    wholesaleGoToStore: "View cart in the store",
     cartTitle: "Your Shopping Cart",
     trackOrder: "Track order",
     trackOrderShort: "Track",
@@ -512,6 +557,51 @@ export const UI_TEXT = {
     totalSavings: "إجمالي التوفير بالجملة",
     addEstimateToCart: "أضف هذه الكمية إلى السلة",
     inquireWholesaleWhatsApp: "اطلب عرض سعر مخصص للشركات عبر واتساب",
+    wholesaleOpenPage: "افتح صفحة البيع بالجملة",
+    wholesaleOpenPageHint:
+      "الحاسبة، مستويات الكمية، التشكيلات وطلب عرض سعر عبر واتساب — في صفحة واحدة.",
+    wholesaleRangesTitle: "تشكيلات الجملة",
+    wholesaleRangesDesc:
+      "امزج صناديق القرطاسية والورق والأحبار واللوازم المدرسية وتقنية المعلومات — عرض سعر واحد وتوصيلة واحدة.",
+    wholesaleStepsTitle: "كيف تتم طلبية الجملة",
+    wholesaleStep1Title: "1. التقدير",
+    wholesaleStep1Desc:
+      "اختر المنتج والكمية. تُطبَّق أسعار الجملة تلقائياً ابتداءً من 10 قطع للصنف الواحد.",
+    wholesaleStep2Title: "2. طلب عرض السعر",
+    wholesaleStep2Desc:
+      "أرسل التقدير عبر واتساب. نؤكد المخزون والتنويع والفاتورة المبدئية.",
+    wholesaleStep3Title: "3. التأكيد",
+    wholesaleStep3Desc: "وافق على العرض. ادفع عند التسليم أو حسب الاتفاق مع المؤسسات.",
+    wholesaleStep4Title: "4. التوصيل",
+    wholesaleStep4Desc:
+      "توصيل مجاني داخل طرابلس فوق 1,900 د.ل. استلام من البيفي، أو شحن للمدن الأخرى عند الطلب.",
+    wholesaleDeliveryTitle: "التوصيل داخل طرابلس",
+    wholesaleDeliveryFree: "توصيل مجاني داخل طرابلس لطلبيات الجملة فوق 1,900 د.ل.",
+    wholesaleDeliveryPickupTitle: "الاستلام من المعرض",
+    wholesaleDeliveryPickup:
+      "الاستلام من منضدة الجملة في معرض البيفي — السبت إلى الخميس 09:00–21:00.",
+    wholesaleDeliveryCitiesTitle: "المدن الأخرى",
+    wholesaleDeliveryCities:
+      "بنغازي ومصراتة وباقي المدن: نرتّب الشحن بعد عرض السعر عبر واتساب.",
+    wholesaleFaqTitle: "أسئلة الجملة",
+    wholesaleFaq1Q: "ما الحد الأدنى لسعر الجملة؟",
+    wholesaleFaq1A:
+      "من 10 قطع للصنف الواحد (أو الحد الأدنى الخاص بالمنتج). المستويات الأعلى تُفتح عند 50 و200 قطعة.",
+    wholesaleFaq2Q: "هل يمكن تنويع عدة منتجات في طلب واحد؟",
+    wholesaleFaq2A:
+      "نعم. امزج الدفاتر وصناديق الورق والأحبار والحقائب وملحقات الحاسوب في عرض سعر واحد.",
+    wholesaleFaq3Q: "هل تصدرون فواتير للمدارس والشركات؟",
+    wholesaleFaq3A:
+      "نعم. نرسل فاتورة مبدئية عبر واتساب ثم فاتورة ضريبية مع التسليم.",
+    wholesaleFaq4Q: "كيف يتم الدفع؟",
+    wholesaleFaq4A:
+      "الدفع عند الاستلام داخل طرابلس، أو حسب الاتفاق في عرض السعر (بما في ذلك مزودي الدفع المرخصين من مصرف ليبيا المركزي عند التفعيل).",
+    wholesaleFaq5Q: "هل أسعار الحاسبة نهائية؟",
+    wholesaleFaq5A:
+      "هي تقدير مباشر من الكتالوج. نؤكد المخزون والتنويع والشحن عبر واتساب قبل الدفع.",
+    wholesaleAddedToCart: "أُضيف إلى السلة",
+    wholesaleAddedHint: "تم حفظ كمية الجملة في سلة المتجر.",
+    wholesaleGoToStore: "عرض السلة في المتجر",
     cartTitle: "سلة المشتريات",
     trackOrder: "تتبع الطلب",
     trackOrderShort: "تتبع",
