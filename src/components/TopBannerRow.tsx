@@ -28,7 +28,7 @@ export function TopBannerRow({ banners, lang, theme, onOpenCatalog }: TopBannerR
 
   return (
     <section
-      className="mx-auto w-full max-w-[1760px] px-3 pt-3 sm:px-4 lg:px-6"
+      className="mx-auto w-full max-w-[1440px] px-3 pt-3 sm:px-4 lg:px-6"
       role="group"
       aria-label={isArabic ? "اللافتات الرئيسية" : "Featured banners"}
     >

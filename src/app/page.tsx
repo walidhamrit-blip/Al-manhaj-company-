@@ -834,7 +834,13 @@ export default function StorefrontPage() {
             color: "#FFFFFF",
           }}
         >
-          <div className="mx-auto flex min-h-14 max-w-[1760px] items-stretch gap-0 overflow-x-auto px-1 sm:px-2 no-scrollbar">
+          {/* Two boxes on purpose: the departments trigger must NOT live inside
+              the horizontally scrollable link track. An `overflow-x-auto`
+              ancestor clips every absolutely positioned descendant, so the mega
+              menu dropped below the strip was entirely swallowed and the button
+              looked dead. The trigger sits outside the scroller; only the links
+              scroll. */}
+          <div className="mx-auto flex min-h-14 max-w-[1760px] items-stretch gap-0 px-1 sm:px-2">
             <CatalogVerticalMenu
               isOpen={isDeptMenuOpen}
               onOpenChange={setIsDeptMenuOpen}
@@ -845,42 +851,44 @@ export default function StorefrontPage() {
               onSelectCategory={handleOpenCatalog}
               onQuickView={setQuickViewProduct}
             />
-            <a
-              href="/magasin"
-              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
-            >
-              <MapPin className="h-5 w-5 shrink-0" />
-              {t.ourStore}
-            </a>
-            <Link
-              href="/wholesale"
-              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
-            >
-              <Layers className="h-5 w-5 shrink-0" />
-              {t.navWholesale}
-            </Link>
-            <Link
-              href="/vente-en-ligne"
-              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
-            >
-              <ShoppingBag className="h-5 w-5 shrink-0" />
-              {t.navOnlineSales}
-            </Link>
-            <Link
-              href="/services"
-              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
-            >
-              <Printer className="h-5 w-5 shrink-0" />
-              {lang === "ar" ? "الخدمات" : "Services"}
-            </Link>
-            <button
-              type="button"
-              onClick={() => handleOpenCatalog("all")}
-              className="ms-auto flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
-            >
-              <BookOpen className="h-5 w-5 shrink-0" />
-              {t.masterCatalog}
-            </button>
+            <div className="flex min-w-0 flex-1 items-stretch gap-0 overflow-x-auto no-scrollbar">
+              <a
+                href="/magasin"
+                className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
+              >
+                <MapPin className="h-5 w-5 shrink-0" />
+                {t.ourStore}
+              </a>
+              <Link
+                href="/wholesale"
+                className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
+              >
+                <Layers className="h-5 w-5 shrink-0" />
+                {t.navWholesale}
+              </Link>
+              <Link
+                href="/vente-en-ligne"
+                className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
+              >
+                <ShoppingBag className="h-5 w-5 shrink-0" />
+                {t.navOnlineSales}
+              </Link>
+              <Link
+                href="/services"
+                className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
+              >
+                <Printer className="h-5 w-5 shrink-0" />
+                {lang === "ar" ? "الخدمات" : "Services"}
+              </Link>
+              <button
+                type="button"
+                onClick={() => handleOpenCatalog("all")}
+                className="ms-auto flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
+              >
+                <BookOpen className="h-5 w-5 shrink-0" />
+                {t.masterCatalog}
+              </button>
+            </div>
           </div>
         </nav>
       </header>
@@ -984,10 +992,10 @@ export default function StorefrontPage() {
           onOpenCatalog={handleOpenCatalog}
         />
 
-        <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
+        <section className="mx-auto w-full max-w-[1440px] px-3 sm:px-4 lg:px-6 pt-3">
           {/* One line, always. `grow basis-0` lets the tiles share the width
               when everything fits, while `min-w-*` floors each of them so the
-              10 departments overflow the 1760px container: the track scrolls
+              10 departments overflow the 1440px container: the track scrolls
               instead of shrinking the tiles into unreadable slivers. Bleed
               margins and the edge fade come from HScrollStrip. */}
           <HScrollStrip
@@ -1068,7 +1076,7 @@ export default function StorefrontPage() {
         {categorySelections.slice(0, 4).map((group, index) => (
           <div key={`sel-${group.category.slug}`}>
             {index === 1 && (
-              <section className="mx-auto w-full max-w-[1760px] px-2 sm:px-3 lg:px-4 py-2">
+              <section className="mx-auto w-full max-w-[1440px] px-2 sm:px-3 lg:px-4 py-2">
                 <button
                   type="button"
                   onClick={() => setIsCatalogOpen(true)}
@@ -1124,7 +1132,7 @@ export default function StorefrontPage() {
       <section
         id="wholesale-section"
         data-wholesale-gateway
-        className="mx-auto w-full max-w-[1760px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
+        className="mx-auto w-full max-w-[1440px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
         <div
           style={{
@@ -1205,7 +1213,7 @@ export default function StorefrontPage() {
         }}
       >
         <div
-          className="mx-auto grid max-w-[1760px] grid-cols-2 gap-px lg:grid-cols-4"
+          className="mx-auto grid max-w-[1440px] grid-cols-2 gap-px lg:grid-cols-4"
           style={{ backgroundColor: currentTheme.colors.border }}
         >
           {[

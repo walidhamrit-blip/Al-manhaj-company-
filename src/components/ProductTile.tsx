@@ -7,6 +7,7 @@ import type { Brand } from "@/lib/brand-data";
 import { INITIAL_BRANDS } from "@/lib/brand-data";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
 import { ProductImage } from "@/components/ProductImage";
+import { BrandWordmark } from "@/components/BrandWordmark";
 import { PromoBadge } from "@/components/PromoBadge";
 import { Check, ShoppingCart } from "lucide-react";
 
@@ -143,12 +144,7 @@ function ProductPresentationCard({
             className="h-7 w-auto max-w-[112px] object-contain object-left"
           />
         ) : (
-          <span
-            dir="ltr"
-            className="max-w-full truncate text-xl font-black italic leading-none tracking-[-0.06em] text-[#171717]"
-          >
-            {wordmark}
-          </span>
+          <BrandWordmark text={wordmark} />
         )}
       </div>
 

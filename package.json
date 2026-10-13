@@ -11,7 +11,8 @@
     "test:promo": "tsx --test tests/promo-badge.test.tsx",
     "test:wholesale": "tsx --test tests/wholesale-page.test.tsx",
     "test:online": "tsx --test tests/online-sales-page.test.tsx",
-    "test:product-ui": "tsx --test tests/product-quick-view.test.tsx"
+    "test:product-ui": "tsx --test tests/product-quick-view.test.tsx",
+    "test:layout": "tsx --test tests/storefront-layout.test.tsx"
   },
   "dependencies": {
     "dotenv": "17.3.1",
