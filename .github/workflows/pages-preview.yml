@@ -1,0 +1,47 @@
+# Publishes the static badge preview (docs/) so it can be opened over a public
+# URL without any authentication. Scope: this preview branch only, plus manual
+# runs. It deploys the already-committed docs/ folder as-is; it never builds or
+# deploys the storefront.
+name: Publish badge preview
+
+on:
+  push:
+    branches: [arena/aac5e088-al-manhaj-company]
+    paths:
+      - "docs/**"
+      - ".github/workflows/pages-preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: badge-preview-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare Pages
+        uses: actions/configure-pages@v5
+        with:
+          # Creates the Pages site on first run instead of asking for a manual
+          # toggle, so the review link exists without anyone touching settings.
+          enablement: true
+
+      - name: Upload the static preview
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy
+        id: pages
+        uses: actions/deploy-pages@v4
