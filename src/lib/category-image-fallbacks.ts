@@ -9,6 +9,7 @@ const CATEGORY_ILLUSTRATIONS: Record<string, string> = {
   "files-folders": "/images/category-illustrations/notebooks.webp",
   "office-supplies": "/images/category-illustrations/writing.webp",
   "school-essentials": "/images/category-illustrations/bags.webp",
+  "printing-services": "/images/category-illustrations/ink-toner.webp",
 };
 
 export function getCategoryIllustration(slug: string): string {

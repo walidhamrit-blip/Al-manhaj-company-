@@ -25,6 +25,7 @@ import {
   ShoppingBag,
   Store,
   Truck,
+  Printer,
 } from "lucide-react";
 
 const theme = THEMES[0];
@@ -195,6 +196,10 @@ export default function OnlineSalesPage() {
             <span className="px-3 py-2.5 bg-black/20" aria-current="page">
               {t.navOnlineSales}
             </span>
+            <Link href="/services" className="px-3 py-2.5 hover:bg-black/15 inline-flex items-center gap-1">
+              <Printer className="h-3.5 w-3.5" />
+              {lang === "ar" ? "الخدمات" : "Services"}
+            </Link>
             <Link href="/wholesale" className="px-3 py-2.5 hover:bg-black/15">
               {t.navWholesale}
             </Link>
@@ -450,6 +455,9 @@ export default function OnlineSalesPage() {
             </Link>
             <Link href="/wholesale" className="hover:text-white hover:underline">
               {t.navWholesale}
+            </Link>
+            <Link href="/services" className="hover:text-white hover:underline">
+              {lang === "ar" ? "خدمات الطباعة" : "Printing Services"}
             </Link>
             <Link href="/magasin" className="hover:text-white hover:underline">
               {t.ourStore}

@@ -56,6 +56,7 @@ import {
   Truck,
   Headphones,
   CreditCard,
+  Printer,
 } from "lucide-react";
 
 export default function StorefrontPage() {
@@ -824,6 +825,13 @@ export default function StorefrontPage() {
               <ShoppingBag className="h-4 w-4" />
               {t.navOnlineSales}
             </Link>
+            <Link
+              href="/services"
+              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+            >
+              <Printer className="h-4 w-4" />
+              {lang === "ar" ? "الخدمات" : "Services"}
+            </Link>
             <button
               type="button"
               onClick={() => handleOpenCatalog("all")}
@@ -1258,6 +1266,12 @@ export default function StorefrontPage() {
               >
                 {t.navOnlineSales}
               </Link>
+              <Link
+                href="/services"
+                className="inline-flex text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
+              >
+                {lang === "ar" ? "خدمات الطباعة" : "Printing Services"}
+              </Link>
             </div>
           </div>
 
@@ -1375,6 +1389,17 @@ export default function StorefrontPage() {
             className="h-5 w-5"
           />
           <span>{t.navWholesale}</span>
+        </Link>
+
+        <Link
+          href="/services"
+          className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
+        >
+          <Printer
+            style={{ color: currentTheme.colors.accentPrimary }}
+            className="h-5 w-5"
+          />
+          <span>{lang === "ar" ? "الخدمات" : "Services"}</span>
         </Link>
 
         <button
