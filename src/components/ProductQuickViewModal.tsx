@@ -7,7 +7,6 @@ import { ProductImage } from "@/components/ProductImage";
 import { WholesalePriceDisclosure } from "@/components/WholesalePriceDisclosure";
 import {
   X,
-  ShoppingBag,
   Layers,
   ChevronLeft,
   ChevronRight,
@@ -61,7 +60,7 @@ export function ProductQuickViewModal({
       />
 
       <div
-        className="relative z-10 grid w-full max-w-3xl grid-cols-1 md:grid-cols-2 rounded-lg border border-gray-200 bg-white shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+        className="relative z-10 grid w-full max-w-2xl grid-cols-1 md:grid-cols-[0.9fr_1.1fr] rounded-lg border border-gray-200 bg-white shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
       >
         {/* Close Button */}
         <button
@@ -213,8 +212,8 @@ export function ProductQuickViewModal({
 
           {/* Quantity & Add to Cart */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 <div
                   style={{
                     backgroundColor: theme.colors.bgSecondary,
@@ -271,20 +270,17 @@ export function ProductQuickViewModal({
 
             <button
               type="button"
+              disabled={product.stock <= 0}
               onClick={() => {
                 onAddToCart(product, qty);
                 onClose();
               }}
-              style={{
-                backgroundColor: theme.colors.accentPrimary,
-                color: "#FFFFFF",
-              }}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 px-5 text-sm font-extrabold shadow-lg transition hover:opacity-95"
+              style={{ backgroundColor: "#4CAF50", color: "#FFFFFF" }}
+              className="w-full rounded-md px-5 py-3.5 text-sm font-bold shadow-sm transition hover:brightness-95 active:brightness-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <ShoppingBag className="h-4 w-4" />
-              <span>
-                {t.addToCart} ({qty} {t.units})
-              </span>
+              {product.stock <= 0
+                ? t.outOfStock
+                : `${t.addToCart} (${qty} ${t.units})`}
             </button>
 
             <div className="flex items-center justify-between text-xs opacity-75 pt-1">

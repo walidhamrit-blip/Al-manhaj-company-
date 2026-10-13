@@ -66,13 +66,16 @@ export default function StorefrontPage() {
   const isRtl = lang === "ar";
   const t = UI_TEXT[lang];
 
-  // Visual Theme state (7 curated e-commerce themes)
-  const [themeId, setThemeId] = useState<ThemeId>("cyber");
+  // Visual Theme state (the second theme is the default black storefront theme).
+  const [themeId, setThemeId] = useState<ThemeId>("paperSource");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   // "All departments" mega menu in the navigation strip.
   const [isDeptMenuOpen, setIsDeptMenuOpen] = useState(false);
   const currentTheme = useMemo(
-    () => THEMES.find((th) => th.id === themeId) || THEMES[0],
+    () =>
+      THEMES.find((th) => th.id === themeId) ||
+      THEMES.find((th) => th.id === "paperSource") ||
+      THEMES[0],
     [themeId]
   );
 
@@ -201,12 +204,10 @@ export default function StorefrontPage() {
         if (!localStorage.getItem("almanhaj_cookie")) {
           setShowCookieBanner(true);
         }
-        const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
-          localStorage.getItem("atelier_theme_v1")) as ThemeId;
-        // Keep SSR and the first client paint on the principal market theme.
+        const savedTheme = localStorage.getItem("atelier_theme_v3") as ThemeId;
+        // Keep SSR and the first client paint on the default black theme.
         if (
           savedTheme &&
-          savedTheme !== "cyber" &&
           savedTheme !== "paperSource" &&
           THEMES.some((th) => th.id === savedTheme)
         ) {
@@ -314,7 +315,7 @@ export default function StorefrontPage() {
     setThemeId(id);
     setIsThemeMenuOpen(false);
     try {
-      localStorage.setItem("atelier_theme_v2", id);
+      localStorage.setItem("atelier_theme_v3", id);
     } catch {
       // ignore
     }
@@ -562,12 +563,21 @@ export default function StorefrontPage() {
         </div>
       )}
 
-      <header className="sticky top-0 z-40 bg-white shadow-sm">
+      <header
+        className="sticky top-0 z-40 shadow-sm"
+        style={{
+          backgroundColor: currentTheme.colors.bgElevated,
+          color: currentTheme.colors.textPrimary,
+        }}
+      >
         <div className="mx-auto flex max-w-[1760px] items-center gap-3 sm:gap-5 px-2 sm:px-3 lg:px-4 py-3">
           <a href="#top" className="flex min-w-0 shrink-0 items-center gap-2.5">
             <span
-              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-sm text-white text-lg font-black"
-              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-sm text-lg font-black"
+              style={{
+                backgroundColor: currentTheme.colors.accentPrimary,
+                color: "#FFFFFF",
+              }}
             >
               {lang === "ar" ? "م" : "A"}
             </span>
@@ -581,7 +591,10 @@ export default function StorefrontPage() {
                     ? "شركة المنهج للقرطاسية"
                     : "AL-MANHAJ"}
               </span>
-              <span className="hidden md:block truncate text-[10px] font-medium uppercase tracking-wider text-neutral-500 max-w-xs">
+              <span
+                className="hidden md:block max-w-xs truncate text-[10px] font-medium uppercase tracking-wider"
+                style={{ color: currentTheme.colors.textSecondary }}
+              >
                 {headerTagline}
               </span>
             </span>
@@ -597,12 +610,19 @@ export default function StorefrontPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className="w-full bg-white px-4 py-2.5 text-sm outline-none"
+                style={{
+                  backgroundColor: currentTheme.colors.bgSecondary,
+                  color: currentTheme.colors.textPrimary,
+                }}
+                className="w-full px-4 py-2.5 text-sm outline-none"
               />
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 px-4 text-sm font-bold text-white"
-                style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                className="inline-flex items-center gap-1.5 px-4 text-sm font-bold"
+                style={{
+                  backgroundColor: currentTheme.colors.accentPrimary,
+                  color: "#FFFFFF",
+                }}
               >
                 <Search className="h-4 w-4" />
                 <span className="hidden lg:inline">{t.searchBtn}</span>
@@ -762,8 +782,11 @@ export default function StorefrontPage() {
               <span className="relative">
                 <ShoppingBag className="h-6 w-6" />
                 <span
-                  className="absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold text-white"
-                  style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                  className="absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold"
+                  style={{
+                    backgroundColor: currentTheme.colors.accentPrimary,
+                    color: "#FFFFFF",
+                  }}
                 >
                   {totalCartUnits}
                 </span>
@@ -787,12 +810,19 @@ export default function StorefrontPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchPlaceholder}
+              style={{
+                backgroundColor: currentTheme.colors.bgSecondary,
+                color: currentTheme.colors.textPrimary,
+              }}
               className="w-full px-3 py-2 text-sm outline-none"
             />
             <button
               type="submit"
-              className="px-3 text-white"
-              style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+              className="px-3"
+              style={{
+                backgroundColor: currentTheme.colors.accentPrimary,
+                color: "#FFFFFF",
+              }}
             >
               <Search className="h-4 w-4" />
             </button>
@@ -800,10 +830,12 @@ export default function StorefrontPage() {
         </div>
 
         <nav
-          className="text-white"
-          style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+          style={{
+            backgroundColor: currentTheme.colors.accentPrimary,
+            color: "#FFFFFF",
+          }}
         >
-          <div className="mx-auto flex max-w-[1760px] items-stretch gap-0 px-1 sm:px-2">
+          <div className="mx-auto flex min-h-14 max-w-[1760px] items-stretch gap-0 overflow-x-auto px-1 sm:px-2 no-scrollbar">
             <CatalogVerticalMenu
               isOpen={isDeptMenuOpen}
               onOpenChange={setIsDeptMenuOpen}
@@ -816,38 +848,38 @@ export default function StorefrontPage() {
             />
             <a
               href="/magasin"
-              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
             >
-              <MapPin className="h-4 w-4" />
+              <MapPin className="h-5 w-5 shrink-0" />
               {t.ourStore}
             </a>
             <Link
               href="/wholesale"
-              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
             >
-              <Layers className="h-4 w-4" />
+              <Layers className="h-5 w-5 shrink-0" />
               {t.navWholesale}
             </Link>
             <Link
               href="/vente-en-ligne"
-              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
             >
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className="h-5 w-5 shrink-0" />
               {t.navOnlineSales}
             </Link>
             <Link
               href="/services"
-              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+              className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
             >
-              <Printer className="h-4 w-4" />
+              <Printer className="h-5 w-5 shrink-0" />
               {lang === "ar" ? "الخدمات" : "Services"}
             </Link>
             <button
               type="button"
               onClick={() => handleOpenCatalog("all")}
-              className="ms-auto flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+              className="ms-auto flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
             >
-              <BookOpen className="h-4 w-4" />
+              <BookOpen className="h-5 w-5 shrink-0" />
               {t.masterCatalog}
             </button>
           </div>
@@ -857,7 +889,7 @@ export default function StorefrontPage() {
       <main id="top" className="flex-1">
         {currentHero && (
           <section className="relative w-full overflow-hidden bg-black">
-            <div className="relative h-[340px] w-full sm:h-[480px] lg:h-[560px] xl:h-[620px]">
+            <div className="relative h-[260px] w-full sm:h-[360px] lg:h-[430px] xl:h-[480px]">
               <StoreImage
                 src={currentHero.imageUrl}
                 alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
@@ -883,8 +915,11 @@ export default function StorefrontPage() {
                     onClick={() =>
                       handleOpenCatalog(currentHero.targetCategory || "all")
                     }
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-extrabold text-white"
-                    style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-extrabold"
+                    style={{
+                      backgroundColor: currentTheme.colors.accentPrimary,
+                      color: "#FFFFFF",
+                    }}
                   >
                     <span>{lang === "ar" ? currentHero.ctaAr : currentHero.ctaEn}</span>
                     <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
@@ -971,8 +1006,12 @@ export default function StorefrontPage() {
                 key={`tile-${cat.slug}`}
                 type="button"
                 onClick={() => handleOpenCatalog(cat.slug)}
-                className="group flex min-w-[152px] max-w-[240px] basis-0 grow flex-col overflow-hidden border bg-white text-start hover:shadow-md sm:min-w-[196px]"
-                style={{ borderColor: currentTheme.colors.border }}
+                className="group flex min-w-[152px] max-w-[240px] basis-0 grow flex-col overflow-hidden border text-start transition hover:shadow-md sm:min-w-[196px]"
+                style={{
+                  backgroundColor: currentTheme.colors.bgElevated,
+                  borderColor: currentTheme.colors.border,
+                  color: currentTheme.colors.textPrimary,
+                }}
               >
                 <div className="relative aspect-[16/9] overflow-hidden bg-white">
                   <CategoryImage
@@ -1007,6 +1046,7 @@ export default function StorefrontPage() {
           promoBadge
           products={promoProducts.length ? promoProducts : featuredProducts}
           categories={categories}
+          brands={brands}
           lang={lang}
           theme={currentTheme}
           currencySymbol={currencySymbol}
@@ -1050,8 +1090,11 @@ export default function StorefrontPage() {
                       {lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
                     </h2>
                     <span
-                      className="mt-3 inline-flex w-fit items-center gap-2 px-4 py-2 text-xs font-extrabold text-white"
-                      style={{ backgroundColor: currentTheme.colors.accentPrimary }}
+                      className="mt-3 inline-flex w-fit items-center gap-2 px-4 py-2 text-xs font-extrabold"
+                      style={{
+                        backgroundColor: currentTheme.colors.accentPrimary,
+                        color: "#FFFFFF",
+                      }}
                     >
                       {lang === "ar" ? landscapeBanner.ctaAr : landscapeBanner.ctaEn}
                       <ArrowRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
@@ -1064,6 +1107,7 @@ export default function StorefrontPage() {
               title={`${t.selectionPrefix} ${lang === "ar" ? group.category.nameAr : group.category.nameEn}`}
               products={group.items}
               categories={categories}
+              brands={brands}
               lang={lang}
               theme={currentTheme}
               currencySymbol={currencySymbol}
@@ -1154,8 +1198,17 @@ export default function StorefrontPage() {
 
       </main>
 
-      <section className="border-y bg-white" style={{ borderColor: currentTheme.colors.border }}>
-        <div className="mx-auto grid max-w-[1760px] grid-cols-2 gap-px bg-neutral-200 lg:grid-cols-4">
+      <section
+        className="border-y"
+        style={{
+          backgroundColor: currentTheme.colors.bgPrimary,
+          borderColor: currentTheme.colors.border,
+        }}
+      >
+        <div
+          className="mx-auto grid max-w-[1760px] grid-cols-2 gap-px lg:grid-cols-4"
+          style={{ backgroundColor: currentTheme.colors.border }}
+        >
           {[
             { icon: Truck, title: t.servicesDelivery, sub: t.servicesDeliverySub },
             { icon: CreditCard, title: t.servicesPayment, sub: t.servicesPaymentSub },
@@ -1167,16 +1220,31 @@ export default function StorefrontPage() {
                 <item.icon className="h-8 w-8 shrink-0" style={{ color: currentTheme.colors.accentPrimary }} />
                 <div>
                   <div className="text-sm font-extrabold">{item.title}</div>
-                  <div className="text-xs text-neutral-500">{item.sub}</div>
+                  <div className="text-xs" style={{ color: currentTheme.colors.textSecondary }}>{item.sub}</div>
                 </div>
               </>
             );
             return item.href ? (
-              <Link key={item.title} href={item.href} className="flex items-center gap-3 bg-white px-4 py-4">
+              <Link
+                key={item.title}
+                href={item.href}
+                className="flex items-center gap-3 px-4 py-4"
+                style={{
+                  backgroundColor: currentTheme.colors.bgElevated,
+                  color: currentTheme.colors.textPrimary,
+                }}
+              >
                 {inner}
               </Link>
             ) : (
-              <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-4">
+              <div
+                key={item.title}
+                className="flex items-center gap-3 px-4 py-4"
+                style={{
+                  backgroundColor: currentTheme.colors.bgElevated,
+                  color: currentTheme.colors.textPrimary,
+                }}
+              >
                 {inner}
               </div>
             );
@@ -1492,7 +1560,7 @@ export default function StorefrontPage() {
               )}
             </p>
             <div className="flex gap-2">
-              <button type="button" onClick={handleAcceptCookies} style={{backgroundColor: currentTheme.colors.accentPrimary, color:'#fff'}} className="flex-1 rounded-none py-2 text-xs font-extrabold">{lang === "ar" ? "موافق" : "Accept"}</button>
+              <button type="button" onClick={handleAcceptCookies} style={{backgroundColor: currentTheme.colors.accentPrimary, color: "#FFFFFF"}} className="flex-1 rounded-none py-2 text-xs font-extrabold">{lang === "ar" ? "موافق" : "Accept"}</button>
               <a href="/privacy" className="flex-1 text-center rounded-none border py-2 text-xs font-bold" style={{borderColor: currentTheme.colors.border}}>{lang === "ar" ? "سياسة الخصوصية" : "Privacy policy"}</a>
             </div>
           </div>

@@ -115,10 +115,13 @@ test("every Hot Deals card carries the badge, in the corner opposite the discoun
   const en = carousel("en", products, true);
   assert.equal((en.match(/>PROMO</g) || []).length, products.length);
 
-  // The badge lives in the picture box, before the product title: never next to it.
+  // The product board places the title and summary first, with the badge on the photo.
+  const titleIndex = ar.indexOf("data-product-title");
+  const summaryIndex = ar.indexOf("data-product-summary");
+  const imageIndex = ar.indexOf("data-product-image");
   const badgeIndex = ar.indexOf("data-promo-badge");
-  const headingIndex = ar.indexOf("<h3");
-  assert.ok(badgeIndex > -1 && headingIndex > -1 && badgeIndex < headingIndex);
+  assert.ok(titleIndex > -1 && summaryIndex > titleIndex);
+  assert.ok(imageIndex > summaryIndex && badgeIndex > imageIndex);
 
   // The discount percentage stays in its own corner, untouched.
   assert.match(ar, /absolute start-2 top-2/);
