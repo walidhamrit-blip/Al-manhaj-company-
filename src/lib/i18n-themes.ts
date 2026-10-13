@@ -333,6 +333,63 @@ export const UI_TEXT = {
     wholesaleAddedToCart: "Added to cart",
     wholesaleAddedHint: "The bulk quantity is saved in your store cart.",
     wholesaleGoToStore: "View cart in the store",
+    navOnlineSales: "Online sales",
+    onlineSalesBadge: "ONLINE STORE · ORDER IN MINUTES",
+    onlineSalesTitle: "Shop online, we deliver across Libya",
+    onlineSalesLead:
+      "Browse the catalog, build your cart and confirm your order on WhatsApp — cash on delivery, live tracking and 14-day returns.",
+    onlineSalesStart: "Start shopping",
+    onlineSalesStepsTitle: "How to order online",
+    onlineSalesStepsDesc: "Four simple steps from the catalog to your doorstep.",
+    onlineSalesStep1Title: "1. Browse the catalog",
+    onlineSalesStep1Desc:
+      "Find stationery, paper, ink and IT gear across every department.",
+    onlineSalesStep2Title: "2. Build your cart",
+    onlineSalesStep2Desc:
+      "Pick your quantities and review the cart — totals update live.",
+    onlineSalesStep3Title: "3. Confirm on WhatsApp",
+    onlineSalesStep3Desc:
+      "Send your order; we confirm stock, final total and delivery.",
+    onlineSalesStep4Title: "4. Track & receive",
+    onlineSalesStep4Desc:
+      "Follow every stage with your order reference and pay cash on delivery.",
+    onlineSalesTrustReturns: "Returns within 14 days",
+    onlineSalesTrustReturnsSub: "Unopened products",
+    onlineSalesPaymentTitle: "Payment you can trust",
+    onlineSalesPaymentCodTitle: "Cash on delivery",
+    onlineSalesPaymentCodDesc:
+      "Pay when the order arrives — no advance payment needed.",
+    onlineSalesPaymentConfirmTitle: "Total confirmed first",
+    onlineSalesPaymentConfirmDesc:
+      "The final total is confirmed with you on WhatsApp before shipping.",
+    onlineSalesDeliveryTitle: "Delivery & shipping",
+    onlineSalesDeliveryTripoli:
+      "Tripoli — free over 1,900 LYD, delivered in 1–2 days.",
+    onlineSalesDeliveryLibya:
+      "Rest of Libya — 20–45 LYD by weight, calculated with you before shipping.",
+    onlineSalesReturnsTitle: "14-day returns",
+    onlineSalesReturnsDesc:
+      "Unopened items can be returned within 14 days — we arrange pickup in Tripoli.",
+    onlineSalesReturnsLink: "Read the full policy",
+    onlineSalesFaqTitle: "Online shopping — questions & answers",
+    onlineSalesFaq1Q: "How long does delivery take?",
+    onlineSalesFaq1A:
+      "Orders in Tripoli arrive within 1–2 days (free over 1,900 LYD). For other cities we confirm the estimated delivery on WhatsApp when your order is validated.",
+    onlineSalesFaq2Q: "How do I track my order?",
+    onlineSalesFaq2A:
+      "After your order is confirmed you receive a reference on WhatsApp. Enter it with your phone number in the tracking tool above to follow every stage.",
+    onlineSalesFaq3Q: "When do I pay?",
+    onlineSalesFaq3A:
+      "Cash on delivery — you pay only when you receive your order, with no advance payment.",
+    onlineSalesFaq4Q: "Do you deliver outside Tripoli?",
+    onlineSalesFaq4A:
+      "Yes, we ship across Libya. Shipping is 20–45 LYD depending on weight and is calculated with you on WhatsApp before dispatch.",
+    onlineSalesFaq5Q: "Can I change or cancel my order?",
+    onlineSalesFaq5A:
+      "Yes — contact us on WhatsApp as soon as possible. Changes are free until the order is shipped.",
+    onlineSalesCtaTitle: "Questions before ordering?",
+    onlineSalesCtaDesc: "Our team replies on WhatsApp the same day.",
+    onlineSalesCall: "Call now",
     cartTitle: "Your Shopping Cart",
     trackOrder: "Track order",
     trackOrderShort: "Track",
@@ -608,6 +665,63 @@ export const UI_TEXT = {
     wholesaleAddedToCart: "أُضيف إلى السلة",
     wholesaleAddedHint: "تم حفظ كمية الجملة في سلة المتجر.",
     wholesaleGoToStore: "عرض السلة في المتجر",
+    navOnlineSales: "الشراء أونلاين",
+    onlineSalesBadge: "المتجر أونلاين · اطلب في دقائق",
+    onlineSalesTitle: "تسوّق أونلاين ونوصل إليك في كل ليبيا",
+    onlineSalesLead:
+      "تصفّح الكتالوج، أضف منتجاتك إلى السلة وأكّد طلبك عبر واتساب — الدفع عند الاستلام، تتبع مباشر واسترجاع خلال 14 يوماً.",
+    onlineSalesStart: "ابدأ التسوق",
+    onlineSalesStepsTitle: "كيف تطلب أونلاين",
+    onlineSalesStepsDesc: "أربع خطوات بسيطة من الكتالوج إلى باب منزلك.",
+    onlineSalesStep1Title: "1. تصفّح الكتالوج",
+    onlineSalesStep1Desc:
+      "اعثر على القرطاسية والورق والأحبار وملحقات الحاسوب في كل الأقسام.",
+    onlineSalesStep2Title: "2. أضف إلى السلة",
+    onlineSalesStep2Desc:
+      "اختر الكميات وراجع سلتك — تُحدَّث الإجماليات فوراً.",
+    onlineSalesStep3Title: "3. أكّد عبر واتساب",
+    onlineSalesStep3Desc:
+      "أرسل طلبك ونؤكد المخزون والإجمالي النهائي وموعد التوصيل.",
+    onlineSalesStep4Title: "4. تتبّع واستلم",
+    onlineSalesStep4Desc:
+      "تابع كل مرحلة برقم الطلب وادفع نقداً عند الاستلام.",
+    onlineSalesTrustReturns: "استرجاع خلال 14 يوماً",
+    onlineSalesTrustReturnsSub: "المنتجات غير المفتوحة",
+    onlineSalesPaymentTitle: "طرق دفع موثوقة",
+    onlineSalesPaymentCodTitle: "الدفع عند الاستلام",
+    onlineSalesPaymentCodDesc:
+      "ادفع عندما يصلك الطلب — بدون أي دفعة مقدمة.",
+    onlineSalesPaymentConfirmTitle: "إجمالي مؤكد مسبقاً",
+    onlineSalesPaymentConfirmDesc:
+      "نؤكد الإجمالي النهائي معك عبر واتساب قبل الشحن.",
+    onlineSalesDeliveryTitle: "التوصيل والشحن",
+    onlineSalesDeliveryTripoli:
+      "طرابلس — مجاناً فوق 1,900 د.ل، والتوصيل خلال 1 إلى 2 يوم.",
+    onlineSalesDeliveryLibya:
+      "باقي ليبيا — 20 إلى 45 د.ل حسب الوزن، ويُحسب معك قبل الشحن.",
+    onlineSalesReturnsTitle: "استرجاع خلال 14 يوماً",
+    onlineSalesReturnsDesc:
+      "يمكن إرجاع المنتجات غير المفتوحة خلال 14 يوماً — نرتب الاستلام في طرابلس.",
+    onlineSalesReturnsLink: "اطّلع على السياسة الكاملة",
+    onlineSalesFaqTitle: "التسوق أونلاين — أسئلة شائعة",
+    onlineSalesFaq1Q: "كم تستغرق مدة التوصيل؟",
+    onlineSalesFaq1A:
+      "طلبات طرابلس تصل خلال 1 إلى 2 يوم (مجاناً فوق 1,900 د.ل). أما باقي المدن فنؤكد المدة المتوقعة عبر واتساب عند تأكيد الطلب.",
+    onlineSalesFaq2Q: "كيف أتتبع طلبي؟",
+    onlineSalesFaq2A:
+      "بعد تأكيد طلبك تصلك رسالة واتساب فيها رقم الطلب. أدخله مع رقم هاتفك في أداة التتبع بالأعلى لمتابعة كل مرحلة.",
+    onlineSalesFaq3Q: "متى أدفع؟",
+    onlineSalesFaq3A:
+      "الدفع عند الاستلام — تدفع فقط عند وصول طلبك بدون أي دفعة مقدمة.",
+    onlineSalesFaq4Q: "هل التوصيل إلى خارج طرابلس؟",
+    onlineSalesFaq4A:
+      "نعم، نشحن إلى كل ليبيا. رسوم الشحن 20 إلى 45 د.ل حسب الوزن وتُحسب معك عبر واتساب قبل الإرسال.",
+    onlineSalesFaq5Q: "هل يمكنني تعديل أو إلغاء طلبي؟",
+    onlineSalesFaq5A:
+      "نعم — تواصل معنا عبر واتساب في أسرع وقت. التعديل مجاني حتى شحن الطلب.",
+    onlineSalesCtaTitle: "أسئلة قبل أن تطلب؟",
+    onlineSalesCtaDesc: "فريقنا يرد على واتساب في نفس اليوم.",
+    onlineSalesCall: "اتصل الآن",
     cartTitle: "سلة المشتريات",
     trackOrder: "تتبع الطلب",
     trackOrderShort: "تتبع",
