@@ -49,4 +49,10 @@ export const CATALOG_DEPARTMENTS: CatalogDepartment[] = [
     nameAr: "الفنون والرسم",
     children: ["art-drafting"],
   },
+  {
+    slug: "services",
+    nameEn: "Printing & services",
+    nameAr: "الطباعة والخدمات",
+    children: ["printing-services"],
+  },
 ];

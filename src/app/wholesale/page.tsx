@@ -25,6 +25,7 @@ import {
   MapPin,
   MessageCircle,
   Phone,
+  Printer,
   Store,
   Truck,
 } from "lucide-react";
@@ -225,6 +226,10 @@ export default function WholesalePage() {
             <span className="px-3 py-2.5 bg-black/20" aria-current="page">
               {t.navWholesale}
             </span>
+            <Link href="/services" className="px-3 py-2.5 hover:bg-black/15 inline-flex items-center gap-1">
+              <Printer className="h-3.5 w-3.5" />
+              {lang === "ar" ? "الخدمات" : "Services"}
+            </Link>
             <Link href="/magasin" className="px-3 py-2.5 hover:bg-black/15">
               {t.ourStore}
             </Link>
