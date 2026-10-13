@@ -36,8 +36,8 @@ export const THEMES: ThemeConfig[] = [
     id: "cyber",
     nameEn: "Al Manhaj Market",
     nameAr: "منهج ماركت",
-    subtitleEn: "Magento red, grey catalog and white cards",
-    subtitleAr: "أحمر تجاري، كتالوج رمادي وبطاقات بيضاء",
+    subtitleEn: "Principal theme — Magento red, grey catalog, white cards",
+    subtitleAr: "الثيم الرئيسي — أحمر تجاري، رمادي كتالوج، بطاقات بيضاء",
     isDark: false,
     colors: {
       bgPrimary: "#EEEEEE",

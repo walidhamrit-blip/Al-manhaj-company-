@@ -66,16 +66,13 @@ export default function StorefrontPage() {
   const isRtl = lang === "ar";
   const t = UI_TEXT[lang];
 
-  // Visual Theme state (the second theme is the default black storefront theme).
-  const [themeId, setThemeId] = useState<ThemeId>("paperSource");
+  // Visual Theme state (7 curated e-commerce themes)
+  const [themeId, setThemeId] = useState<ThemeId>("cyber");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   // "All departments" mega menu in the navigation strip.
   const [isDeptMenuOpen, setIsDeptMenuOpen] = useState(false);
   const currentTheme = useMemo(
-    () =>
-      THEMES.find((th) => th.id === themeId) ||
-      THEMES.find((th) => th.id === "paperSource") ||
-      THEMES[0],
+    () => THEMES.find((th) => th.id === themeId) || THEMES[0],
     [themeId]
   );
 
@@ -204,10 +201,12 @@ export default function StorefrontPage() {
         if (!localStorage.getItem("almanhaj_cookie")) {
           setShowCookieBanner(true);
         }
-        const savedTheme = localStorage.getItem("atelier_theme_v3") as ThemeId;
-        // Keep SSR and the first client paint on the default black theme.
+        const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
+          localStorage.getItem("atelier_theme_v1")) as ThemeId;
+        // Keep SSR and the first client paint on the principal market theme.
         if (
           savedTheme &&
+          savedTheme !== "cyber" &&
           savedTheme !== "paperSource" &&
           THEMES.some((th) => th.id === savedTheme)
         ) {
@@ -315,7 +314,7 @@ export default function StorefrontPage() {
     setThemeId(id);
     setIsThemeMenuOpen(false);
     try {
-      localStorage.setItem("atelier_theme_v3", id);
+      localStorage.setItem("atelier_theme_v2", id);
     } catch {
       // ignore
     }
