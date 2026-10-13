@@ -9,7 +9,9 @@ import type {
   MidBannerSlide,
   Product,
   StoreSettings,
+  TopBanner,
 } from "@/db/schema";
+import { TOP_BANNERS_MAX } from "@/db/schema";
 import {
   THEMES,
   UI_TEXT,
@@ -749,6 +751,52 @@ export function AdminDashboardModal({
     const [moved] = next.splice(index, 1);
     next.splice(target, 0, moved);
     setArticleBanners(next);
+  };
+
+  /* -------------------------------------------------------------------------
+     Row of 3 banners directly under the brand ribbons (max 3, one line)
+  ------------------------------------------------------------------------- */
+
+  const topBanners: TopBanner[] = Array.isArray(settingsForm?.topBanners)
+    ? settingsForm.topBanners
+    : [];
+
+  const setTopBanners = (banners: TopBanner[]) =>
+    patchSettings({ topBanners: banners.slice(0, TOP_BANNERS_MAX) });
+
+  const updateTopBanner = (index: number, patch: Partial<TopBanner>) =>
+    setTopBanners(
+      topBanners.map((banner, i) => (i === index ? { ...banner, ...patch } : banner))
+    );
+
+  const addTopBanner = () =>
+    setTopBanners([
+      ...topBanners,
+      {
+        id: `top-banner-${Date.now()}`,
+        imageUrl: "/images/new/hero-stationery-01.jpg",
+        badgeEn: "",
+        badgeAr: "",
+        titleEn: "",
+        titleAr: "",
+        subtitleEn: "",
+        subtitleAr: "",
+        ctaEn: "",
+        ctaAr: "",
+        targetCategory: categories[0]?.slug ?? "",
+      },
+    ]);
+
+  const removeTopBanner = (index: number) =>
+    setTopBanners(topBanners.filter((_, i) => i !== index));
+
+  const moveTopBanner = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= topBanners.length) return;
+    const next = [...topBanners];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    setTopBanners(next);
   };
 
   return (
@@ -2529,6 +2577,179 @@ export function AdminDashboardModal({
                     >
                       <Plus className="h-4 w-4" />
                       <span>{t.homepageAddMidBanner}</span>
+                    </button>
+                  </PanelSection>
+
+                  {/* --- Row of 3 banners under the brand ribbons --- */}
+                  <PanelSection
+                    title={
+                      isAr
+                        ? "ثلاث لافتات تحت شريط العلامات التجارية"
+                        : "Three banners under the brand ribbons"
+                    }
+                    hint={
+                      isAr
+                        ? "تظهر الثلاث لافتات في صف واحد مباشرة تحت شريط العلامات التجارية (حد أقصى 3). اترك النص فارغاً لعرض الصورة وحدها."
+                        : "Up to 3 banners shown side by side, directly under the brand ribbons. Leave the copy blank for a photo-only banner."
+                    }
+                    icon={<Images className="h-4 w-4" />}
+                    theme={theme}
+                  >
+                    {topBanners.length === 0 && (
+                      <p style={{ color: theme.colors.textSecondary }} className="text-xs">
+                        {isAr
+                          ? "لا توجد لافتات؛ سيبقى هذا القسم مخفياً في الصفحة الرئيسية."
+                          : "No banners: this row stays hidden on the homepage."}
+                      </p>
+                    )}
+
+                    {topBanners.map((banner, index) => (
+                      <div
+                        key={banner.id || `top-banner-${index}`}
+                        style={{
+                          backgroundColor: theme.colors.bgElevated,
+                          borderColor: theme.colors.border,
+                        }}
+                        className="space-y-3 rounded-xl border p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-extrabold uppercase tracking-widest">
+                            {isAr ? "لافتة" : "Banner"} {index + 1}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => moveTopBanner(index, -1)}
+                              disabled={index === 0}
+                              title={isAr ? "تحريك إلى الأعلى" : "Move up"}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveTopBanner(index, 1)}
+                              disabled={index === topBanners.length - 1}
+                              title={isAr ? "تحريك إلى الأسفل" : "Move down"}
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                              }}
+                              className="rounded-lg border p-1.5 transition hover:opacity-80 disabled:opacity-40"
+                            >
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeTopBanner(index)}
+                              title={isAr ? "حذف اللافتة" : "Delete banner"}
+                              className="rounded-lg bg-red-600 p-1.5 text-white transition hover:bg-red-500"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <ImageUploadField
+                          label={isAr ? `صورة اللافتة ${index + 1}` : `Banner ${index + 1} photo`}
+                          value={banner.imageUrl}
+                          onChange={(url) => updateTopBanner(index, { imageUrl: url })}
+                          adminToken={adminToken}
+                          lang={lang}
+                          theme={theme}
+                          required
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageBadgeText} (EN)`}
+                          labelAr={`${t.homepageBadgeText} (AR)`}
+                          valueEn={banner.badgeEn}
+                          valueAr={banner.badgeAr}
+                          onChangeEn={(v) => updateTopBanner(index, { badgeEn: v })}
+                          onChangeAr={(v) => updateTopBanner(index, { badgeAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageTitle} (EN)`}
+                          labelAr={`${t.homepageTitle} (AR)`}
+                          valueEn={banner.titleEn}
+                          valueAr={banner.titleAr}
+                          onChangeEn={(v) => updateTopBanner(index, { titleEn: v })}
+                          onChangeAr={(v) => updateTopBanner(index, { titleAr: v })}
+                          theme={theme}
+                        />
+
+                        <BilingualField
+                          labelEn={`${t.homepageDescription} (EN)`}
+                          labelAr={`${t.homepageDescription} (AR)`}
+                          valueEn={banner.subtitleEn}
+                          valueAr={banner.subtitleAr}
+                          onChangeEn={(v) => updateTopBanner(index, { subtitleEn: v })}
+                          onChangeAr={(v) => updateTopBanner(index, { subtitleAr: v })}
+                          theme={theme}
+                          textarea
+                        />
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <TextField
+                            label={`${t.homepageCtaText} (EN)`}
+                            value={banner.ctaEn}
+                            onChange={(v) => updateTopBanner(index, { ctaEn: v })}
+                            theme={theme}
+                          />
+                          <TextField
+                            label={`${t.homepageCtaText} (AR)`}
+                            value={banner.ctaAr}
+                            onChange={(v) => updateTopBanner(index, { ctaAr: v })}
+                            theme={theme}
+                            rtl
+                          />
+                          <div>
+                            <label className="mb-1 block text-xs font-bold">
+                              {t.homepageTargetCategory}
+                            </label>
+                            <select
+                              value={banner.targetCategory}
+                              onChange={(e) =>
+                                updateTopBanner(index, {
+                                  targetCategory: e.target.value,
+                                })
+                              }
+                              style={{
+                                backgroundColor: theme.colors.bgSecondary,
+                                borderColor: theme.colors.border,
+                                color: theme.colors.textPrimary,
+                              }}
+                              className="w-full rounded-xl border px-3 py-2 text-sm"
+                            >
+                              {categories.map((cat) => (
+                                <option key={cat.id} value={cat.slug}>
+                                  {isAr ? cat.nameAr : cat.nameEn}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addTopBanner}
+                      disabled={topBanners.length >= TOP_BANNERS_MAX}
+                      style={{
+                        backgroundColor: theme.colors.bgElevated,
+                        borderColor: theme.colors.border,
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-extrabold transition hover:opacity-80 disabled:opacity-40"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>{isAr ? "إضافة لافتة" : "Add a banner"}</span>
                     </button>
                   </PanelSection>
 

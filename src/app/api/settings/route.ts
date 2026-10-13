@@ -118,6 +118,9 @@ export async function PUT(request: NextRequest) {
         midBanners: Array.isArray(body.midBanners)
           ? body.midBanners
           : existing.midBanners,
+        topBanners: Array.isArray(body.topBanners)
+          ? body.topBanners.slice(0, 3)
+          : existing.topBanners,
         articleBanners: Array.isArray(body.articleBanners)
           ? body.articleBanners
           : existing.articleBanners,
