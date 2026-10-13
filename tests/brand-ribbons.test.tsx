@@ -108,7 +108,8 @@ test("short lists fill the track without adding keyboard stops", () => {
   for (const count of [1, 2, 6]) {
     const html = renderToStaticMarkup(<BrandRibbon section={INITIAL_BRAND_SECTIONS[0]} brands={INITIAL_BRANDS.slice(0, count)} lang="ar" onSearch={() => {}} />);
     const total = (html.match(/<button/g) || []).length;
-    assert.ok(total / 2 * 172 >= 1760, "each half covers the maximum viewport");
+    // The ribbon window is capped at the homepage content width (1440px).
+    assert.ok(total / 2 * 172 >= 1440, "each half covers the maximum viewport");
     assert.equal((html.match(/tabindex="0"/g) || []).length, count);
   }
 });

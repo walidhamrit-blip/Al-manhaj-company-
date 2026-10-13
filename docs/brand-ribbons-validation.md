@@ -65,7 +65,8 @@ Les SVG typographiques initiaux sont remplacés par des logos vectoriels archiv�
 (sources dans `public/brands/SOURCES.md`). Titres et légendes visibles supprimés,
 cartes compactes. Le ruban informatique défile à gauche, la papeterie à droite
 via des keyframes distinctes, sans `animation-direction: reverse`. Chaque moitié
-de piste contient assez de tuiles pour couvrir 1760 px, même si une seule marque
+de piste contient assez de tuiles pour couvrir 1440 px (la largeur du contenu
+de la page d'accueil, `max-width` du ruban), même si une seule marque
 reste active. Les répétitions de remplissage sont décoratives et hors tabulation ;
 elles sont masquées en mode mouvement réduit. Les espacements horizontaux sont
 fixes au lieu d'être étirés pour remplir la largeur.
