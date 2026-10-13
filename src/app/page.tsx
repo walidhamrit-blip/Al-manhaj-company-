@@ -3,6 +3,7 @@
 import { BrandRibbon } from "@/components/BrandRibbon";
 import { INITIAL_BRANDS, INITIAL_BRAND_SECTIONS, type Brand, type BrandSection } from "@/lib/brand-data";
 import { ribbonSections } from "@/lib/brand-ribbons";
+import Link from "next/link";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import type { Category, Product, StoreSettings } from "@/db/schema";
 import {
@@ -10,7 +11,6 @@ import {
   UI_TEXT,
   bannerImageClass,
   bannerScrimClass,
-  formatPrice,
   type Language,
   type ThemeId,
 } from "@/lib/i18n-themes";
@@ -33,7 +33,7 @@ import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
 import { OrderTrackingSection, type OrderTrackingRequest } from "@/components/OrderTrackingSection";
-import { WhatsAppOrderPanel } from "@/components/WhatsAppOrderPanel";
+
 import {
   BookOpen,
   Search,
@@ -117,10 +117,6 @@ export default function StorefrontPage() {
   // Department highlighted when the master catalog drawer opens
   const [catalogDeptSlug, setCatalogDeptSlug] = useState<string>("all");
 
-  // Wholesale Interactive Estimator states
-  const [wholesaleProductId, setWholesaleProductId] = useState<number>(0);
-  const [wholesaleQty, setWholesaleQty] = useState<number>(25);
-
   // Drawers & Modals state
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -129,9 +125,6 @@ export default function StorefrontPage() {
     null
   );
 
-  // WhatsApp in-app panel state
-  const [waPanelOpen, setWaPanelOpen] = useState(false);
-  const [waPanelMessage, setWaPanelMessage] = useState("");
   // Cookie notice: shown only when the visitor has not accepted it yet.
   const [showCookieBanner, setShowCookieBanner] = useState(false);
 
@@ -190,9 +183,6 @@ export default function StorefrontPage() {
       } else {
         setSettings(fallback.settings as StoreSettings);
       }
-      if (nextProducts.length > 0) {
-        setWholesaleProductId((prev) => prev || nextProducts[0].id);
-      }
     } catch (err) {
       console.error("Failed to fetch store data, using seed fallback:", err);
       try {
@@ -202,9 +192,6 @@ export default function StorefrontPage() {
         setCategories(fallback.categories as Category[]);
         setProducts(fallback.products as Product[]);
         setSettings(fallback.settings as StoreSettings);
-        if (fallback.products.length > 0) {
-          setWholesaleProductId((prev) => prev || fallback.products[0].id);
-        }
       } catch {}
     }
   }, []);
@@ -441,46 +428,6 @@ export default function StorefrontPage() {
     setCatalogDeptSlug("all");
     setIsCatalogOpen(true);
   };
-
-  // Wholesale Calculator Logic
-  const selectedWholesaleProduct = useMemo(() => {
-    return (
-      products.find((p) => p.id === wholesaleProductId) || products[0] || null
-    );
-  }, [products, wholesaleProductId]);
-
-  const wholesaleCalculation = useMemo(() => {
-    if (!selectedWholesaleProduct) return null;
-    const retailUnit = Number(selectedWholesaleProduct.price);
-    const baseWholesaleUnit = Number(selectedWholesaleProduct.wholesalePrice);
-    const minQty = selectedWholesaleProduct.wholesaleMinQty || 10;
-
-    let appliedUnit = retailUnit;
-    let tierName =
-      lang === "ar" ? "سعر التقسيط العادي" : "Standard Retail Rate";
-
-    if (wholesaleQty >= 200) {
-      appliedUnit = Number((baseWholesaleUnit * 0.88).toFixed(2));
-      tierName = t.tier3Label;
-    } else if (wholesaleQty >= 50) {
-      appliedUnit = Number((baseWholesaleUnit * 0.94).toFixed(2));
-      tierName = t.tier2Label;
-    } else if (wholesaleQty >= minQty) {
-      appliedUnit = baseWholesaleUnit;
-      tierName = t.tier1Label;
-    }
-
-    const totalCost = appliedUnit * wholesaleQty;
-    const totalSavings = Math.max(0, (retailUnit - appliedUnit) * wholesaleQty);
-
-    return {
-      retailUnit,
-      appliedUnit,
-      tierName,
-      totalCost,
-      totalSavings,
-    };
-  }, [selectedWholesaleProduct, wholesaleQty, lang, t]);
 
   const totalCartUnits = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
@@ -871,6 +818,13 @@ export default function StorefrontPage() {
               <MapPin className="h-4 w-4" />
               {t.ourStore}
             </a>
+            <Link
+              href="/wholesale"
+              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold hover:bg-black/15"
+            >
+              <Layers className="h-4 w-4" />
+              {t.navWholesale}
+            </Link>
             <button
               type="button"
               onClick={() => handleOpenCatalog("all")}
@@ -1141,10 +1095,11 @@ export default function StorefrontPage() {
         ))}
 
       {/* =====================================================================
-          6. DEDICATED WHOLESALE & B2B BULK ORDERING SECTION
+          6. B2B WHOLESALE GATEWAY (estimator lives on /wholesale)
       ===================================================================== */}
       <section
         id="wholesale-section"
+        data-wholesale-gateway
         className="mx-auto w-full max-w-[1760px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
         <div
@@ -1152,247 +1107,66 @@ export default function StorefrontPage() {
             backgroundColor: currentTheme.colors.bgElevated,
             borderColor: currentTheme.colors.border,
           }}
-          className="rounded-none border p-6 sm:p-10 shadow-sm"
+          className="rounded-none border p-6 sm:p-8 shadow-sm"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column: Wholesale Tiers & Conditions */}
-            <div className="lg:col-span-7 space-y-6">
-              <div>
-                <span
-                  style={{
-                    backgroundColor: currentTheme.colors.badgeBg,
-                    color: currentTheme.colors.badgeText,
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider mb-3"
-                >
-                  <Building2 className="h-3.5 w-3.5" />
-                  {t.wholesaleSectionBadge}
-                </span>
-
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-                  {t.wholesaleSectionTitle}
-                </h2>
-
-                <p
-                  style={{ color: currentTheme.colors.textSecondary }}
-                  className="mt-2 text-sm leading-relaxed"
-                >
-                  {t.wholesaleSectionDesc}
-                </p>
-              </div>
-
-              {/* 3 Volume Discount Tiers */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.bgSecondary,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="rounded-none border p-4"
-                >
-                  <div
-                    style={{ color: currentTheme.colors.accentPrimary }}
-                    className="text-2xl font-black tabular-nums mb-1"
-                  >
-                    -{settings?.wholesaleDiscountTier1Pct ?? 15}%{" "}
-                    <span className="text-xs font-bold">{t.discountOff}</span>
-                  </div>
-                  <div className="text-xs font-extrabold">{t.tier1Label}</div>
-                </div>
-
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.bgSecondary,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="rounded-none border p-4"
-                >
-                  <div
-                    style={{ color: currentTheme.colors.accentPrimary }}
-                    className="text-2xl font-black tabular-nums mb-1"
-                  >
-                    -{settings?.wholesaleDiscountTier2Pct ?? 22}%{" "}
-                    <span className="text-xs font-bold">{t.discountOff}</span>
-                  </div>
-                  <div className="text-xs font-extrabold">{t.tier2Label}</div>
-                </div>
-
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.badgeBg,
-                    borderColor: currentTheme.colors.accentPrimary,
-                    color: currentTheme.colors.badgeText,
-                  }}
-                  className="rounded-none border-2 p-4"
-                >
-                  <div className="text-2xl font-black tabular-nums mb-1">
-                    -{settings?.wholesaleDiscountTier3Pct ?? 30}%{" "}
-                    <span className="text-xs font-bold">{t.discountOff}</span>
-                  </div>
-                  <div className="text-xs font-extrabold">{t.tier3Label}</div>
-                </div>
-              </div>
-
-              {/* Dynamic Wholesale Conditions from PostgreSQL */}
-              <div
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl space-y-3">
+              <span
                 style={{
-                  backgroundColor: currentTheme.colors.bgSecondary,
-                  borderColor: currentTheme.colors.border,
+                  backgroundColor: currentTheme.colors.badgeBg,
+                  color: currentTheme.colors.badgeText,
                 }}
-                className="rounded-none border p-4 text-xs sm:text-sm leading-relaxed"
+                className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider"
               >
-                <p className="font-medium">
-                  {settings
-                    ? lang === "ar"
-                      ? settings.wholesaleConditionsAr
-                      : settings.wholesaleConditionsEn
-                    : ""}
-                </p>
+                <Building2 className="h-3.5 w-3.5" />
+                {t.wholesaleSectionBadge}
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+                {t.wholesaleSectionTitle}
+              </h2>
+              <p
+                style={{ color: currentTheme.colors.textSecondary }}
+                className="text-sm leading-relaxed"
+              >
+                {t.wholesaleOpenPageHint}
+              </p>
+              <div className="flex flex-wrap gap-2 text-[11px] font-extrabold">
+                <span
+                  className="rounded-none border px-2.5 py-1"
+                  style={{ borderColor: currentTheme.colors.border }}
+                >
+                  -{settings?.wholesaleDiscountTier1Pct ?? 15}% · {t.tier1Label}
+                </span>
+                <span
+                  className="rounded-none border px-2.5 py-1"
+                  style={{ borderColor: currentTheme.colors.border }}
+                >
+                  -{settings?.wholesaleDiscountTier2Pct ?? 22}% · {t.tier2Label}
+                </span>
+                <span
+                  className="rounded-none border-2 px-2.5 py-1"
+                  style={{
+                    borderColor: currentTheme.colors.accentPrimary,
+                    backgroundColor: currentTheme.colors.badgeBg,
+                    color: currentTheme.colors.badgeText,
+                  }}
+                >
+                  -{settings?.wholesaleDiscountTier3Pct ?? 30}% · {t.tier3Label}
+                </span>
               </div>
             </div>
-
-            {/* Right Column: Interactive Bulk Wholesale Estimator */}
-            <div
+            <Link
+              href="/wholesale"
               style={{
-                backgroundColor: currentTheme.colors.bgSecondary,
-                borderColor: currentTheme.colors.border,
+                backgroundColor: currentTheme.colors.accentPrimary,
+                color: "#FFFFFF",
               }}
-              className="lg:col-span-5 rounded-none border p-5 sm:p-6 space-y-4"
+              className="inline-flex shrink-0 items-center justify-center gap-2 px-5 py-3 text-sm font-extrabold shadow-md"
             >
-              <div className="flex items-center gap-2">
-                <Layers
-                  style={{ color: currentTheme.colors.accentPrimary }}
-                  className="h-5 w-5"
-                />
-                <h3 className="text-base sm:text-lg font-extrabold">
-                  {t.wholesaleCalculatorTitle}
-                </h3>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold mb-1.5">
-                  {t.selectProduct}
-                </label>
-                <select
-                  value={wholesaleProductId}
-                  onChange={(e) =>
-                    setWholesaleProductId(Number(e.target.value))
-                  }
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    borderColor: currentTheme.colors.border,
-                    color: currentTheme.colors.textPrimary,
-                  }}
-                  className="w-full rounded-none border px-3 py-2.5 text-xs sm:text-sm font-bold outline-none"
-                >
-                  {products.map((prod) => (
-                    <option key={prod.sku} value={prod.id}>
-                      {lang === "ar" ? prod.titleAr : prod.titleEn} (
-                      {formatPrice(prod.wholesalePrice, lang)})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between text-xs font-bold mb-1">
-                  <span>{t.quantityLabel}</span>
-                  <span className="text-sm font-black tabular-nums">
-                    {wholesaleQty} {t.units}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={5}
-                  max={250}
-                  step={5}
-                  value={wholesaleQty}
-                  onChange={(e) => setWholesaleQty(Number(e.target.value))}
-                  className="w-full cursor-pointer accent-current"
-                />
-                <div className="flex justify-between text-[10px] opacity-70 mt-1">
-                  <span>10+ (Tier 1)</span>
-                  <span>50+ (Tier 2)</span>
-                  <span>200+ (Tier 3)</span>
-                </div>
-              </div>
-
-              {wholesaleCalculation && selectedWholesaleProduct && (
-                <div
-                  style={{
-                    backgroundColor: currentTheme.colors.bgElevated,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                  className="rounded-none border p-4 space-y-2"
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="opacity-75">{t.unitPriceApplied}:</span>
-                    <span className="font-extrabold tabular-nums">
-                      {formatPrice(wholesaleCalculation.appliedUnit, lang)} /{" "}
-                      {lang === "ar" ? "قطعة" : "unit"}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-emerald-600 font-bold">
-                    <span>{t.totalSavings}:</span>
-                    <span className="tabular-nums">
-                      -{formatPrice(wholesaleCalculation.totalSavings, lang)}
-                    </span>
-                  </div>
-
-                  <div className="border-t pt-2 flex items-center justify-between text-base font-black">
-                    <span>{t.totalEstimated}:</span>
-                    <span className="tabular-nums">
-                      {formatPrice(wholesaleCalculation.totalCost, lang)}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-2 pt-1">
-                {selectedWholesaleProduct && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleAddToCart(selectedWholesaleProduct, wholesaleQty);
-                      setIsCartOpen(true);
-                    }}
-                    style={{
-                      backgroundColor: currentTheme.colors.accentPrimary,
-                      color: "#FFFFFF",
-                    }}
-                    className="w-full flex items-center justify-center gap-2 rounded-none py-3 px-4 text-xs sm:text-sm font-extrabold shadow-md transition hover:opacity-95"
-                  >
-                    <ShoppingBag className="h-4 w-4" />
-                    <span>
-                      {t.addEstimateToCart} ({wholesaleQty} {t.units})
-                    </span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!selectedWholesaleProduct || !wholesaleCalculation)
-                      return;
-                    const prodTitle =
-                      lang === "ar"
-                        ? selectedWholesaleProduct.titleAr
-                        : selectedWholesaleProduct.titleEn;
-                    setWaPanelMessage(
-                      lang === "ar"
-                        ? `مرحباً، أود طلب عرض سعر جملة للمؤسسات:\n• المنتج: ${prodTitle} (${selectedWholesaleProduct.sku})\n• الكمية: ${wholesaleQty} قطعة\n• الإجمالي التقديري: ${formatPrice(wholesaleCalculation.totalCost, "ar")}`
-                        : `Hello, I would like a B2B Wholesale Quote:\n• Product: ${prodTitle} (${selectedWholesaleProduct.sku})\n• Quantity: ${wholesaleQty} units\n• Estimated Total: ${formatPrice(wholesaleCalculation.totalCost, "en")}`
-                    );
-                    setWaPanelOpen(true);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 rounded-none bg-[#25D366] hover:bg-[#1EBE5D] text-white py-2.5 px-4 text-xs font-extrabold shadow transition"
-                >
-                  <MessageCircle className="h-4 w-4 fill-current" />
-                  <span>{t.inquireWholesaleWhatsApp}</span>
-                </button>
-              </div>
-            </div>
+              <Layers className="h-4 w-4" />
+              {t.wholesaleOpenPage}
+              <ArrowRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
+            </Link>
           </div>
         </div>
       </section>
@@ -1410,16 +1184,27 @@ export default function StorefrontPage() {
             { icon: Truck, title: t.servicesDelivery, sub: t.servicesDeliverySub },
             { icon: CreditCard, title: t.servicesPayment, sub: t.servicesPaymentSub },
             { icon: Headphones, title: t.servicesSupport, sub: t.servicesSupportSub },
-            { icon: Building2, title: t.servicesWholesale, sub: t.servicesWholesaleSub },
-          ].map((item) => (
-            <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-4">
-              <item.icon className="h-8 w-8 shrink-0" style={{ color: currentTheme.colors.accentPrimary }} />
-              <div>
-                <div className="text-sm font-extrabold">{item.title}</div>
-                <div className="text-xs text-neutral-500">{item.sub}</div>
+            { icon: Building2, title: t.servicesWholesale, sub: t.servicesWholesaleSub, href: "/wholesale" },
+          ].map((item) => {
+            const inner = (
+              <>
+                <item.icon className="h-8 w-8 shrink-0" style={{ color: currentTheme.colors.accentPrimary }} />
+                <div>
+                  <div className="text-sm font-extrabold">{item.title}</div>
+                  <div className="text-xs text-neutral-500">{item.sub}</div>
+                </div>
+              </>
+            );
+            return item.href ? (
+              <Link key={item.title} href={item.href} className="flex items-center gap-3 bg-white px-4 py-4">
+                {inner}
+              </Link>
+            ) : (
+              <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-4">
+                {inner}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -1460,12 +1245,20 @@ export default function StorefrontPage() {
                 <span>{t.trackOrder}</span>
               </button>
             </div>
-            <a
-              href="/magasin"
-              className="inline-flex pt-2 text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
-            >
-              {t.ourStore}
-            </a>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2">
+              <a
+                href="/magasin"
+                className="inline-flex text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
+              >
+                {t.ourStore}
+              </a>
+              <Link
+                href="/wholesale"
+                className="inline-flex text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
+              >
+                {t.navWholesale}
+              </Link>
+            </div>
           </div>
 
           {/* Dynamic Contact Details from PostgreSQL */}
@@ -1573,16 +1366,16 @@ export default function StorefrontPage() {
           <span>{t.masterCatalog}</span>
         </button>
 
-        <a
-          href="#wholesale-section"
+        <Link
+          href="/wholesale"
           className="flex flex-col items-center gap-0.5 text-[11px] font-bold"
         >
           <Layers
             style={{ color: currentTheme.colors.accentPrimary }}
             className="h-5 w-5"
           />
-          <span>{t.wholesalePrice}</span>
-        </a>
+          <span>{t.navWholesale}</span>
+        </Link>
 
         <button
           type="button"
@@ -1684,15 +1477,6 @@ export default function StorefrontPage() {
         theme={currentTheme}
         currencySymbol={currencySymbol}
         onDataUpdated={fetchStoreData}
-      />
-
-      <WhatsAppOrderPanel
-        isOpen={waPanelOpen}
-        onClose={() => setWaPanelOpen(false)}
-        phoneNumber={settings?.whatsappNumber || "218912145050"}
-        message={waPanelMessage}
-        lang={lang}
-        theme={currentTheme}
       />
 
       {/* Cookie Consent - CBL Privacy requirement. Rendered by React: an inline

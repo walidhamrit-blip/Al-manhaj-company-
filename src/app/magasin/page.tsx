@@ -89,6 +89,9 @@ export default function MagasinPage() {
           <div className="mx-auto flex max-w-[1760px] items-center gap-4 px-3 py-2 text-xs font-semibold sm:text-sm">
             <Store className="h-4 w-4" />
             <span>{t.ourStoreTitle}</span>
+            <Link href="/wholesale" className="ms-auto hover:underline">
+              {t.navWholesale}
+            </Link>
           </div>
         </div>
       </header>

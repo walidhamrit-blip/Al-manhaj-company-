@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:brands": "tsx --test tests/brand-ribbons.test.tsx",
-    "test:promo": "tsx --test tests/promo-badge.test.tsx"
+    "test:promo": "tsx --test tests/promo-badge.test.tsx",
+    "test:wholesale": "tsx --test tests/wholesale-page.test.tsx"
   },
   "dependencies": {
     "dotenv": "17.3.1",
