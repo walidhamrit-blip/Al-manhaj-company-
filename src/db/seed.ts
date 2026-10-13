@@ -1,3 +1,4 @@
+import { ensureBrandRibbons } from "./brand-migration";
 import { db, pool } from "./index";
 import {
   categories,
@@ -54,6 +55,8 @@ let isInitialized = false;
 
 export async function ensureDatabaseSeeded() {
   if (isInitialized) return;
+
+  await ensureBrandRibbons(pool);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS categories (
