@@ -1044,6 +1044,16 @@ export default function StorefrontPage() {
           onSeeMore={() => handleOpenCatalog("all")}
         />
 
+        {/* Deux bannières articles : juste sous le carrousel Hot Deals. */}
+        {articleBanners.length > 0 && (
+          <ArticleBannerGrid
+            banners={articleBanners}
+            lang={lang}
+            theme={currentTheme}
+            onOpenCatalog={handleOpenCatalog}
+          />
+        )}
+
         {categorySelections.slice(0, 4).map((group, index) => (
           <div key={`sel-${group.category.slug}`}>
             {index === 1 && (
@@ -1090,14 +1100,6 @@ export default function StorefrontPage() {
               onQuickView={setQuickViewProduct}
               onSeeMore={() => handleOpenCatalog(group.category.slug)}
             />
-            {index === 1 && articleBanners.length > 0 && (
-              <ArticleBannerGrid
-                banners={articleBanners}
-                lang={lang}
-                theme={currentTheme}
-                onOpenCatalog={handleOpenCatalog}
-              />
-            )}
           </div>
         ))}
 

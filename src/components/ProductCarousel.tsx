@@ -93,7 +93,7 @@ export function ProductCarousel({
           return (
             <div
               key={`carousel-${product.id ?? product.sku}`}
-              className="w-[200px] sm:w-[230px] lg:w-[250px] shrink-0 snap-start"
+              className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-1.5rem)/3)] lg:w-[calc((100%-2.25rem)/4)]"
             >
               <ProductTile
                 product={product}

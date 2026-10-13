@@ -51,7 +51,7 @@ export function ArticleBannerGrid({
               type="button"
               onClick={() => onOpenCatalog(banner.targetCategory?.trim() || "all")}
               aria-label={title?.trim() || fallbackAlt}
-              className="group relative block h-[160px] overflow-hidden border text-start sm:h-[200px] lg:h-[230px]"
+              className="group relative block h-[240px] overflow-hidden border text-start sm:h-[320px] lg:h-[400px] xl:h-[460px]"
               style={{ borderColor: theme.colors.border }}
             >
               <StoreImage
