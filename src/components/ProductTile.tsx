@@ -4,6 +4,7 @@ import React from "react";
 import type { Product } from "@/db/schema";
 import { UI_TEXT, formatPrice, type Language, type ThemeConfig } from "@/lib/i18n-themes";
 import { ProductImage } from "@/components/ProductImage";
+import { PromoBadge } from "@/components/PromoBadge";
 import { Check, Plus } from "lucide-react";
 
 interface ProductTileProps {
@@ -11,6 +12,12 @@ interface ProductTileProps {
   lang: Language;
   theme: ThemeConfig;
   added?: boolean;
+  /**
+   * Hot Deals carousels only: adds the golden "PROMO" / "عرض" badge in the
+   * corner opposite the discount percentage. Category carousels keep the
+   * plain card.
+   */
+  showPromoBadge?: boolean;
   onOpen: (product: Product) => void;
   onQuickAdd: (product: Product) => void;
 }
@@ -24,6 +31,7 @@ export function ProductTile({
   lang,
   theme,
   added = false,
+  showPromoBadge = false,
   onOpen,
   onQuickAdd,
 }: ProductTileProps) {
@@ -76,6 +84,9 @@ export function ProductTile({
             -{discountPct}%
           </span>
         )}
+
+        {/* Coin opposé au pourcentage de réduction ; purement décoratif. */}
+        {showPromoBadge && <PromoBadge lang={lang} />}
 
         <button
           type="button"

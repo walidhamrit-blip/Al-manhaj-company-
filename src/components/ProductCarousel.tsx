@@ -15,6 +15,8 @@ interface ProductCarouselProps {
   theme: ThemeConfig;
   currencySymbol: string;
   cart: { product: Product; quantity: number }[];
+  /** Forwarded to every tile: Hot Deals only, never the category carousels. */
+  promoBadge?: boolean;
   onAddToCart: (product: Product, qty: number) => void;
   onQuickView: (product: Product) => void;
   onSeeMore?: () => void;
@@ -29,6 +31,7 @@ export function ProductCarousel({
   theme,
   currencySymbol,
   cart,
+  promoBadge = false,
   onAddToCart,
   onQuickView,
   onSeeMore,
@@ -97,6 +100,7 @@ export function ProductCarousel({
                 lang={lang}
                 theme={theme}
                 added={inCart > 0}
+                showPromoBadge={promoBadge}
                 onOpen={onQuickView}
                 onQuickAdd={(prod) => onAddToCart(prod, 1)}
               />

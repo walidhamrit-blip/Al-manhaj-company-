@@ -1071,6 +1071,7 @@ export default function StorefrontPage() {
 
         <ProductCarousel
           title={t.dealsTitle}
+          promoBadge
           products={promoProducts.length ? promoProducts : featuredProducts}
           categories={categories}
           lang={lang}
