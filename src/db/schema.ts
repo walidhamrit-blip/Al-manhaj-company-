@@ -148,7 +148,7 @@ export const storeSettings = pgTable("store_settings", {
   articleBanners: jsonb("article_banners").$type<ArticleBanner[]>(),
   /** Three image banners placed in one row directly under the brand ribbons. */
   topBanners: jsonb("top_banners").$type<TopBanner[]>(),
-  defaultTheme: text("default_theme").notNull().default("paperSource"),
+  defaultTheme: text("default_theme").notNull().default("atelier"),
   // ----- Pied de page : barre légale (السجل التجاري / موثوق / طرق الدفع) -----
   complianceEnabled: boolean("compliance_enabled").notNull().default(true),
   complianceStatusEn: text("compliance_status_en").notNull().default(""),

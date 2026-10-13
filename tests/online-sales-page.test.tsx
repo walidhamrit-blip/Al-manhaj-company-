@@ -38,8 +38,13 @@ test("homepage forwards tracking requests to the new page", () => {
 });
 
 test("online-sales title stays visible: sticky headers on both pages", () => {
-  // Sticky top navigation on the homepage carries the online-sales link.
-  assert.match(homeSource, /<header className="sticky top-0 z-40 bg-white shadow-sm">/);
+  // Sticky top navigation on the homepage carries the online-sales link. Its
+  // bar is theme-aware: the background follows the active theme (bgElevated)
+  // instead of the former hard-coded `bg-white` utility class.
+  assert.match(
+    homeSource,
+    /<header[\s\S]{0,120}?className="sticky top-0 z-40 shadow-sm"[\s\S]{0,240}?backgroundColor: currentTheme\.colors\.bgElevated/,
+  );
   // The online-sales page wraps its top bar + header in a sticky container.
   assert.match(pageSource, /sticky top-0 z-40 shadow-sm/);
   assert.match(pageSource, /data-online-sales-page/);
