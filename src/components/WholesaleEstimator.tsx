@@ -12,7 +12,7 @@ import {
   buildWholesaleWhatsAppMessage,
   computeWholesaleQuote,
 } from "@/lib/wholesale";
-import { Check, Layers, MessageCircle, ShoppingBag } from "lucide-react";
+import { Check, Layers, MessageCircle, Search, ShoppingBag } from "lucide-react";
 
 interface WholesaleEstimatorProps {
   products: Product[];
@@ -33,9 +33,22 @@ export function WholesaleEstimator({
   const [productId, setProductId] = useState<number>(products[0]?.id ?? 0);
   const [qty, setQty] = useState(25);
   const [added, setAdded] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const filteredProducts = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((product) =>
+      [product.titleAr, product.titleEn, product.sku, product.categorySlug, product.subcategorySlug]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(q)),
+    );
+  }, [products, query]);
 
   const selected =
-    products.find((product) => product.id === productId) || products[0] || null;
+    filteredProducts.find((product) => product.id === productId) ||
+    filteredProducts[0] ||
+    null;
 
   const quote = useMemo(() => {
     if (!selected) return null;
@@ -68,12 +81,54 @@ export function WholesaleEstimator({
       </div>
 
       <div>
+        <label
+          className="block text-xs font-bold mb-1.5"
+          htmlFor="wholesale-product-search"
+        >
+          {t.wholesaleSearchLabel}
+        </label>
+        <div className="relative">
+          <Search
+            aria-hidden="true"
+            style={{ color: theme.colors.textSecondary }}
+            className="pointer-events-none absolute inset-y-0 start-3 my-auto h-4 w-4 opacity-70"
+          />
+          <input
+            id="wholesale-product-search"
+            data-wholesale-search
+            type="search"
+            value={query}
+            placeholder={t.wholesaleSearchPlaceholder}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setAdded(false);
+            }}
+            style={{
+              backgroundColor: theme.colors.bgElevated,
+              borderColor: theme.colors.border,
+              color: theme.colors.textPrimary,
+            }}
+            className="w-full rounded-none border py-2.5 ps-9 pe-3 text-xs sm:text-sm font-bold outline-none focus:ring-2"
+          />
+        </div>
+        {filteredProducts.length === 0 && (
+          <p
+            data-wholesale-search-empty
+            className="mt-1.5 text-[11px] font-bold text-red-500"
+          >
+            {t.wholesaleSearchEmpty}
+          </p>
+        )}
+      </div>
+
+      <div>
         <label className="block text-xs font-bold mb-1.5" htmlFor="wholesale-product">
           {t.selectProduct}
         </label>
         <select
           id="wholesale-product"
           value={selected?.id ?? 0}
+          disabled={filteredProducts.length === 0}
           onChange={(event) => {
             setProductId(Number(event.target.value));
             setAdded(false);
@@ -83,9 +138,9 @@ export function WholesaleEstimator({
             borderColor: theme.colors.border,
             color: theme.colors.textPrimary,
           }}
-          className="w-full rounded-none border px-3 py-2.5 text-xs sm:text-sm font-bold outline-none"
+          className="w-full rounded-none border px-3 py-2.5 text-xs sm:text-sm font-bold outline-none disabled:opacity-60"
         >
-          {products.map((prod) => (
+          {filteredProducts.map((prod) => (
             <option key={prod.sku} value={prod.id}>
               {lang === "ar" ? prod.titleAr : prod.titleEn} (
               {formatPrice(prod.wholesalePrice, lang)})
@@ -173,25 +228,26 @@ export function WholesaleEstimator({
           </button>
         )}
 
-        <button
-          type="button"
-          onClick={() => {
-            if (!selected || !quote) return;
-            onInquire(
-              buildWholesaleWhatsAppMessage({
-                lang,
-                productTitle: lang === "ar" ? selected.titleAr : selected.titleEn,
-                sku: selected.sku,
-                qty,
-                totalLabel: formatPrice(quote.totalCost, lang),
-              }),
-            );
-          }}
-          className="w-full flex items-center justify-center gap-2 rounded-none bg-[#25D366] hover:bg-[#1EBE5D] text-white py-2.5 px-4 text-xs font-extrabold shadow transition"
-        >
-          <MessageCircle className="h-4 w-4 fill-current" />
-          <span>{t.inquireWholesaleWhatsApp}</span>
-        </button>
+        {selected && quote && (
+          <button
+            type="button"
+            onClick={() => {
+              onInquire(
+                buildWholesaleWhatsAppMessage({
+                  lang,
+                  productTitle: lang === "ar" ? selected.titleAr : selected.titleEn,
+                  sku: selected.sku,
+                  qty,
+                  totalLabel: formatPrice(quote.totalCost, lang),
+                }),
+              );
+            }}
+            className="w-full flex items-center justify-center gap-2 rounded-none bg-[#25D366] hover:bg-[#1EBE5D] text-white py-2.5 px-4 text-xs font-extrabold shadow transition"
+          >
+            <MessageCircle className="h-4 w-4 fill-current" />
+            <span>{t.inquireWholesaleWhatsApp}</span>
+          </button>
+        )}
       </div>
     </div>
   );
