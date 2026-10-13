@@ -200,7 +200,7 @@ test("top bar, footer and main banner keep their full width", () => {
  * ------------------------------------------------------------------ */
 
 function brandRow(html: string): string {
-  const row = html.match(/<div class="flex h-9[^"]*" aria-hidden="true">[\s\S]*?<\/div>/);
+  const row = html.match(/<div class="flex min-h-9[^"]*" aria-hidden="true">[\s\S]*?<\/div>/);
   assert.ok(row, "the brand row of the card is rendered");
   return row![0];
 }
@@ -233,7 +233,7 @@ test("long English brand names are shrunk, never truncated", () => {
 
   const size = Number(/font-size:([\d.]+)px/.exec(row)?.[1]);
   assert.ok(size > 0, "the size is set explicitly");
-  assert.ok(size <= 12, `a 25-character name shrinks to fit (got ${size}px)`);
+  assert.ok(size <= 16, `a 25-character name shrinks to fit (got ${size}px)`);
 });
 
 test("short brand names keep the reference size", () => {

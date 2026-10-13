@@ -133,7 +133,7 @@ function ProductPresentationCard({
         </p>
       </div>
 
-      <div className="flex h-9 w-full shrink-0 items-center px-3" aria-hidden="true">
+      <div className="flex min-h-9 w-full shrink-0 items-center px-3" aria-hidden="true">
         {logoSrc ? (
           <Image
             src={logoSrc}

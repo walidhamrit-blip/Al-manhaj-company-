@@ -53,16 +53,54 @@ large utile, moins sur téléphone) et finissaient en points de suspension.
 Nouveau composant `src/components/BrandWordmark.tsx` :
 
 - le nom est mesuré (`getBoundingClientRect`) dans sa boîte réelle, puis réduit
-  jusqu'à tenir sur une seule ligne, entre 20 px et 9 px ; deux passes, les
-  largeurs de glyphes n'étant pas parfaitement proportionnelles à la taille ;
-- la taille de départ est déduite du nombre de caractères, donc le HTML servi
-  par le serveur est déjà proche du résultat final : pas de saut visible après
-  l'hydratation ;
-- un `ResizeObserver` recalcule au redimensionnement (carrousel, rotation,
-  changement de langue) ; la boîte est `flex-1` et non pas ajustée à son
-  contenu, ce qui évite toute boucle de mesure ;
-- le nom reste en `dir="ltr"`, `whitespace-nowrap`, aligné sur le bord de début
-  (à droite en arabe), comme avant.
+  jusqu'à tenir sur une seule ligne, entre 20 px et 9 px — `computeFitFontSize`,
+  trois passes, les largeurs de glyphes n'étant pas parfaitement
+  proportionnelles à la taille (hinting, interlettrage, gras et italique de
+  synthèse) ;
+- la taille de départ (`guessFontSize`) est calculée pour la carte la plus
+  étroite prévue (238 px utiles) avec une avance moyenne de 0,62 em par
+  caractère : le HTML servi par le serveur tient déjà dans la fiche, même si
+  JavaScript ne s'exécute jamais, et la mesure l'agrandit ensuite jusqu'à la
+  plus grande taille qui tient ;
+- un `ResizeObserver` recalcule au redimensionnement (carrousel, rotation, volet
+  d'aperçu) et `document.fonts.ready` recalcule une fois Inter chargée, ses
+  glyphes étant plus larges que ceux de la police de repli ;
+- second filet de sécurité : si le nom ne tient toujours pas à 9 px, il passe
+  sur deux lignes (`whitespace-normal break-words`) au lieu d'être rogné — la
+  ligne de marque est en `min-h-9`, plus en `h-9` fixe ;
+- le nom reste en `dir="ltr"`, aligné sur le bord de début (à droite en arabe),
+  comme avant. La boîte est `flex-1`, jamais ajustée à son contenu, ce qui évite
+  toute boucle de mesure du `ResizeObserver`.
 
 Les marques disposant d'un logo (`/brands/*.svg`) continuent d'afficher leur
-logo vectoriel en `object-contain` : rien n'est rogné de ce côté-là.
+logo vectoriel en `object-contain` : rien n'est rogné de ce côté-là. Les douze
+fichiers ont été contrôlés tracé par tracé : chaque boîte de tracé reste dans le
+`viewBox` (± 1 unité de marge pour les wordmarks papeterie, 0,4 % de débord sur
+un point de contrôle pour Pilot), donc aucun logo n'est coupé par son propre
+fichier. Le seul texte coupé venait bien du mot-marque de repli.
+
+## Contrôle automatique
+
+- `npm run test:layout` : structure de la barre (le déclencheur hors de la piste
+  défilante), rendu du méga-menu ouvert et fermé, largeurs 1440/1760, ligne de
+  marque du HTML serveur (texte complet, pas de `truncate`, taille adaptée).
+- `npm run test:wordmark` : le composant est monté dans un vrai DOM (jsdom,
+  géométrie simulée) — l'effet s'exécute, la taille mesurée est appliquée, un
+  rétrécissement de la carte refait le calcul, un nom démesuré passe sur deux
+  lignes, et la taille du premier rendu tient déjà dans la carte la plus étroite.
+
+## Vérifier dans le navigateur
+
+Le serveur de développement est relancé entre les séries de corrections : un
+onglet ouvert avant le redémarrage perd son socket HMR et **conserve l'ancien
+bundle**. Il faut recharger l'aperçu (Ctrl+Maj+R). Deux repères :
+
+1. le badge en bas à gauche affiche `dev · <sha>`, le commit servi
+   (`BUILD_SHA`), à comparer avec `git log --oneline -1` ;
+2. sur une carte produit, la ligne de marque porte l'attribut
+   `data-brand-wordmark="<nom complet>"` et un `font-size` en px calculé, au
+   lieu de la classe `truncate` à 20 px fixes.
+
+Rappel : tant que la branche n'est pas fusionnée puis redéployée,
+<https://al-manhaj-company.vercel.app/> sert l'ancien code — les corrections ne
+sont visibles que dans l'aperçu Arena ou en local.
