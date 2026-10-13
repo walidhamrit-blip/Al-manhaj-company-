@@ -200,7 +200,7 @@ test("top bar, footer and main banner keep their full width", () => {
  * ------------------------------------------------------------------ */
 
 function brandRow(html: string): string {
-  const row = html.match(/<div class="flex min-h-9[^"]*" aria-hidden="true">[\s\S]*?<\/div>/);
+  const row = html.match(/<div class="@container flex min-h-9[^"]*" aria-hidden="true">[\s\S]*?<\/div>/);
   assert.ok(row, "the brand row of the card is rendered");
   return row![0];
 }
@@ -218,7 +218,7 @@ function presentationHtml(overrides: Partial<Product>): string {
   );
 }
 
-test("long English brand names are shrunk, never truncated", () => {
+test("long English brand names are sized by the card width, never truncated", () => {
   const html = presentationHtml({
     id: 7,
     sku: "CALC-EXEC-01",
@@ -229,17 +229,19 @@ test("long English brand names are shrunk, never truncated", () => {
 
   assert.match(row, /Tactile Mechanical-Switch/, "the whole name is in the markup");
   assert.doesNotMatch(row, /truncate/, "no ellipsis on the brand line");
-  assert.match(row, /whitespace-nowrap/, "the name stays on a single line");
+  assert.match(row, /@container/, "the row is the sizing container for cqw units");
+  assert.match(row, /min-h-9/, "the row can grow to a second line");
+  assert.match(row, /break-words whitespace-normal/, "a name that cannot fit wraps");
 
-  const size = Number(/font-size:([\d.]+)px/.exec(row)?.[1]);
-  assert.ok(size > 0, "the size is set explicitly");
-  assert.ok(size <= 16, `a 25-character name shrinks to fit (got ${size}px)`);
+  // 25 characters x 0.62em -> the name is sized from the card's own width.
+  assert.match(row, /font-size:min\(20px, calc\(100cqw \/ 15\.50\)\)/);
 });
 
-test("short brand names keep the reference size", () => {
+test("a short brand name keeps the reference size", () => {
   const row = brandRow(presentationHtml({ id: 8, sku: "PAPER-A4-01" }));
   assert.match(row, /Office A4/);
-  assert.equal(Number(/font-size:([\d.]+)px/.exec(row)?.[1]), 20);
+  // 9 characters: 100cqw / 5.58 is far above the 20px cap on any real card.
+  assert.match(row, /font-size:min\(20px, calc\(100cqw \/ 5\.58\)\)/);
 });
 
 test("a known brand still shows its logo instead of the wordmark", () => {

@@ -133,7 +133,14 @@ function ProductPresentationCard({
         </p>
       </div>
 
-      <div className="flex min-h-9 w-full shrink-0 items-center px-3" aria-hidden="true">
+      {/* `@container` : la ligne de marque calcule sa propre taille de police
+          en `cqw`, donc en fonction de la largeur réelle de la carte. `min-h-9`
+          (et non `h-9`) laisse la place d'un retour à la ligne si un nom ne
+          tient à aucune taille. */}
+      <div
+        className="@container flex min-h-9 w-full shrink-0 items-center px-3"
+        aria-hidden="true"
+      >
         {logoSrc ? (
           <Image
             src={logoSrc}

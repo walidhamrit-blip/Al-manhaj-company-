@@ -50,27 +50,36 @@ par `findWordmark` — les deux premiers mots du titre anglais — et il est lon
 « KeyChronos Low-Profile ». À 20 px, ces noms dépassent la carte (≈ 296 px de
 large utile, moins sur téléphone) et finissaient en points de suspension.
 
-Nouveau composant `src/components/BrandWordmark.tsx` :
+Nouveau composant `src/components/BrandWordmark.tsx`, avec trois niveaux de
+garantie dans cet ordre :
 
-- le nom est mesuré (`getBoundingClientRect`) dans sa boîte réelle, puis réduit
-  jusqu'à tenir sur une seule ligne, entre 20 px et 9 px — `computeFitFontSize`,
-  trois passes, les largeurs de glyphes n'étant pas parfaitement
-  proportionnelles à la taille (hinting, interlettrage, gras et italique de
-  synthèse) ;
-- la taille de départ (`guessFontSize`) est calculée pour la carte la plus
-  étroite prévue (238 px utiles) avec une avance moyenne de 0,62 em par
-  caractère : le HTML servi par le serveur tient déjà dans la fiche, même si
-  JavaScript ne s'exécute jamais, et la mesure l'agrandit ensuite jusqu'à la
-  plus grande taille qui tient ;
-- un `ResizeObserver` recalcule au redimensionnement (carrousel, rotation, volet
-  d'aperçu) et `document.fonts.ready` recalcule une fois Inter chargée, ses
-  glyphes étant plus larges que ceux de la police de repli ;
-- second filet de sécurité : si le nom ne tient toujours pas à 9 px, il passe
-  sur deux lignes (`whitespace-normal break-words`) au lieu d'être rogné — la
-  ligne de marque est en `min-h-9`, plus en `h-9` fixe ;
-- le nom reste en `dir="ltr"`, aligné sur le bord de début (à droite en arabe),
-  comme avant. La boîte est `flex-1`, jamais ajustée à son contenu, ce qui évite
-  toute boucle de mesure du `ResizeObserver`.
+1. **CSS, sans JavaScript** — la ligne de marque est un conteneur
+   (`@container` sur la rangée, dans `ProductTile`) et la taille du nom est
+   `min(20px, calc(100cqw / (0,62 × nombre de caractères)))` : `100cqw` est la
+   largeur réellement disponible dans la carte, à chaque point de rupture. Le
+   HTML servi par le serveur est donc déjà complet, sans mesure, sans effet,
+   sans saut. Le facteur 0,62 em surestime volontairement la largeur moyenne
+   d'un caractère (≈ 0,55 em en réalité) : mieux vaut un nom un peu plus petit
+   qu'un nom coupé. Les navigateurs sans container queries ignorent la
+   déclaration et retombent sur le `text-[13px]` statique, qui tient aussi.
+2. **JavaScript, affinage** — une fois monté, le composant mesure les glyphes
+   réels (`getBoundingClientRect`) et ajuste la taille au dixième de pixel,
+   entre 20 px et 9 px (`computeFitFontSize`, trois passes, les largeurs de
+   glyphes n'étant pas parfaitement proportionnelles à la taille). Recalcul au
+   redimensionnement (`ResizeObserver` : carrousel, volet d'aperçu, rotation) et
+   une fois Inter chargée (`document.fonts.ready`), ses glyphes étant plus
+   larges que ceux de la police de repli.
+3. **Mise en page, dernier recours** — le nom est en
+   `break-words whitespace-normal` et la rangée en `min-h-9` (plus en `h-9`
+   fixe) : un nom qui ne tiendrait à aucune taille passe sur deux lignes au
+   lieu d'être rogné. **Aucun cas ne peut plus produire un texte coupé.**
+
+Le nom reste en `dir="ltr"`, aligné sur le bord de début (à droite en arabe),
+comme avant. La boîte est `flex-1`, jamais ajustée à son contenu, ce qui évite
+toute boucle de mesure du `ResizeObserver`. Un attribut
+`data-brand-wordmark="<nom>"` marque la nouvelle ligne de marque : c'est le
+repère le plus simple pour vérifier dans l'inspecteur qu'un navigateur affiche
+bien le code corrigé.
 
 Les marques disposant d'un logo (`/brands/*.svg`) continuent d'afficher leur
 logo vectoriel en `object-contain` : rien n'est rogné de ce côté-là. Les douze
@@ -84,22 +93,30 @@ fichier. Le seul texte coupé venait bien du mot-marque de repli.
 - `npm run test:layout` : structure de la barre (le déclencheur hors de la piste
   défilante), rendu du méga-menu ouvert et fermé, largeurs 1440/1760, ligne de
   marque du HTML serveur (texte complet, pas de `truncate`, taille adaptée).
-- `npm run test:wordmark` : le composant est monté dans un vrai DOM (jsdom,
-  géométrie simulée) — l'effet s'exécute, la taille mesurée est appliquée, un
-  rétrécissement de la carte refait le calcul, un nom démesuré passe sur deux
-  lignes, et la taille du premier rendu tient déjà dans la carte la plus étroite.
+- `npm run test:wordmark` : d'abord l'ajustement CSS seul — pour chaque nom du
+  catalogue de repli et trois largeurs de carte (238, 271, 326 px), la formule
+  `min(20px, 100cqw / diviseur)` donne une taille qui tient, le diviseur suit le
+  nombre de caractères, et le HTML servi ne contient ni `truncate` ni taille
+  fixe. Ensuite le composant est monté dans un vrai DOM (jsdom, géométrie
+  simulée) : l'effet s'exécute, la taille mesurée est appliquée, un
+  rétrécissement de la carte refait le calcul, un nom démesuré s'arrête au
+  plancher de 9 px et reste en `whitespace-normal` (deux lignes), et
+  l'algorithme est borné.
 
 ## Vérifier dans le navigateur
 
 Le serveur de développement est relancé entre les séries de corrections : un
 onglet ouvert avant le redémarrage perd son socket HMR et **conserve l'ancien
-bundle**. Il faut recharger l'aperçu (Ctrl+Maj+R). Deux repères :
+bundle**. Il faut recharger l'aperçu (Ctrl+Maj+R). Trois repères, du plus
+visible au plus précis :
 
-1. le badge en bas à gauche affiche `dev · <sha>`, le commit servi
-   (`BUILD_SHA`), à comparer avec `git log --oneline -1` ;
-2. sur une carte produit, la ligne de marque porte l'attribut
-   `data-brand-wordmark="<nom complet>"` et un `font-size` en px calculé, au
-   lieu de la classe `truncate` à 20 px fixes.
+1. cliquer sur **« الأقسام »** : si le méga-menu se déploie, le navigateur
+   affiche bien le code corrigé — les trois corrections voyagent ensemble ;
+2. le contenu de la page d'accueil est plus étroit que l'en-tête et la bannière
+   principale (1440 px contre pleine largeur) ;
+3. dans l'inspecteur, la ligne de marque d'une carte porte
+   `data-brand-wordmark="<nom complet>"` et un `font-size: min(20px, calc(100cqw
+   / …))`, au lieu de la classe `truncate` à 20 px fixes.
 
 Rappel : tant que la branche n'est pas fusionnée puis redéployée,
 <https://al-manhaj-company.vercel.app/> sert l'ancien code — les corrections ne
