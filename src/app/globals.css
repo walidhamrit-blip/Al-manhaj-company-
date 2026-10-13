@@ -116,3 +116,193 @@ body {
   .brand-ribbon-window { overflow-x: auto; }
   .brand-ribbon-set[aria-hidden="true"], .brand-ribbon-set button[data-decorative="true"] { display: none; }
 }
+
+/* ------------------------------------------------------------------------ *
+ * Hot Deals promotional badge (promo-badge)
+ *
+ * One badge per Hot Deals product card, in the corner opposite the discount
+ * percentage. Shape: a slightly irregular oval, golden yellow, red outline,
+ * small black shadow. Motion, all on a single 3.6s cycle:
+ *   - promo-shimmer : a light sweep crossing the badge,
+ *   - promo-lift    : a gentle bounce,
+ *   - promo-twinkle : four small red sparkles near the rim.
+ * Deliberately no long rays bursting from the centre and no harsh blinking:
+ * the sparkles never fade below ~28% opacity and the whole cycle is disabled
+ * by prefers-reduced-motion at the bottom of this block.
+ *
+ * `pointer-events: none` keeps the card clickable: the badge is not a control.
+ * ------------------------------------------------------------------------ */
+.promo-badge {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-end: 0.5rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.9rem;
+  padding: 0.3rem 0.7rem 0.34rem;
+  overflow: hidden;
+  pointer-events: none;
+  border: 2px solid #e30613;
+  border-radius: 52% 48% 46% 54% / 60% 56% 44% 40%;
+  background: linear-gradient(148deg, #ffe9a3 0%, #ffd447 38%, #f4b400 72%, #e59b00 100%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #7d0b12;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  rotate: -6deg;
+  transform-origin: 50% 62%;
+  animation: promo-lift 3.6s ease-in-out infinite;
+}
+
+/* The tilt mirrors itself so the badge leans into the card in both readings. */
+[dir="rtl"] .promo-badge {
+  rotate: 6deg;
+}
+
+.promo-badge__label {
+  position: relative;
+  z-index: 1;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+[data-promo-lang="ar"] .promo-badge__label {
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.promo-badge__sheen {
+  position: absolute;
+  inset: -60% -30%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 36%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(255, 255, 255, 0) 64%
+  );
+  opacity: 0;
+  animation: promo-shimmer 3.6s ease-in-out infinite;
+}
+
+.promo-badge__sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.promo-badge__sparkle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #e30613;
+  opacity: 0.3;
+  clip-path: polygon(50% 0%, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0% 50%, 42% 42%);
+  filter: drop-shadow(0 0 2px rgba(227, 6, 19, 0.55));
+  animation: promo-twinkle 3.6s ease-in-out infinite;
+}
+
+.promo-badge__sparkle:nth-child(1) {
+  inset-block-start: 2px;
+  inset-inline-start: 9px;
+}
+
+.promo-badge__sparkle:nth-child(2) {
+  inset-block-start: 7px;
+  inset-inline-end: 7px;
+  width: 4px;
+  height: 4px;
+  animation-delay: 0.9s;
+}
+
+.promo-badge__sparkle:nth-child(3) {
+  inset-block-end: 3px;
+  inset-inline-start: 41%;
+  animation-delay: 1.8s;
+}
+
+.promo-badge__sparkle:nth-child(4) {
+  inset-block-end: 2px;
+  inset-inline-end: 24%;
+  width: 4px;
+  height: 4px;
+  animation-delay: 2.7s;
+}
+
+/* One light sweep, early in the cycle, then the badge rests. */
+@keyframes promo-shimmer {
+  0% {
+    opacity: 0;
+    transform: translateX(-140%) rotate(6deg);
+  }
+  5% {
+    opacity: 0.92;
+  }
+  24% {
+    opacity: 0;
+    transform: translateX(140%) rotate(6deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(140%) rotate(6deg);
+  }
+}
+
+/* Gentle bounce: barely lifts, never snaps. */
+@keyframes promo-lift {
+  0%,
+  32%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  42% {
+    transform: translateY(-2.5px) scale(1.035);
+  }
+  50% {
+    transform: translateY(0) scale(0.995);
+  }
+  58% {
+    transform: translateY(-1.2px) scale(1.015);
+  }
+  68% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Sparkles stay lit: opacity never reaches 0, so there is no flashing. */
+@keyframes promo-twinkle {
+  0%,
+  10%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.8);
+  }
+  30% {
+    opacity: 0.95;
+    transform: scale(1.15);
+  }
+  52% {
+    opacity: 0.42;
+    transform: scale(0.88);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-badge,
+  .promo-badge__sheen,
+  .promo-badge__sparkle {
+    animation: none;
+  }
+  .promo-badge__sheen {
+    opacity: 0;
+  }
+  .promo-badge__sparkle {
+    opacity: 0.55;
+    transform: none;
+  }
+}
