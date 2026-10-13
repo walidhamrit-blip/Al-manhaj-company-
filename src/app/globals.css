@@ -97,3 +97,22 @@ body {
   transform: translateY(-3px);
   border-color: #E31837;
 }
+/* LTR tracks in both languages, with opposite seamless animations. */
+.brand-ribbon { margin: 0.375rem auto; padding: 0.375rem 0; max-width: 1760px; overflow: hidden; }
+.brand-ribbon--it { background: #123c78; color: white; }
+.brand-ribbon--stationery { background: #f4f6fa; color: #17304d; }
+.brand-ribbon-window { direction: ltr; overflow: hidden; }
+.brand-ribbon-track { display: flex; width: max-content; direction: ltr; animation: brand-ribbon-scroll 32s linear infinite; }
+.brand-ribbon--stationery .brand-ribbon-track { animation-name: brand-ribbon-scroll-right; }
+.brand-ribbon-set { display: flex; flex-shrink: 0; gap: 12px; padding-inline-end: 12px; }
+.brand-ribbon-set button { flex: 0 0 160px; width: 160px; height: 56px; padding: 4px 12px; border-radius: 8px; background: white; color: #17304d; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.brand-ribbon-set img { display: block; width: 136px; height: 44px; object-fit: contain; }
+.brand-ribbon-set button:focus-visible { outline: 3px solid #efac25; outline-offset: -3px; }
+.brand-ribbon:hover .brand-ribbon-track, .brand-ribbon:focus-within .brand-ribbon-track { animation-play-state: paused; }
+@keyframes brand-ribbon-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes brand-ribbon-scroll-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .brand-ribbon-track { animation: none; }
+  .brand-ribbon-window { overflow-x: auto; }
+  .brand-ribbon-set[aria-hidden="true"], .brand-ribbon-set button[data-decorative="true"] { display: none; }
+}

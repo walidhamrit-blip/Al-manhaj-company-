@@ -1,5 +1,8 @@
 "use client";
 
+import { BrandRibbon } from "@/components/BrandRibbon";
+import { INITIAL_BRANDS, INITIAL_BRAND_SECTIONS, type Brand, type BrandSection } from "@/lib/brand-data";
+import { ribbonSections } from "@/lib/brand-ribbons";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import type { Category, Product, StoreSettings } from "@/db/schema";
 import {
@@ -70,6 +73,9 @@ export default function StorefrontPage() {
     () => THEMES.find((th) => th.id === themeId) || THEMES[0],
     [themeId]
   );
+
+  const [brands, setBrands] = useState<Brand[]>(INITIAL_BRANDS);
+  const [brandSections, setBrandSections] = useState<BrandSection[]>(INITIAL_BRAND_SECTIONS);
 
   // Store Data from PostgreSQL
   const [categories, setCategories] = useState<Category[]>([]);
@@ -175,6 +181,8 @@ export default function StorefrontPage() {
         ...product,
         id: Number(product.id) || index + 1,
       }));
+      setBrands(data.brands ?? INITIAL_BRANDS);
+      setBrandSections(data.sections ?? INITIAL_BRAND_SECTIONS);
       setCategories(nextCategories);
       setProducts(nextProducts);
       if (data.settings) {
@@ -189,6 +197,8 @@ export default function StorefrontPage() {
       console.error("Failed to fetch store data, using seed fallback:", err);
       try {
         const fallback = hydrateFallbackStore();
+        setBrands(INITIAL_BRANDS);
+        setBrandSections(INITIAL_BRAND_SECTIONS);
         setCategories(fallback.categories as Category[]);
         setProducts(fallback.products as Product[]);
         setSettings(fallback.settings as StoreSettings);
@@ -956,6 +966,11 @@ export default function StorefrontPage() {
             </div>
           </section>
         )}
+
+        {ribbonSections(brandSections).map((section) => (
+          <BrandRibbon key={section.slug} section={section} brands={brands} lang={lang}
+            onSearch={(query) => { setSearchQuery(query); setCatalogDeptSlug("all"); setIsCatalogOpen(true); }} />
+        ))}
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
             <div className="grid grid-cols-2 gap-3">

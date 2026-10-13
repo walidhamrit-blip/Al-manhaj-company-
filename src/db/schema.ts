@@ -220,3 +220,23 @@ export type StoreSettings = typeof storeSettings.$inferSelect;
 export type NewStoreSettings = typeof storeSettings.$inferInsert;
 export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
+
+export const brands = pgTable("brands", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").unique(),
+  nameEn: text("name_en").notNull().default(""),
+  nameAr: text("name_ar").notNull().default(""),
+  group: text("group"),
+  logoUrl: text("logo_url").notNull().default(""),
+  searchQuery: text("search_query").notNull().default(""),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+export const sections = pgTable("sections", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").unique(),
+  type: text("type").notNull().default("brands"),
+  group: text("group"),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
