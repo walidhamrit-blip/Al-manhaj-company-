@@ -228,6 +228,10 @@ export async function ensureDatabaseSeeded() {
   // uniquement les anciennes lignes encore vides.
   await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS article_banners JSONB;`);
 
+  // Rangée de 3 bannières sous les rubans de marques (nullable : le backfill
+  // ci-dessous injecte les 3 bannières de démarrage une seule fois).
+  await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS top_banners JSONB;`);
+
   const [{ value: catCount }] = await db.select({ value: count() }).from(categories);
   if (catCount === 0) {
     await db.insert(categories).values(INITIAL_CATEGORIES);

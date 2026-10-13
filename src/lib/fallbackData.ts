@@ -1539,6 +1539,48 @@ export const INITIAL_STORE_SETTINGS: NewStoreSettings = {
       targetCategory: "it-peripherals",
     },
   ],
+  // Rangée de 3 bannières sous les rubans de marques (modifiable depuis l'admin).
+  topBanners: [
+    {
+      id: "top-banner-1",
+      imageUrl: "/images/new/hero-it-tech-01.jpg",
+      badgeEn: "Hot deals",
+      badgeAr: "العروض الساخنة",
+      titleEn: "",
+      titleAr: "",
+      subtitleEn: "",
+      subtitleAr: "",
+      ctaEn: "Shop now",
+      ctaAr: "تسوق الآن",
+      targetCategory: "it-peripherals",
+    },
+    {
+      id: "top-banner-2",
+      imageUrl: "/images/new/landscape-01.jpg",
+      badgeEn: "",
+      badgeAr: "",
+      titleEn: "",
+      titleAr: "",
+      subtitleEn: "",
+      subtitleAr: "",
+      ctaEn: "Open Full Master Catalog",
+      ctaAr: "افتح الكتالوج الشامل",
+      targetCategory: "all",
+    },
+    {
+      id: "top-banner-3",
+      imageUrl: "/images/new/hero-stationery-01.jpg",
+      badgeEn: "",
+      badgeAr: "",
+      titleEn: "",
+      titleAr: "",
+      subtitleEn: "",
+      subtitleAr: "",
+      ctaEn: "",
+      ctaAr: "",
+      targetCategory: "school-essentials",
+    },
+  ],
   // Bannières moyennes articles/offres : photos seules par défaut; leur contenu
   // éditorial et promotionnel reste regroupé dans une seule liste administrable.
   articleBanners: [

@@ -37,6 +37,11 @@ export type MidBannerSlide = HeroSlide;
  */
 export type ArticleBanner = HeroSlide;
 
+/** Bannière de la rangée de 3 sous les rubans de marques (modifiable en admin). */
+export type TopBanner = HeroSlide;
+
+export const TOP_BANNERS_MAX = 3;
+
 export interface LandscapeBannerConfig {
   imageUrl: string;
   badgeEn: string;
@@ -141,6 +146,8 @@ export const storeSettings = pgTable("store_settings", {
   midBanners: jsonb("mid_banners").$type<MidBannerSlide[]>(),
   /** Medium image banners displayed between article selections on the homepage. */
   articleBanners: jsonb("article_banners").$type<ArticleBanner[]>(),
+  /** Three image banners placed in one row directly under the brand ribbons. */
+  topBanners: jsonb("top_banners").$type<TopBanner[]>(),
   defaultTheme: text("default_theme").notNull().default("atelier"),
   // ----- Pied de page : barre légale (السجل التجاري / موثوق / طرق الدفع) -----
   complianceEnabled: boolean("compliance_enabled").notNull().default(true),

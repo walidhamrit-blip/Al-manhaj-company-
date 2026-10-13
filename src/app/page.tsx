@@ -28,6 +28,7 @@ import { CategoryImage } from "@/components/CategoryImage";
 import { HScrollStrip } from "@/components/HScrollStrip";
 import { SectionBannerCarousel } from "@/components/SectionBannerCarousel";
 import { ArticleBannerGrid } from "@/components/ArticleBannerGrid";
+import { TopBannerRow } from "@/components/TopBannerRow";
 import { StoreImage } from "@/components/StoreImage";
 import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
@@ -373,6 +374,15 @@ export default function StorefrontPage() {
     return (INITIAL_STORE_SETTINGS.articleBanners ?? []).filter((banner) =>
       Boolean(banner?.imageUrl?.trim())
     );
+  }, [settings]);
+
+  // Rangée de 3 bannières sous les rubans de marques, entièrement administrable.
+  const topBanners = useMemo(() => {
+    const raw = settings?.topBanners;
+    const list = Array.isArray(raw)
+      ? raw
+      : INITIAL_STORE_SETTINGS.topBanners ?? [];
+    return list.filter((banner) => Boolean(banner?.imageUrl?.trim())).slice(0, 3);
   }, [settings]);
 
   // Auto-advance Hero Carousel every 6 seconds
@@ -933,50 +943,12 @@ export default function StorefrontPage() {
             onSearch={(query) => { setSearchQuery(query); setCatalogDeptSlug("all"); setIsCatalogOpen(true); }} />
         ))}
 
-        <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleOpenCatalog("it-peripherals")}
-                className="relative h-[160px] overflow-hidden sm:h-[210px] lg:h-[230px] text-start"
-              >
-                <StoreImage
-                  src="/images/new/hero-it-tech-01.jpg"
-                  alt={t.dealsTitle}
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 50vw, 25vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
-                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
-                    {t.dealsTitle}
-                  </div>
-                  <div className="text-sm font-extrabold leading-snug line-clamp-2">{t.shopNow}</div>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCatalogOpen(true)}
-                className="relative h-[160px] overflow-hidden sm:h-[210px] lg:h-[230px] text-start"
-              >
-                <StoreImage
-                  src={landscapeBanner.imageUrl}
-                  alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 50vw, 25vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
-                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
-                    {lang === "ar" ? landscapeBanner.badgeAr : landscapeBanner.badgeEn}
-                  </div>
-                  <div className="text-sm font-extrabold leading-snug line-clamp-2">
-                    {lang === "ar" ? landscapeBanner.ctaAr : landscapeBanner.ctaEn}
-                  </div>
-                </div>
-              </button>
-            </div>
-        </section>
+        <TopBannerRow
+          banners={topBanners}
+          lang={lang}
+          theme={currentTheme}
+          onOpenCatalog={handleOpenCatalog}
+        />
 
         <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 pt-3">
           {/* One line, always. `grow basis-0` lets the tiles share the width
