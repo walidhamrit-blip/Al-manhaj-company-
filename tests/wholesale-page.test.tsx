@@ -44,6 +44,21 @@ test("B2B /wholesale page hosts the calculator, tiers, ranges, steps, delivery a
   assert.match(estimator, /inquireWholesaleWhatsApp/);
 });
 
+test("wholesale calculator ships a product search bar", () => {
+  assert.match(estimator, /data-wholesale-search/);
+  assert.match(estimator, /data-wholesale-search-empty/);
+  assert.match(estimator, /type="search"/);
+  assert.match(estimator, /wholesaleSearchPlaceholder/);
+  assert.match(estimator, /wholesaleSearchEmpty/);
+  assert.match(estimator, /filteredProducts/);
+  assert.match(estimator, /product\.titleAr/);
+  assert.match(estimator, /product\.sku/);
+  assert.match(i18n, /wholesaleSearchLabel: "Find a Product"/);
+  assert.match(i18n, /wholesaleSearchPlaceholder: "Search by name or SKU…"/);
+  assert.match(i18n, /wholesaleSearchLabel: "ابحث عن منتج"/);
+  assert.match(i18n, /wholesaleSearchPlaceholder: "ابحث بالاسم أو الرمز…"/);
+});
+
 test("navigation and i18n expose the wholesale page in Arabic and English", () => {
   assert.match(i18n, /navWholesale: "Wholesale B2B"/);
   assert.match(i18n, /navWholesale: "البيع بالجملة"/);
