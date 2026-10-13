@@ -38,9 +38,32 @@ function catalogue(): Product[] {
   }));
 }
 
+/**
+ * The preview is opened either from a GitHub Pages project sub-path
+ * (/Al-manhaj-company-/...) or straight from the file system, where
+ * root-relative asset paths ("/images/...") cannot resolve. Point those at the
+ * storefront's own public asset host. Preview only: the app data is untouched.
+ */
+const publicAssetBase = "https://al-manhaj-company.vercel.app";
+
+function withResolvableImages(products: Product[]): Product[] {
+  return products.map((product) => ({
+    ...product,
+    images: Array.isArray(product.images)
+      ? product.images.map((src) =>
+          typeof src === "string" && src.startsWith("/") ? `${publicAssetBase}${src}` : src,
+        )
+      : product.images,
+  }));
+}
+
 const all = catalogue();
-const hotDeals = all.filter((p) => !p.isHidden && p.isPromotion).slice(0, 10);
-const otherSection = all.filter((p) => !p.isHidden && p.categorySlug === "notebooks").slice(0, 6);
+const hotDeals = withResolvableImages(
+  all.filter((p) => !p.isHidden && p.isPromotion).slice(0, 10),
+);
+const otherSection = withResolvableImages(
+  all.filter((p) => !p.isHidden && p.categorySlug === "notebooks").slice(0, 4),
+);
 
 function carousel(lang: "ar" | "en", products: Product[], promoBadge: boolean) {
   return renderToStaticMarkup(
