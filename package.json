@@ -8,8 +8,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:brands": "tsx --test tests/brand-ribbons.test.tsx",
-    "test:promo": "tsx --test tests/promo-badge.test.tsx",
-    "preview:promo": "tsx scripts/build-promo-preview.tsx"
+    "test:promo": "tsx --test tests/promo-badge.test.tsx"
   },
   "dependencies": {
     "dotenv": "17.3.1",
