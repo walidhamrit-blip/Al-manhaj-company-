@@ -576,13 +576,16 @@ export function CatalogVerticalMenu({
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-controls={MENU_ID}
-        className="flex h-full items-center gap-2 px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-wide text-white transition hover:opacity-90 sm:px-4 sm:text-xs"
-        style={{ backgroundColor: theme.colors.textPrimary }}
+        className="flex h-full min-h-14 items-center gap-2 px-3 py-3 text-[13px] font-extrabold uppercase tracking-wide text-white transition hover:opacity-90 sm:px-4 sm:text-sm lg:text-base"
+        style={{
+          backgroundColor: theme.isDark ? theme.colors.bgSecondary : theme.colors.textPrimary,
+          color: "#FFFFFF",
+        }}
       >
-        <Menu className="h-4 w-4" />
+        <Menu className="h-5 w-5 shrink-0" />
         <span>{t.navDepartments}</span>
         <ChevronDown
-          className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 

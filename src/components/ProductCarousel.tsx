@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
+import type { Brand } from "@/lib/brand-data";
 import type { Category, Product } from "@/db/schema";
 import { UI_TEXT, type Language, type ThemeConfig } from "@/lib/i18n-themes";
 import { ProductTile } from "@/components/ProductTile";
@@ -15,6 +16,7 @@ interface ProductCarouselProps {
   theme: ThemeConfig;
   currencySymbol: string;
   cart: { product: Product; quantity: number }[];
+  brands?: Brand[];
   /** Forwarded to every tile: Hot Deals only, never the category carousels. */
   promoBadge?: boolean;
   onAddToCart: (product: Product, qty: number) => void;
@@ -31,6 +33,7 @@ export function ProductCarousel({
   theme,
   currencySymbol,
   cart,
+  brands,
   promoBadge = false,
   onAddToCart,
   onQuickView,
@@ -50,63 +53,64 @@ export function ProductCarousel({
   if (products.length === 0) return null;
 
   return (
-    <section className="mx-auto w-full max-w-[1760px] px-3 sm:px-4 lg:px-6 py-5 sm:py-6">
+    <section className="mx-auto w-full max-w-[1440px] px-3 py-5 sm:px-4 sm:py-6 lg:px-6">
       <div className="mb-3 flex items-center justify-between gap-3 border-b pb-2" style={{ borderColor: theme.colors.border }}>
-        <h2 className="text-lg sm:text-xl font-bold tracking-tight">{title}</h2>
-        <div className="flex items-center gap-2">
-          {onSeeMore && (
-            <button
-              type="button"
-              onClick={onSeeMore}
-              className="text-xs sm:text-sm font-semibold hover:underline"
-              style={{ color: theme.colors.accentPrimary }}
-            >
-              {seeMoreLabel || t.seeMore}
-            </button>
-          )}
+        <h2 className="text-lg font-bold tracking-tight sm:text-xl">{title}</h2>
+        {onSeeMore && (
           <button
             type="button"
-            aria-label="Previous"
-            onClick={() => scrollByCards(-1)}
-            className="flex h-8 w-8 items-center justify-center rounded-full border bg-white text-neutral-700 shadow-sm hover:bg-neutral-50"
-            style={{ borderColor: theme.colors.border }}
+            onClick={onSeeMore}
+            className="text-xs font-semibold hover:underline sm:text-sm"
+            style={{ color: theme.colors.accentPrimary }}
           >
-            <ChevronLeft className="h-4 w-4" />
+            {seeMoreLabel || t.seeMore}
           </button>
-          <button
-            type="button"
-            aria-label="Next"
-            onClick={() => scrollByCards(1)}
-            className="flex h-8 w-8 items-center justify-center rounded-full border bg-white text-neutral-700 shadow-sm hover:bg-neutral-50"
-            style={{ borderColor: theme.colors.border }}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+        )}
       </div>
-      <div
-        ref={scrollerRef}
-        className="flex gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth snap-x snap-mandatory"
-      >
-        {products.map((product) => {
-          const inCart = cart.find((c) => c.product.id === product.id)?.quantity || 0;
-          return (
-            <div
-              key={`carousel-${product.id ?? product.sku}`}
-              className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-1.5rem)/3)] lg:w-[calc((100%-2.25rem)/4)]"
-            >
-              <ProductTile
-                product={product}
-                lang={lang}
-                theme={theme}
-                added={inCart > 0}
-                showPromoBadge={promoBadge}
-                onOpen={onQuickView}
-                onQuickAdd={(prod) => onAddToCart(prod, 1)}
-              />
-            </div>
-          );
-        })}
+
+      <div className="relative">
+        <button
+          type="button"
+          aria-label={isRtl ? "السابق" : "Previous"}
+          onClick={() => scrollByCards(-1)}
+          className="absolute start-0 top-1/2 z-20 flex h-[84px] w-10 -translate-y-1/2 items-center justify-center border border-[#d2d2d2] bg-white/95 text-neutral-600 shadow-sm transition hover:bg-white hover:text-[#d70a18]"
+        >
+          {isRtl ? <ChevronRight className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
+        </button>
+        <div
+          ref={scrollerRef}
+          className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-0.5 pb-2 no-scrollbar scroll-smooth"
+        >
+          {products.map((product) => {
+            const inCart = cart.find((item) => item.product.id === product.id)?.quantity || 0;
+            return (
+              <div
+                key={`carousel-${product.id ?? product.sku}`}
+                className="w-[min(82vw,320px)] shrink-0 snap-start sm:w-[min(43vw,340px)] lg:w-[min(31vw,350px)]"
+              >
+                <ProductTile
+                  product={product}
+                  lang={lang}
+                  theme={theme}
+                  brands={brands}
+                  added={inCart > 0}
+                  presentation
+                  showPromoBadge={promoBadge}
+                  onOpen={onQuickView}
+                  onQuickAdd={(prod) => onAddToCart(prod, 1)}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          aria-label={isRtl ? "التالي" : "Next"}
+          onClick={() => scrollByCards(1)}
+          className="absolute end-0 top-1/2 z-20 flex h-[84px] w-10 -translate-y-1/2 items-center justify-center border border-[#d2d2d2] bg-white/95 text-neutral-600 shadow-sm transition hover:bg-white hover:text-[#d70a18]"
+        >
+          {isRtl ? <ChevronLeft className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
+        </button>
       </div>
     </section>
   );
