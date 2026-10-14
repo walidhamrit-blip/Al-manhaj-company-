@@ -45,6 +45,109 @@ body {
   border-radius: 9999px;
 }
 
+/* ------------------------------------------------------------------------ *
+ * Coquille d'affichage de la vitrine (storefront shell)
+ *
+ * UNE largeur et UNE gouttière pour toute la page : barre d'annonce, en-tête,
+ * barre de navigation, toutes les sections placées sous les rubans de marques
+ * (bannières, tuiles de départements, carrousels produits, passerelle gros,
+ * bandeau services) et pied de page tombent sur exactement les mêmes bords.
+ *
+ * 1760 px, la largeur déjà employée par l'en-tête et le pied de page. Sur un
+ * écran de 1920 px le contenu laissait 336 px de vide à 1584 px ; il n'en
+ * laisse plus que 160 px — la moitié du blanc latéral est rendue au contenu.
+ * Les rubans de marques restent pleine largeur (.brand-ribbon).
+ * ------------------------------------------------------------------------ */
+.storefront-shell {
+  width: 100%;
+  max-width: 1760px;
+  margin-inline: auto;
+  padding-inline: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .storefront-shell {
+    padding-inline: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-shell {
+    padding-inline: 1rem;
+  }
+}
+
+/* ------------------------------------------------------------------------ *
+ * Tuiles des départements de la page d'accueil
+ *
+ * Une grille, plus une piste qui défile : `auto-fit` ouvre autant de colonnes
+ * que la largeur le permet et les tuiles s'étirent pour occuper toute la
+ * ligne. Conséquence : un département n'est jamais coupé au bord de la zone
+ * d'affichage. Si l'administrateur coche des départements supplémentaires, les
+ * tuiles se resserrent puis passent à la ligne suivante — au lieu d'être
+ * tronquées par un débordement horizontal.
+ *
+ * 145 px de minimum : les 11 départements du catalogue de référence tiennent
+ * sur une seule ligne dans la coquille de 1760 px (11 × 145 + 10 × 12 = 1715
+ * ≤ 1728 utiles), soit ≈ 146 px par tuile sur un écran de 1920 px.
+ * ------------------------------------------------------------------------ */
+.category-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .category-tile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr));
+    gap: 0.75rem;
+  }
+}
+
+/* ------------------------------------------------------------------------ *
+ * Piste des carrousels produits
+ *
+ * Un nombre ENTIER de cartes par vue — 1, puis 2, puis 3, puis 4 — et jamais
+ * plus de 4. La largeur d'une carte est exactement
+ * (100% − (n − 1) × gouttière) / n : la piste est donc toujours remplie bord à
+ * bord par des cartes complètes, et chaque position d'arrêt du scroll-snap
+ * tombe sur le bord d'une carte (aucune carte entamée au repos, y compris en
+ * fin de piste, où le dernier point d'ancrage reste atteignable).
+ * Les cartes s'élargissent avec la coquille : ≈ 423 px à 1920 px de large.
+ * ------------------------------------------------------------------------ */
+.product-carousel-track {
+  --carousel-gap: 0.75rem;
+  display: flex;
+  gap: var(--carousel-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-block-end: 0.5rem;
+}
+
+.product-carousel-card {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+  .product-carousel-card {
+    flex-basis: calc((100% - var(--carousel-gap)) / 2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-carousel-card {
+    flex-basis: calc((100% - 2 * var(--carousel-gap)) / 3);
+  }
+}
+
+@media (min-width: 1280px) {
+  .product-carousel-card {
+    flex-basis: calc((100% - 3 * var(--carousel-gap)) / 4);
+  }
+}
+
 @keyframes kenburns-zoom {
   0% {
     transform: scale(1.04) translate3d(0, 0, 0);

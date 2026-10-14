@@ -23,6 +23,11 @@ déclencheur reste toujours accessible sur petit écran puisqu'il ne défile plu
 
 ## 2. Largeur de la zone d'affichage : 1440 px
 
+> **Mise à jour** — cette largeur a été remplacée depuis : toutes les sections
+> sous les rubans partagent une coquille unique de 1760 px (`.storefront-shell`
+> dans `globals.css`), avec au plus 4 cartes produits par vue et aucune tuile de
+> département coupée. Voir `docs/storefront-shell-alignment.md`.
+
 Le contenu de la page d'accueil passe de `max-w-[1760px]` à `max-w-[1440px]`,
 la largeur déjà utilisée par les carrousels produits (les sections n'étaient
 donc pas alignées entre elles). Sont concernés :

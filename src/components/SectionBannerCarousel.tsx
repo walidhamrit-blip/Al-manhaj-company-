@@ -97,7 +97,7 @@ export function SectionBannerCarousel({
 
   return (
     <section
-      className="mx-auto w-full max-w-[1584px] px-3 pt-4 sm:px-4 sm:pt-5 lg:px-6"
+      className="storefront-shell pt-4 sm:pt-5"
       role="group"
       aria-label={t.midBannersTitle}
       onMouseEnter={() => setIsPaused(true)}
