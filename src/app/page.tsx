@@ -992,10 +992,10 @@ export default function StorefrontPage() {
           onOpenCatalog={handleOpenCatalog}
         />
 
-        <section className="mx-auto w-full max-w-[1440px] px-3 sm:px-4 lg:px-6 pt-3">
+        <section className="mx-auto w-full max-w-[1584px] px-3 sm:px-4 lg:px-6 pt-3">
           {/* One line, always. `grow basis-0` lets the tiles share the width
               when everything fits, while `min-w-*` floors each of them so the
-              10 departments overflow the 1440px container: the track scrolls
+              10 departments overflow the 1584px container: the track scrolls
               instead of shrinking the tiles into unreadable slivers. Bleed
               margins and the edge fade come from HScrollStrip. */}
           <HScrollStrip
@@ -1076,7 +1076,7 @@ export default function StorefrontPage() {
         {categorySelections.slice(0, 4).map((group, index) => (
           <div key={`sel-${group.category.slug}`}>
             {index === 1 && (
-              <section className="mx-auto w-full max-w-[1440px] px-2 sm:px-3 lg:px-4 py-2">
+              <section className="mx-auto w-full max-w-[1584px] px-2 sm:px-3 lg:px-4 py-2">
                 <button
                   type="button"
                   onClick={() => setIsCatalogOpen(true)}
@@ -1132,7 +1132,7 @@ export default function StorefrontPage() {
       <section
         id="wholesale-section"
         data-wholesale-gateway
-        className="mx-auto w-full max-w-[1440px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
+        className="mx-auto w-full max-w-[1584px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
       >
         <div
           style={{
@@ -1213,7 +1213,7 @@ export default function StorefrontPage() {
         }}
       >
         <div
-          className="mx-auto grid max-w-[1440px] grid-cols-2 gap-px lg:grid-cols-4"
+          className="mx-auto grid max-w-[1584px] grid-cols-2 gap-px lg:grid-cols-4"
           style={{ backgroundColor: currentTheme.colors.border }}
         >
           {[
