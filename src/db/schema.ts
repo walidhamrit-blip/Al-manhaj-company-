@@ -21,6 +21,18 @@ export interface HeroSlide {
   ctaEn: string;
   ctaAr: string;
   targetCategory: string;
+  /**
+   * Miroir horizontal de la photo dans la version arabe — **désactivé par
+   * défaut**, à cocher bannière par bannière depuis لوحة الإدارة.
+   *
+   * La photo reste donc telle quelle en arabe : c'est la seule façon de garder
+   * lisible le texte imprimé qu'elle contient (accroche anglaise, logo, clavier
+   * QWERTY, couverture de cahier). Le miroir ne sert qu'aux photos **sans aucun
+   * texte**, composées en LTR avec le sujet à gauche, pour ramener la zone
+   * calme — celle que le dégradé sombre assombrit — sous le texte arabe qui
+   * s'affiche à droite. Voir docs/bannieres-arabe-miroir.md.
+   */
+  mirrorInArabic?: boolean;
 }
 
 /**
@@ -52,6 +64,8 @@ export interface LandscapeBannerConfig {
   subtitleAr: string;
   ctaEn: string;
   ctaAr: string;
+  /** Même règle que HeroSlide.mirrorInArabic : faux (photo intacte) par défaut. */
+  mirrorInArabic?: boolean;
 }
 
 export const categories = pgTable("categories", {

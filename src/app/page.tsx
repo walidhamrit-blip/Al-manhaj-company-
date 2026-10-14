@@ -10,7 +10,7 @@ import type { Category, Product, StoreSettings } from "@/db/schema";
 import {
   THEMES,
   UI_TEXT,
-  bannerImageClass,
+  bannerImageFrameClass,
   bannerScrimClass,
   type Language,
   type ThemeId,
@@ -896,13 +896,15 @@ export default function StorefrontPage() {
         {currentHero && (
           <section className="relative w-full overflow-hidden bg-black">
             <div className="relative h-[260px] w-full sm:h-[360px] lg:h-[430px] xl:h-[480px]">
-              <StoreImage
-                src={currentHero.imageUrl}
-                alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
-                className={bannerImageClass(lang, "object-cover transition-all duration-700")}
-                priority
-                sizes="100vw"
-              />
+              <div className={bannerImageFrameClass(lang, currentHero.mirrorInArabic)}>
+                <StoreImage
+                  src={currentHero.imageUrl}
+                  alt={lang === "ar" ? currentHero.titleAr : currentHero.titleEn}
+                  className="object-cover transition-all duration-700"
+                  priority
+                  sizes="100vw"
+                />
+              </div>
               <div className={bannerScrimClass(lang, "from-black/70 via-black/25 to-transparent")} />
               <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-10 lg:p-14 text-white">
               <div className="mx-auto w-full max-w-[1760px]">
@@ -1073,12 +1075,14 @@ export default function StorefrontPage() {
                   onClick={() => setIsCatalogOpen(true)}
                   className="relative block h-[140px] w-full overflow-hidden sm:h-[200px]"
                 >
-                  <StoreImage
-                    src={landscapeBanner.imageUrl}
-                    alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
-                    className={bannerImageClass(lang, "object-cover")}
-                    sizes="100vw"
-                  />
+                  <div className={bannerImageFrameClass(lang, landscapeBanner.mirrorInArabic)}>
+                    <StoreImage
+                      src={landscapeBanner.imageUrl}
+                      alt={lang === "ar" ? landscapeBanner.titleAr : landscapeBanner.titleEn}
+                      className="object-cover"
+                      sizes="100vw"
+                    />
+                  </div>
                   <div className={bannerScrimClass(lang, "from-black/70 via-black/35 to-transparent")} />
                   <div className="absolute inset-0 flex flex-col justify-center p-6 text-white sm:p-10">
                     <span className="text-[11px] font-bold uppercase tracking-widest">

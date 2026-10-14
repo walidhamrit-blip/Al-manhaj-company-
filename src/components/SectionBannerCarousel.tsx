@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { MidBannerSlide } from "@/db/schema";
 import {
   UI_TEXT,
+  bannerImageFrameClass,
   bannerScrimClass,
   type Language,
   type ThemeConfig,
@@ -129,13 +130,17 @@ export function SectionBannerCarousel({
             >
               {/* StoreImage is a plain <img>: it honours `loading` but ignores
                   `priority`/`sizes`, so the first slide is loaded eagerly this
-                  way (it sits high enough on the page to be the LCP image). */}
-              <StoreImage
-                src={banner.imageUrl}
-                alt={lang === "ar" ? banner.titleAr : banner.titleEn}
-                className={`h-full w-full object-cover ${active ? "kenburns-bg" : ""}`}
-                loading={i === 0 ? "eager" : "lazy"}
-              />
+                  way (it sits high enough on the page to be the LCP image).
+                  Le cadre porte le miroir éventuel : l'animation Ken Burns et
+                  le zoom au survol restent sur l'image et se composent. */}
+              <div className={bannerImageFrameClass(lang, banner.mirrorInArabic)}>
+                <StoreImage
+                  src={banner.imageUrl}
+                  alt={lang === "ar" ? banner.titleAr : banner.titleEn}
+                  className={`h-full w-full object-cover ${active ? "kenburns-bg" : ""}`}
+                  loading={i === 0 ? "eager" : "lazy"}
+                />
+              </div>
               {copy && <div className={bannerScrimClass(lang, "from-black/80 via-black/30 to-transparent")} />}
               {copy && (
                 <div className="absolute inset-0 flex items-center">

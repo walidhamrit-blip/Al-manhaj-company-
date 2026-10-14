@@ -188,15 +188,31 @@ export function formatPrice(amount: number, lang: Language): string {
 }
 
 /**
- * Hero/banner hooks are bilingual (badge + title + subtitle + CTA per language)
- * and the artwork is composed for the left-to-right reading order: the calm
- * area of the picture — the one the dark scrim darkens — sits on the left.
- * In Arabic the copy is aligned to the right, so the picture is mirrored
- * horizontally; the headline then lands on that calm area instead of running
- * over the products, and the gradient is flipped to match (see below).
+ * Cadre de la photo d'une bannière (le conteneur `absolute inset-0` qui
+ * enveloppe l'`<img>`) : vide, ou miroir horizontal en arabe.
+ *
+ * **Le miroir n'est plus automatique.** Il l'était : en arabe la photo entière
+ * était retournée pour ramener sa zone calme — celle que le dégradé sombre
+ * assombrit — du côté où s'affiche le texte (à droite). Mais la plupart des
+ * photos de bannière contiennent du texte imprimé — accroche anglaise, logo,
+ * clavier QWERTY, étiquette de cahier — et le moindre retournement le rend
+ * illisible (`Work Smarter.` → `.ɿɘtɿɒmS ʞɿoW`) : c'est le défaut constaté en
+ * version arabe. Voir docs/bannieres-arabe-miroir.md.
+ *
+ * Le miroir reste disponible, bannière par bannière, via la case « عكس الصورة
+ * في النسخة العربية » du panneau d'administration : réservé aux photos sans
+ * aucun texte, composées en LTR avec le sujet à gauche.
+ *
+ * Le retournement est porté par le cadre et non par l'`<img>` : les utilitaires
+ * `scale` de Tailwind (zoom au survol des petites bannières) restent donc
+ * disponibles sur l'image elle-même (`scale` se compose avec `transform`).
  */
-export function bannerImageClass(lang: Language, base: string): string {
-  return lang === "ar" ? `${base} -scale-x-100` : base;
+export function bannerImageFrameClass(
+  lang: Language,
+  mirrorInArabic?: boolean
+): string {
+  const frame = "absolute inset-0";
+  return lang === "ar" && mirrorInArabic ? `${frame} -scale-x-100` : frame;
 }
 
 /** Mirrors the banner scrim (dark side follows the text side). */
@@ -460,6 +476,9 @@ export const UI_TEXT = {
     homepageSlide: "Slide",
     homepageAddSlide: "Add a slide",
     homepageSlidesLimit: "Maximum 5 slides",
+    homepageMirrorInArabic: "Mirror the photo in Arabic",
+    homepageMirrorInArabicHint:
+      "Leave unchecked whenever the photo contains printed text — headline, logo, keyboard, notebook cover: flipping it makes that text unreadable. Tick it only for a photo with no text at all, composed with its subject on the left, to bring the calm area back under the Arabic text on the right.",
     homepageTargetCategory: "Category opened by the button",
     homepageBanner: "Wide panoramic banner",
     homepageBadgeText: "Badge text",
@@ -792,6 +811,9 @@ export const UI_TEXT = {
     homepageSlide: "الشريحة",
     homepageAddSlide: "إضافة شريحة",
     homepageSlidesLimit: "الحد الأقصى 5 شرائح",
+    homepageMirrorInArabic: "عكس الصورة في النسخة العربية",
+    homepageMirrorInArabicHint:
+      "اتركه دون تحديد إذا كانت الصورة تحتوي على أي كتابة مطبوعة — عنوان، شعار، لوحة مفاتيح، غلاف دفتر — لأن العكس يجعلها غير مقروءة. حدّده فقط لصورة خالية تماماً من النصوص ويقع موضوعها على اليسار، لإعادة المنطقة الهادئة تحت النص العربي على اليمين.",
     homepageTargetCategory: "القسم الذي يفتحه الزر",
     homepageBanner: "الشريط العريض (بانوراما)",
     homepageBadgeText: "نص الشارة",
