@@ -10,6 +10,7 @@ import {
 import { StoreImage } from "@/components/StoreImage";
 import { THEMES, UI_TEXT, type Language } from "@/lib/i18n-themes";
 import { hydrateFallbackStore } from "@/lib/fallbackData";
+import { resolveOnlineSalesCopy } from "@/lib/page-content";
 import {
   ArrowRight,
   Clock,
@@ -81,56 +82,35 @@ export default function OnlineSalesPage() {
     "",
   );
   const contactPhone = settings?.contactPhone || "+218 91-214-5050";
+  const copy = resolveOnlineSalesCopy(settings?.onlineSalesPage, t, lang);
+  const stepIcons = [Search, ShoppingBag, MessageCircle, Truck];
+  const trustIcons = [Truck, CreditCard, RotateCcw, Headphones];
 
-  const steps = [
-    { icon: Search, title: t.onlineSalesStep1Title, desc: t.onlineSalesStep1Desc },
-    {
-      icon: ShoppingBag,
-      title: t.onlineSalesStep2Title,
-      desc: t.onlineSalesStep2Desc,
-    },
-    {
-      icon: MessageCircle,
-      title: t.onlineSalesStep3Title,
-      desc: t.onlineSalesStep3Desc,
-    },
-    { icon: Truck, title: t.onlineSalesStep4Title, desc: t.onlineSalesStep4Desc },
-  ];
+  const steps = copy.steps.map((step, index) => ({
+    icon: stepIcons[index % stepIcons.length],
+    title: step.title,
+    desc: step.desc,
+  }));
 
-  const trust = [
-    {
-      icon: Truck,
-      title: t.servicesDelivery,
-      sub: t.servicesDeliverySub,
-    },
-    {
-      icon: CreditCard,
-      title: t.onlineSalesPaymentCodTitle,
-      sub: t.onlineSalesPaymentCodDesc,
-    },
-    {
-      icon: RotateCcw,
-      title: t.onlineSalesTrustReturns,
-      sub: t.onlineSalesTrustReturnsSub,
-      href: "/returns",
-      hrefLabel: t.onlineSalesReturnsLink,
-    },
-    {
-      icon: Headphones,
-      title: t.servicesSupport,
-      sub: t.servicesSupportSub,
-      href: `https://wa.me/${whatsappNumber}`,
-      hrefLabel: "WhatsApp",
-    },
-  ];
+  const trust = copy.trust.map((item, index) => ({
+    icon: trustIcons[index % trustIcons.length],
+    title: item.title,
+    sub: item.desc,
+    href:
+      item.link === "returns"
+        ? "/returns"
+        : item.link === "whatsapp"
+          ? `https://wa.me/${whatsappNumber}`
+          : undefined,
+    hrefLabel:
+      item.link === "returns"
+        ? t.onlineSalesReturnsLink
+        : item.link === "whatsapp"
+          ? "WhatsApp"
+          : undefined,
+  }));
 
-  const faqs = [
-    { q: t.onlineSalesFaq1Q, a: t.onlineSalesFaq1A },
-    { q: t.onlineSalesFaq2Q, a: t.onlineSalesFaq2A },
-    { q: t.onlineSalesFaq3Q, a: t.onlineSalesFaq3A },
-    { q: t.onlineSalesFaq4Q, a: t.onlineSalesFaq4A },
-    { q: t.onlineSalesFaq5Q, a: t.onlineSalesFaq5A },
-  ];
+  const faqs = copy.faqs;
 
   return (
     <div
@@ -214,8 +194,8 @@ export default function OnlineSalesPage() {
       <main className="mx-auto max-w-[1760px] px-3 py-6 sm:py-10 space-y-8">
         <section className="relative h-[240px] overflow-hidden bg-black sm:h-[360px]">
           <StoreImage
-            src="/images/new/hero-stationery-01.jpg"
-            alt={t.onlineSalesTitle}
+            src={copy.heroImage}
+            alt={copy.title}
             className="object-cover"
             priority
             sizes="100vw"
@@ -224,13 +204,13 @@ export default function OnlineSalesPage() {
           <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-8">
             <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-red-200">
               <PackageSearch className="h-3.5 w-3.5" />
-              {t.onlineSalesBadge}
+              {copy.badge}
             </p>
             <h1 className="mt-1 max-w-3xl text-2xl font-black sm:text-4xl">
-              {t.onlineSalesTitle}
+              {copy.title}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-white/90 sm:text-base">
-              {t.onlineSalesLead}
+              {copy.lead}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link
@@ -238,7 +218,7 @@ export default function OnlineSalesPage() {
                 className="inline-flex items-center gap-2 bg-[#E30613] px-5 py-3 text-xs sm:text-sm font-extrabold text-white shadow-md transition hover:opacity-95"
               >
                 <ShoppingBag className="h-4 w-4" />
-                {t.onlineSalesStart}
+                {copy.cta}
               </Link>
               <a
                 href="#order-tracking"
@@ -296,8 +276,8 @@ export default function OnlineSalesPage() {
 
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
           <div className="lg:col-span-7 space-y-4">
-            <h2 className="text-xl font-black">{t.onlineSalesStepsTitle}</h2>
-            <p className="text-sm text-neutral-600">{t.onlineSalesStepsDesc}</p>
+            <h2 className="text-xl font-black">{copy.stepsTitle}</h2>
+            <p className="text-sm text-neutral-600">{copy.stepsDesc}</p>
             <ol
               data-online-sales-steps
               className="grid gap-3 sm:grid-cols-2"
@@ -319,23 +299,23 @@ export default function OnlineSalesPage() {
               <h3 className="text-sm font-extrabold">{t.servicesPayment}</h3>
             </div>
             <p className="text-xs leading-5 text-neutral-600">
-              {t.onlineSalesPaymentCodDesc}
+              {copy.paymentCodDesc}
             </p>
             <div className="mt-4 border-t pt-4">
               <div className="mb-2 flex items-center gap-2">
                 <Truck className="h-5 w-5 text-[#E30613]" />
                 <h3 className="text-sm font-extrabold">
-                  {t.onlineSalesDeliveryTitle}
+                  {copy.deliveryTitle}
                 </h3>
               </div>
               <ul className="space-y-2 text-xs leading-5 text-neutral-600">
                 <li className="flex gap-2">
                   <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                  {t.onlineSalesDeliveryTripoli}
+                  {copy.deliveryTripoli}
                 </li>
                 <li className="flex gap-2">
                   <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                  {t.onlineSalesDeliveryLibya}
+                  {copy.deliveryLibya}
                 </li>
               </ul>
             </div>
@@ -355,16 +335,16 @@ export default function OnlineSalesPage() {
           >
             <CreditCard className="mb-2 h-5 w-5 text-[#E30613]" />
             <h2 className="text-sm font-extrabold">
-              {t.onlineSalesPaymentTitle}
+              {copy.paymentTitle}
             </h2>
             <p className="mt-1 text-sm font-bold text-neutral-700">
-              {t.onlineSalesPaymentCodTitle}
+              {copy.paymentCodTitle}
             </p>
             <p className="mt-1 text-xs leading-5 text-neutral-600">
-              {t.onlineSalesPaymentCodDesc}
+              {copy.paymentCodDesc}
             </p>
             <p className="mt-2 text-xs leading-5 text-neutral-600">
-              {t.onlineSalesPaymentConfirmDesc}
+              {copy.paymentConfirmDesc}
             </p>
           </article>
           <article
@@ -373,13 +353,13 @@ export default function OnlineSalesPage() {
           >
             <Truck className="mb-2 h-5 w-5 text-[#E30613]" />
             <h2 className="text-sm font-extrabold">
-              {t.onlineSalesDeliveryTitle}
+              {copy.deliveryTitle}
             </h2>
             <p className="mt-1 text-xs leading-5 text-neutral-600">
-              {t.onlineSalesDeliveryTripoli}
+              {copy.deliveryTripoli}
             </p>
             <p className="mt-2 text-xs leading-5 text-neutral-600">
-              {t.onlineSalesDeliveryLibya}
+              {copy.deliveryLibya}
             </p>
           </article>
           <article
@@ -388,10 +368,10 @@ export default function OnlineSalesPage() {
           >
             <RotateCcw className="mb-2 h-5 w-5 text-[#E30613]" />
             <h2 className="text-sm font-extrabold">
-              {t.onlineSalesReturnsTitle}
+              {copy.returnsTitle}
             </h2>
             <p className="mt-1 text-xs leading-5 text-neutral-600">
-              {t.onlineSalesReturnsDesc}
+              {copy.returnsDesc}
             </p>
             <Link
               href="/returns"
@@ -404,7 +384,7 @@ export default function OnlineSalesPage() {
         </section>
 
         <section data-online-sales-faq className="border bg-white p-4 sm:p-6">
-          <h2 className="mb-3 text-xl font-black">{t.onlineSalesFaqTitle}</h2>
+          <h2 className="mb-3 text-xl font-black">{copy.faqTitle}</h2>
           <div className="divide-y">
             {faqs.map((item) => (
               <details key={item.q} className="py-3">
@@ -422,8 +402,8 @@ export default function OnlineSalesPage() {
         <section className="flex flex-wrap items-center gap-3 border bg-white p-5">
           <MessageCircle className="h-5 w-5 fill-[#25D366] text-[#25D366]" />
           <div className="flex-1 min-w-[200px]">
-            <p className="text-sm font-extrabold">{t.onlineSalesCtaTitle}</p>
-            <p className="text-xs text-neutral-500">{t.onlineSalesCtaDesc}</p>
+            <p className="text-sm font-extrabold">{copy.ctaTitle}</p>
+            <p className="text-xs text-neutral-500">{copy.ctaDesc}</p>
           </div>
           <a
             href={`https://wa.me/${whatsappNumber}`}

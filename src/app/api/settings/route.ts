@@ -4,6 +4,10 @@ import { storeSettings } from "@/db/schema";
 import { ensureDatabaseSeeded } from "@/db/seed";
 import { eq } from "drizzle-orm";
 import { limitHeroSlides } from "@/lib/homepage-slides";
+import {
+  normalizeOnlineSalesPage,
+  normalizeWholesalePage,
+} from "@/lib/page-content";
 
 export const dynamic = "force-dynamic";
 
@@ -124,6 +128,24 @@ export async function PUT(request: NextRequest) {
         articleBanners: Array.isArray(body.articleBanners)
           ? body.articleBanners
           : existing.articleBanners,
+        onlineSalesPage:
+          body.onlineSalesPage !== undefined
+            ? normalizeOnlineSalesPage({
+                ...(existing.onlineSalesPage ?? {}),
+                ...(body.onlineSalesPage && typeof body.onlineSalesPage === "object"
+                  ? body.onlineSalesPage
+                  : {}),
+              })
+            : existing.onlineSalesPage,
+        wholesalePage:
+          body.wholesalePage !== undefined
+            ? normalizeWholesalePage({
+                ...(existing.wholesalePage ?? {}),
+                ...(body.wholesalePage && typeof body.wholesalePage === "object"
+                  ? body.wholesalePage
+                  : {}),
+              })
+            : existing.wholesalePage,
         defaultTheme: String(body.defaultTheme ?? existing.defaultTheme),
         // ----- Editable legal footer bar -----
         complianceEnabled:

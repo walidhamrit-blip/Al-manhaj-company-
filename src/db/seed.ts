@@ -232,6 +232,11 @@ export async function ensureDatabaseSeeded() {
   // ci-dessous injecte les 3 bannières de démarrage une seule fois).
   await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS top_banners JSONB;`);
 
+  // Rubriques CMS des pages Vente en ligne et Vente en gros (nullable : le
+  // backfill plus bas n'écrit les valeurs par défaut que si la colonne est vide).
+  await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS online_sales_page JSONB;`);
+  await pool.query(`ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS wholesale_page JSONB;`);
+
   const [{ value: catCount }] = await db.select({ value: count() }).from(categories);
   if (catCount === 0) {
     await db.insert(categories).values(INITIAL_CATEGORIES);

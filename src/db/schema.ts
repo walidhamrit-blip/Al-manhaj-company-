@@ -54,6 +54,117 @@ export type TopBanner = HeroSlide;
 
 export const TOP_BANNERS_MAX = 3;
 
+/** Bloc bilingue titre + description (étapes, cartes services, etc.). */
+export interface PageCopyItem {
+  titleEn: string;
+  titleAr: string;
+  descEn: string;
+  descAr: string;
+}
+
+export type PageTrustLink = "none" | "returns" | "whatsapp";
+
+export interface PageTrustItem extends PageCopyItem {
+  link?: PageTrustLink;
+}
+
+export interface PageFaqItem {
+  id: string;
+  qEn: string;
+  qAr: string;
+  aEn: string;
+  aAr: string;
+}
+
+/**
+ * Contenu CMS de la page /vente-en-ligne — toutes les rubriques visibles
+ * (héros, services, étapes, paiement, livraison, retours, FAQ, CTA).
+ */
+export interface OnlineSalesPageConfig {
+  heroImage: string;
+  badgeEn: string;
+  badgeAr: string;
+  titleEn: string;
+  titleAr: string;
+  leadEn: string;
+  leadAr: string;
+  ctaEn: string;
+  ctaAr: string;
+  stepsTitleEn: string;
+  stepsTitleAr: string;
+  stepsDescEn: string;
+  stepsDescAr: string;
+  steps: PageCopyItem[];
+  trust: PageTrustItem[];
+  paymentTitleEn: string;
+  paymentTitleAr: string;
+  paymentCodTitleEn: string;
+  paymentCodTitleAr: string;
+  paymentCodDescEn: string;
+  paymentCodDescAr: string;
+  paymentConfirmDescEn: string;
+  paymentConfirmDescAr: string;
+  deliveryTitleEn: string;
+  deliveryTitleAr: string;
+  deliveryTripoliEn: string;
+  deliveryTripoliAr: string;
+  deliveryLibyaEn: string;
+  deliveryLibyaAr: string;
+  returnsTitleEn: string;
+  returnsTitleAr: string;
+  returnsDescEn: string;
+  returnsDescAr: string;
+  faqTitleEn: string;
+  faqTitleAr: string;
+  faqs: PageFaqItem[];
+  ctaTitleEn: string;
+  ctaTitleAr: string;
+  ctaDescEn: string;
+  ctaDescAr: string;
+}
+
+/**
+ * Contenu CMS de la page /wholesale — héros, paliers, étapes, gammes,
+ * livraison et FAQ. Les % de remise restent les colonnes wholesaleDiscount*.
+ */
+export interface WholesalePageConfig {
+  heroImage: string;
+  badgeEn: string;
+  badgeAr: string;
+  titleEn: string;
+  titleAr: string;
+  descEn: string;
+  descAr: string;
+  tier1LabelEn: string;
+  tier1LabelAr: string;
+  tier2LabelEn: string;
+  tier2LabelAr: string;
+  tier3LabelEn: string;
+  tier3LabelAr: string;
+  stepsTitleEn: string;
+  stepsTitleAr: string;
+  steps: PageCopyItem[];
+  rangesTitleEn: string;
+  rangesTitleAr: string;
+  rangesDescEn: string;
+  rangesDescAr: string;
+  deliveryTitleEn: string;
+  deliveryTitleAr: string;
+  deliveryFreeEn: string;
+  deliveryFreeAr: string;
+  pickupTitleEn: string;
+  pickupTitleAr: string;
+  pickupDescEn: string;
+  pickupDescAr: string;
+  citiesTitleEn: string;
+  citiesTitleAr: string;
+  citiesDescEn: string;
+  citiesDescAr: string;
+  faqTitleEn: string;
+  faqTitleAr: string;
+  faqs: PageFaqItem[];
+}
+
 export interface LandscapeBannerConfig {
   imageUrl: string;
   badgeEn: string;
@@ -162,6 +273,17 @@ export const storeSettings = pgTable("store_settings", {
   articleBanners: jsonb("article_banners").$type<ArticleBanner[]>(),
   /** Three image banners placed in one row directly under the brand ribbons. */
   topBanners: jsonb("top_banners").$type<TopBanner[]>(),
+  /**
+   * Rubriques de la page Vente en ligne (/vente-en-ligne). Nullable : le
+   * backfill de ensureDatabaseSeeded() n'écrit les valeurs par défaut que
+   * lorsque la colonne est encore vide, pour ne jamais écraser un admin.
+   */
+  onlineSalesPage: jsonb("online_sales_page").$type<OnlineSalesPageConfig>(),
+  /**
+   * Rubriques de la page Vente en gros (/wholesale). Même règle nullable
+   * que onlineSalesPage.
+   */
+  wholesalePage: jsonb("wholesale_page").$type<WholesalePageConfig>(),
   defaultTheme: text("default_theme").notNull().default("atelier"),
   // ----- Pied de page : barre légale (السجل التجاري / موثوق / طرق الدفع) -----
   complianceEnabled: boolean("compliance_enabled").notNull().default(true),
