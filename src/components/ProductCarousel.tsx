@@ -43,17 +43,30 @@ export function ProductCarousel({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const isRtl = lang === "ar";
 
+  /**
+   * Une page entière à la fois. Le pas est mesuré sur la première carte plus la
+   * gouttière (`--carousel-gap` de `.product-carousel-track`), puis multiplié
+   * par le nombre de cartes réellement visibles : les flèches retombent donc
+   * toujours sur un bord de carte, quelle que soit la largeur. Une fraction de
+   * page laisserait une carte entamée sous la flèche.
+   */
   const scrollByCards = (direction: number) => {
     const el = scrollerRef.current;
     if (!el) return;
-    const amount = Math.max(240, Math.floor(el.clientWidth * 0.8));
+    const first = el.firstElementChild as HTMLElement | null;
+    if (!first) return;
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+    const step = first.getBoundingClientRect().width + gap;
+    if (step <= 0) return;
+    const perView = Math.max(1, Math.round(el.clientWidth / step));
+    const amount = perView * step;
     el.scrollBy({ left: isRtl ? -direction * amount : direction * amount, behavior: "smooth" });
   };
 
   if (products.length === 0) return null;
 
   return (
-    <section className="mx-auto w-full max-w-[1584px] px-3 py-5 sm:px-4 sm:py-6 lg:px-6">
+    <section className="storefront-shell py-5 sm:py-6">
       <div className="mb-3 flex items-center justify-between gap-3 border-b pb-2" style={{ borderColor: theme.colors.border }}>
         <h2 className="text-lg font-bold tracking-tight sm:text-xl">{title}</h2>
         {onSeeMore && (
@@ -77,17 +90,14 @@ export function ProductCarousel({
         >
           {isRtl ? <ChevronRight className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
         </button>
-        <div
-          ref={scrollerRef}
-          className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-0.5 pb-2 no-scrollbar scroll-smooth"
-        >
+        {/* 1 / 2 / 3 / 4 cartes par vue, jamais plus de 4, jamais une carte
+            coupée : la largeur d'une carte vient de `.product-carousel-card`
+            (globals.css), calculée sur la largeur réelle de la piste. */}
+        <div ref={scrollerRef} className="product-carousel-track no-scrollbar">
           {products.map((product) => {
             const inCart = cart.find((item) => item.product.id === product.id)?.quantity || 0;
             return (
-              <div
-                key={`carousel-${product.id ?? product.sku}`}
-                className="w-[min(82vw,320px)] shrink-0 snap-start sm:w-[min(43vw,340px)] lg:w-[min(31vw,350px)]"
-              >
+              <div key={`carousel-${product.id ?? product.sku}`} className="product-carousel-card">
                 <ProductTile
                   product={product}
                   lang={lang}

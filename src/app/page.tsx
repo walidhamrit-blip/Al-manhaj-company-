@@ -25,7 +25,6 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CatalogVerticalMenu } from "@/components/CatalogVerticalMenu";
 import { CategoryImage } from "@/components/CategoryImage";
-import { HScrollStrip } from "@/components/HScrollStrip";
 import { SectionBannerCarousel } from "@/components/SectionBannerCarousel";
 import { ArticleBannerGrid } from "@/components/ArticleBannerGrid";
 import { TopBannerRow } from "@/components/TopBannerRow";
@@ -531,7 +530,7 @@ export default function StorefrontPage() {
     >
       {announcementEnabled && (
         <div className="w-full bg-[#222] text-white">
-          <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-3 px-2 sm:px-3 lg:px-4 py-1.5 text-[11px] sm:text-xs">
+          <div className="storefront-shell flex items-center justify-between gap-3 py-1.5 text-[11px] sm:text-xs">
             <div className="flex min-w-0 items-center gap-3">
               <a href={`tel:+${whatsappDigits}`} className="hidden sm:inline-flex items-center gap-1.5 font-semibold hover:opacity-80">
                 <Phone className="h-3.5 w-3.5" />
@@ -569,7 +568,7 @@ export default function StorefrontPage() {
           color: currentTheme.colors.textPrimary,
         }}
       >
-        <div className="mx-auto flex max-w-[1760px] items-center gap-3 sm:gap-5 px-2 sm:px-3 lg:px-4 py-3">
+        <div className="storefront-shell flex items-center gap-3 sm:gap-5 py-3">
           <a href="#top" className="flex min-w-0 shrink-0 items-center gap-2.5">
             <span
               className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-sm text-lg font-black"
@@ -840,7 +839,7 @@ export default function StorefrontPage() {
               menu dropped below the strip was entirely swallowed and the button
               looked dead. The trigger sits outside the scroller; only the links
               scroll. */}
-          <div className="mx-auto flex min-h-14 max-w-[1760px] items-stretch gap-0 px-1 sm:px-2">
+          <div className="storefront-shell flex min-h-14 items-stretch gap-0">
             <CatalogVerticalMenu
               isOpen={isDeptMenuOpen}
               onOpenChange={setIsDeptMenuOpen}
@@ -992,28 +991,20 @@ export default function StorefrontPage() {
           onOpenCatalog={handleOpenCatalog}
         />
 
-        <section className="mx-auto w-full max-w-[1584px] px-3 sm:px-4 lg:px-6 pt-3">
-          {/* One line, always. `grow basis-0` lets the tiles share the width
-              when everything fits, while `min-w-*` floors each of them so the
-              10 departments overflow the 1584px container: the track scrolls
-              instead of shrinking the tiles into unreadable slivers. Bleed
-              margins and the edge fade come from HScrollStrip. */}
-          <HScrollStrip
-            ariaLabel={t.categoriesTitle}
-            showArrows
-            arrowLabels={
-              lang === "ar"
-                ? { left: "تمرير إلى اليسار", right: "تمرير إلى اليمين" }
-                : { left: "Scroll left", right: "Scroll right" }
-            }
-            className="-mx-3 gap-2 px-3 pb-1 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6"
-          >
+        <section className="storefront-shell pt-3">
+          {/* Grille, pas piste défilante : `repeat(auto-fit, minmax(...))`
+              (globals.css) ouvre autant de colonnes que la largeur le permet et
+              étire les tuiles sur toute la ligne. Les départements tombent donc
+              sur les mêmes bords que les sections voisines et aucun n'est coupé
+              au bord — s'il y en a davantage, ils passent à la ligne suivante
+              au lieu de déborder. */}
+          <div className="category-tile-grid" role="group" aria-label={t.categoriesTitle}>
             {homeCategories.map((cat) => (
               <button
                 key={`tile-${cat.slug}`}
                 type="button"
                 onClick={() => handleOpenCatalog(cat.slug)}
-                className="group flex min-w-[152px] max-w-[240px] basis-0 grow flex-col overflow-hidden border text-start transition hover:shadow-md sm:min-w-[196px]"
+                className="group flex h-full flex-col overflow-hidden border text-start transition hover:shadow-md"
                 style={{
                   backgroundColor: currentTheme.colors.bgElevated,
                   borderColor: currentTheme.colors.border,
@@ -1033,7 +1024,7 @@ export default function StorefrontPage() {
                 </div>
               </button>
             ))}
-          </HScrollStrip>
+          </div>
         </section>
 
         {/* Bannières images défilantes, entre les tuiles de catégories et les
@@ -1076,7 +1067,7 @@ export default function StorefrontPage() {
         {categorySelections.slice(0, 4).map((group, index) => (
           <div key={`sel-${group.category.slug}`}>
             {index === 1 && (
-              <section className="mx-auto w-full max-w-[1584px] px-2 sm:px-3 lg:px-4 py-2">
+              <section className="storefront-shell py-2">
                 <button
                   type="button"
                   onClick={() => setIsCatalogOpen(true)}
@@ -1132,7 +1123,7 @@ export default function StorefrontPage() {
       <section
         id="wholesale-section"
         data-wholesale-gateway
-        className="mx-auto w-full max-w-[1584px] px-2 sm:px-3 lg:px-4 pb-10 sm:pb-14"
+        className="storefront-shell pb-10 sm:pb-14"
       >
         <div
           style={{
@@ -1213,7 +1204,7 @@ export default function StorefrontPage() {
         }}
       >
         <div
-          className="mx-auto grid max-w-[1584px] grid-cols-2 gap-px lg:grid-cols-4"
+          className="storefront-shell grid grid-cols-2 gap-px lg:grid-cols-4"
           style={{ backgroundColor: currentTheme.colors.border }}
         >
           {[
@@ -1260,7 +1251,7 @@ export default function StorefrontPage() {
       </section>
 
       <footer className="mt-auto bg-[#1a1a1a] py-10 text-white">
-        <div className="mx-auto max-w-[1760px] px-2 sm:px-3 lg:px-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="storefront-shell grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
             <h3 className="text-lg font-black">
               {settings
@@ -1378,7 +1369,7 @@ export default function StorefrontPage() {
         </div>
         {/* ===== CBL / Mawthooq Compliance Bar (editable from Admin) ===== */}
         {complianceEnabled && (
-          <div className="mx-auto max-w-[1760px] px-2 sm:px-3 lg:px-4 mt-10 pt-6 border-t border-white/15">
+          <div className="storefront-shell mt-10 pt-6 border-t border-white/15">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-[11px] sm:text-xs leading-5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white px-3 py-1.5 font-bold text-neutral-900">
