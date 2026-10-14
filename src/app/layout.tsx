@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import BuildBadge from "@/components/BuildBadge";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "شركة المنهج للقرطاسية | Al Manhaj Company for Stationery",
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         {children}
         <BuildBadge />
+        <Analytics />
       </body>
     </html>
   );
