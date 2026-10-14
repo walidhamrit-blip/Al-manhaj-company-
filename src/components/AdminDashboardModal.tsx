@@ -140,6 +140,54 @@ function BilingualField({
   );
 }
 
+/**
+ * Case à cocher « عكس الصورة في النسخة العربية » d'une bannière.
+ *
+ * Le miroir de la photo en arabe n'est plus automatique (voir
+ * docs/bannieres-arabe-miroir.md) : le moindre texte imprimé dans la photo —
+ * accroche anglaise, logo, clavier QWERTY — devient illisible une fois
+ * retourné. Chaque bannière décide donc, et la valeur par défaut est « non ».
+ */
+function MirrorInArabicField({
+  checked,
+  onChange,
+  theme,
+  label,
+  hint,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  theme: ThemeConfig;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <label
+      style={{
+        backgroundColor: theme.colors.bgSecondary,
+        borderColor: theme.colors.border,
+      }}
+      className="flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 text-xs"
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0"
+      />
+      <span className="min-w-0">
+        <span className="block font-bold">{label}</span>
+        <span
+          style={{ color: theme.colors.textSecondary }}
+          className="mt-0.5 block text-[11px] leading-relaxed"
+        >
+          {hint}
+        </span>
+      </span>
+    </label>
+  );
+}
+
 function PanelSection({
   title,
   hint,
@@ -2311,6 +2359,14 @@ export function AdminDashboardModal({
                           required
                         />
 
+                        <MirrorInArabicField
+                          checked={Boolean(slide.mirrorInArabic)}
+                          onChange={(value) => updateSlide(index, { mirrorInArabic: value })}
+                          theme={theme}
+                          label={t.homepageMirrorInArabic}
+                          hint={t.homepageMirrorInArabicHint}
+                        />
+
                         <BilingualField
                           labelEn={`${t.homepageBadgeText} (EN)`}
                           labelAr={`${t.homepageBadgeText} (AR)`}
@@ -2492,6 +2548,14 @@ export function AdminDashboardModal({
                           required
                         />
 
+                        <MirrorInArabicField
+                          checked={Boolean(banner.mirrorInArabic)}
+                          onChange={(value) => updateMidBanner(index, { mirrorInArabic: value })}
+                          theme={theme}
+                          label={t.homepageMirrorInArabic}
+                          hint={t.homepageMirrorInArabicHint}
+                        />
+
                         <BilingualField
                           labelEn={`${t.homepageBadgeText} (EN)`}
                           labelAr={`${t.homepageBadgeText} (AR)`}
@@ -2662,6 +2726,14 @@ export function AdminDashboardModal({
                           lang={lang}
                           theme={theme}
                           required
+                        />
+
+                        <MirrorInArabicField
+                          checked={Boolean(banner.mirrorInArabic)}
+                          onChange={(value) => updateTopBanner(index, { mirrorInArabic: value })}
+                          theme={theme}
+                          label={t.homepageMirrorInArabic}
+                          hint={t.homepageMirrorInArabicHint}
                         />
 
                         <BilingualField
@@ -2837,6 +2909,14 @@ export function AdminDashboardModal({
                           required
                         />
 
+                        <MirrorInArabicField
+                          checked={Boolean(banner.mirrorInArabic)}
+                          onChange={(value) => updateArticleBanner(index, { mirrorInArabic: value })}
+                          theme={theme}
+                          label={t.homepageMirrorInArabic}
+                          hint={t.homepageMirrorInArabicHint}
+                        />
+
                         <BilingualField
                           labelEn={`${t.homepageBadgeText} (EN)`}
                           labelAr={`${t.homepageBadgeText} (AR)`}
@@ -2944,6 +3024,14 @@ export function AdminDashboardModal({
                       lang={lang}
                       theme={theme}
                       required
+                    />
+
+                    <MirrorInArabicField
+                      checked={Boolean(landscapeBannerForm.mirrorInArabic)}
+                      onChange={(value) => updateBanner({ mirrorInArabic: value })}
+                      theme={theme}
+                      label={t.homepageMirrorInArabic}
+                      hint={t.homepageMirrorInArabicHint}
                     />
 
                     <BilingualField

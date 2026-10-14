@@ -2,6 +2,7 @@
 
 import type { TopBanner } from "@/db/schema";
 import {
+  bannerImageFrameClass,
   bannerScrimClass,
   type Language,
   type ThemeConfig,
@@ -54,11 +55,13 @@ export function TopBannerRow({ banners, lang, theme, onOpenCatalog }: TopBannerR
               className="group relative block h-[220px] overflow-hidden border text-start sm:h-[340px] lg:h-[420px] xl:h-[480px]"
               style={{ borderColor: theme.colors.border }}
             >
-              <StoreImage
-                src={banner.imageUrl}
-                alt={title?.trim() || fallbackAlt}
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-              />
+              <div className={bannerImageFrameClass(lang, banner.mirrorInArabic)}>
+                <StoreImage
+                  src={banner.imageUrl}
+                  alt={title?.trim() || fallbackAlt}
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              </div>
               {hasCopy && (
                 <div
                   className={bannerScrimClass(
