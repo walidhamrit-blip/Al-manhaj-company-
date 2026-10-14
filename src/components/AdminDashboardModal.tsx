@@ -22,6 +22,11 @@ import { ImageUploadField } from "@/components/ImageUploadField";
 import { limitHeroSlides, MAX_HERO_SLIDES } from "@/lib/homepage-slides";
 import { StoreImage } from "@/components/StoreImage";
 import { OrdersAdminPanel } from "@/components/OrdersAdminPanel";
+import { PageContentEditor } from "@/components/PageContentEditor";
+import {
+  normalizeOnlineSalesPage,
+  normalizeWholesalePage,
+} from "@/lib/page-content";
 import {
   X,
   Lock,
@@ -46,6 +51,8 @@ import {
   ArrowUp,
   ArrowDown,
   ShieldCheck,
+  ShoppingBag,
+  Building2,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------------------
@@ -295,7 +302,13 @@ export function AdminDashboardModal({
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "products" | "categories" | "orders" | "homepage" | "settings"
+    | "products"
+    | "categories"
+    | "orders"
+    | "homepage"
+    | "onlineSales"
+    | "wholesale"
+    | "settings"
   >("products");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [toastIsError, setToastIsError] = useState(false);
@@ -608,17 +621,30 @@ export function AdminDashboardModal({
     if (!targetSettings) return;
     setIsSaving(true);
     try {
+      const payload = {
+        ...targetSettings,
+        onlineSalesPage: normalizeOnlineSalesPage(targetSettings.onlineSalesPage),
+        wholesalePage: normalizeWholesalePage(targetSettings.wholesalePage),
+      };
       const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(targetSettings),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         await onDataUpdated();
         showToast(
           lang === "ar"
-            ? "تم حفظ إعدادات المتجر ومعلومات الاتصال في قاعدة البيانات!"
-            : "Store settings & WhatsApp contact saved to PostgreSQL!"
+            ? activeTab === "onlineSales"
+              ? "تم حفظ محتوى صفحة الشراء أونلاين!"
+              : activeTab === "wholesale"
+                ? "تم حفظ محتوى صفحة البيع بالجملة!"
+                : "تم حفظ إعدادات المتجر ومعلومات الاتصال في قاعدة البيانات!"
+            : activeTab === "onlineSales"
+              ? "Online sales page content saved!"
+              : activeTab === "wholesale"
+                ? "Wholesale page content saved!"
+                : "Store settings & WhatsApp contact saved to PostgreSQL!"
         );
       }
     } finally {
@@ -1080,6 +1106,58 @@ export function AdminDashboardModal({
                 >
                   <Home className="h-4 w-4" />
                   <span>{t.adminTabsHomepage}</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-admin-tab="onlineSales"
+                  onClick={() => {
+                    setActiveTab("onlineSales");
+                    setEditingProduct(null);
+                    setEditingCategory(null);
+                    setSettingsForm(settings);
+                  }}
+                  style={
+                    activeTab === "onlineSales"
+                      ? {
+                          backgroundColor: theme.colors.accentPrimary,
+                          color: "#FFFFFF",
+                        }
+                      : {
+                          backgroundColor: theme.colors.bgElevated,
+                          color: theme.colors.textPrimary,
+                        }
+                  }
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold shadow-sm transition"
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>{t.adminTabsOnlineSales}</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-admin-tab="wholesale"
+                  onClick={() => {
+                    setActiveTab("wholesale");
+                    setEditingProduct(null);
+                    setEditingCategory(null);
+                    setSettingsForm(settings);
+                  }}
+                  style={
+                    activeTab === "wholesale"
+                      ? {
+                          backgroundColor: theme.colors.accentPrimary,
+                          color: "#FFFFFF",
+                        }
+                      : {
+                          backgroundColor: theme.colors.bgElevated,
+                          color: theme.colors.textPrimary,
+                        }
+                  }
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold shadow-sm transition"
+                >
+                  <Building2 className="h-4 w-4" />
+                  <span>{t.adminTabsWholesale}</span>
                 </button>
 
                 <button
@@ -2130,7 +2208,10 @@ export function AdminDashboardModal({
 
               {/* TAB 3: STORE CONTACT, WHATSAPP & WHOLESALE SETTINGS */}
               {/* Settings could not be loaded (database unreachable) */}
-              {(activeTab === "homepage" || activeTab === "settings") &&
+              {(activeTab === "homepage" ||
+                activeTab === "settings" ||
+                activeTab === "onlineSales" ||
+                activeTab === "wholesale") &&
                 !settingsForm && (
                   <p className="mx-auto max-w-4xl rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-xs font-bold">
                     {isAr
@@ -3230,6 +3311,20 @@ export function AdminDashboardModal({
                   </div>
                 </form>
               )}
+
+              {(activeTab === "onlineSales" || activeTab === "wholesale") &&
+                settingsForm && (
+                  <PageContentEditor
+                    page={activeTab}
+                    settingsForm={settingsForm}
+                    patchSettings={patchSettings}
+                    onSubmit={handleSaveSettings}
+                    isSaving={isSaving}
+                    adminToken={adminToken}
+                    lang={lang}
+                    theme={theme}
+                  />
+                )}
 
               {/* TAB: CONTACT, WHATSAPP & WHOLESALE */}
               {activeTab === "settings" && settingsForm && (

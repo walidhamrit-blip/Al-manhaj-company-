@@ -12,6 +12,7 @@ import {
   type Language,
 } from "@/lib/i18n-themes";
 import { hydrateFallbackStore } from "@/lib/fallbackData";
+import { resolveWholesaleCopy } from "@/lib/page-content";
 import { CATALOG_DEPARTMENTS } from "@/lib/catalog-tree";
 import { getCategoryIllustration } from "@/lib/category-image-fallbacks";
 import type { CartItem } from "@/components/CartDrawer";
@@ -130,35 +131,29 @@ export default function WholesalePage() {
     );
   };
 
-  const steps = [
-    { icon: Layers, title: t.wholesaleStep1Title, desc: t.wholesaleStep1Desc },
-    { icon: MessageCircle, title: t.wholesaleStep2Title, desc: t.wholesaleStep2Desc },
-    { icon: ClipboardList, title: t.wholesaleStep3Title, desc: t.wholesaleStep3Desc },
-    { icon: Truck, title: t.wholesaleStep4Title, desc: t.wholesaleStep4Desc },
-  ];
-
-  const faqs = [
-    { q: t.wholesaleFaq1Q, a: t.wholesaleFaq1A },
-    { q: t.wholesaleFaq2Q, a: t.wholesaleFaq2A },
-    { q: t.wholesaleFaq3Q, a: t.wholesaleFaq3A },
-    { q: t.wholesaleFaq4Q, a: t.wholesaleFaq4A },
-    { q: t.wholesaleFaq5Q, a: t.wholesaleFaq5A },
-  ];
+  const copy = resolveWholesaleCopy(settings?.wholesalePage, t, lang);
+  const stepIcons = [Layers, MessageCircle, ClipboardList, Truck];
+  const steps = copy.steps.map((step, index) => ({
+    icon: stepIcons[index % stepIcons.length],
+    title: step.title,
+    desc: step.desc,
+  }));
+  const faqs = copy.faqs;
 
   const tiers = [
     {
       pct: settings?.wholesaleDiscountTier1Pct ?? 15,
-      label: t.tier1Label,
+      label: copy.tier1Label,
       featured: false,
     },
     {
       pct: settings?.wholesaleDiscountTier2Pct ?? 22,
-      label: t.tier2Label,
+      label: copy.tier2Label,
       featured: false,
     },
     {
       pct: settings?.wholesaleDiscountTier3Pct ?? 30,
-      label: t.tier3Label,
+      label: copy.tier3Label,
       featured: true,
     },
   ];
@@ -240,8 +235,8 @@ export default function WholesalePage() {
       <main className="mx-auto max-w-[1760px] px-3 py-6 sm:py-10 space-y-8">
         <section className="relative h-[240px] overflow-hidden bg-black sm:h-[360px]">
           <StoreImage
-            src="/images/new/hero-stationery-01.jpg"
-            alt={lang === "ar" ? t.wholesaleSectionTitle : t.wholesaleSectionTitle}
+            src={copy.heroImage}
+            alt={copy.title}
             className="object-cover"
             priority
             sizes="100vw"
@@ -250,13 +245,13 @@ export default function WholesalePage() {
           <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-8">
             <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-red-200">
               <Building2 className="h-3.5 w-3.5" />
-              {t.wholesaleSectionBadge}
+              {copy.badge}
             </p>
             <h1 className="mt-1 max-w-3xl text-2xl font-black sm:text-4xl">
-              {t.wholesaleSectionTitle}
+              {copy.title}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-white/90 sm:text-base">
-              {t.wholesaleSectionDesc}
+              {copy.desc}
             </p>
           </div>
         </section>
@@ -286,7 +281,7 @@ export default function WholesalePage() {
 
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
           <div className="lg:col-span-7 space-y-4">
-            <h2 className="text-xl font-black">{t.wholesaleStepsTitle}</h2>
+            <h2 className="text-xl font-black">{copy.stepsTitle}</h2>
             <ol className="grid gap-3 sm:grid-cols-2" data-wholesale-steps>
               {steps.map((step) => (
                 <li key={step.title} className="border bg-white p-4">
@@ -316,9 +311,9 @@ export default function WholesalePage() {
 
         <section data-wholesale-ranges>
           <h2 className="mb-3 border-b border-neutral-300 pb-2 text-xl font-bold">
-            {t.wholesaleRangesTitle}
+            {copy.rangesTitle}
           </h2>
-          <p className="mb-4 text-sm text-neutral-600">{t.wholesaleRangesDesc}</p>
+          <p className="mb-4 text-sm text-neutral-600">{copy.rangesDesc}</p>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
             {ranges.map((range) => (
               <button
@@ -349,23 +344,23 @@ export default function WholesalePage() {
         <section className="grid gap-3 md:grid-cols-3" data-wholesale-delivery>
           <article className="border bg-white p-4">
             <Truck className="mb-2 h-5 w-5 text-[#E30613]" />
-            <h2 className="text-sm font-extrabold">{t.wholesaleDeliveryTitle}</h2>
-            <p className="mt-1 text-sm text-neutral-600">{t.wholesaleDeliveryFree}</p>
+            <h2 className="text-sm font-extrabold">{copy.deliveryTitle}</h2>
+            <p className="mt-1 text-sm text-neutral-600">{copy.deliveryFree}</p>
           </article>
           <article className="border bg-white p-4">
             <Store className="mb-2 h-5 w-5 text-[#E30613]" />
-            <h2 className="text-sm font-extrabold">{t.wholesaleDeliveryPickupTitle}</h2>
-            <p className="mt-1 text-sm text-neutral-600">{t.wholesaleDeliveryPickup}</p>
+            <h2 className="text-sm font-extrabold">{copy.pickupTitle}</h2>
+            <p className="mt-1 text-sm text-neutral-600">{copy.pickupDesc}</p>
           </article>
           <article className="border bg-white p-4">
             <MapPin className="mb-2 h-5 w-5 text-[#E30613]" />
-            <h2 className="text-sm font-extrabold">{t.wholesaleDeliveryCitiesTitle}</h2>
-            <p className="mt-1 text-sm text-neutral-600">{t.wholesaleDeliveryCities}</p>
+            <h2 className="text-sm font-extrabold">{copy.citiesTitle}</h2>
+            <p className="mt-1 text-sm text-neutral-600">{copy.citiesDesc}</p>
           </article>
         </section>
 
         <section data-wholesale-faq className="border bg-white p-4 sm:p-6">
-          <h2 className="mb-3 text-xl font-black">{t.wholesaleFaqTitle}</h2>
+          <h2 className="mb-3 text-xl font-black">{copy.faqTitle}</h2>
           <div className="divide-y">
             {faqs.map((item) => (
               <details key={item.q} className="py-3">

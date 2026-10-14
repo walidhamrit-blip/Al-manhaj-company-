@@ -40,6 +40,8 @@ test("B2B /wholesale page hosts the calculator, tiers, ranges, steps, delivery a
   assert.match(wholesalePage, /data-wholesale-faq/);
   assert.match(wholesalePage, /WholesaleEstimator/);
   assert.match(wholesalePage, /inquireWholesaleWhatsApp/);
+  assert.match(wholesalePage, /resolveWholesaleCopy/);
+  assert.match(wholesalePage, /wholesalePage/);
   assert.match(estimator, /type="range"/);
   assert.match(estimator, /inquireWholesaleWhatsApp/);
 });

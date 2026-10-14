@@ -57,10 +57,12 @@ test("online-sales page covers professional rubriques in both languages", () => 
   assert.match(pageSource, /data-online-sales-delivery/);
   assert.match(pageSource, /data-online-sales-returns/);
   assert.match(pageSource, /data-online-sales-faq/);
-  assert.match(pageSource, /onlineSalesFaqTitle/);
-  assert.match(pageSource, /onlineSalesPaymentTitle/);
-  assert.match(pageSource, /onlineSalesDeliveryTitle/);
-  assert.match(pageSource, /onlineSalesReturnsTitle/);
+  assert.match(pageSource, /resolveOnlineSalesCopy/);
+  assert.match(pageSource, /onlineSalesPage/);
+  assert.match(pageSource, /copy\.faqTitle/);
+  assert.match(pageSource, /copy\.paymentTitle/);
+  assert.match(pageSource, /copy\.deliveryTitle/);
+  assert.match(pageSource, /copy\.returnsTitle/);
   assert.match(pageSource, /wa\.me/);
   assert.match(pageSource, /href="\/returns"/);
 
