@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import BuildBadge from "@/components/BuildBadge";
 
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         {children}
         <BuildBadge />
+        <Analytics />
       </body>
     </html>
   );
