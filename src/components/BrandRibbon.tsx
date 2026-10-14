@@ -10,7 +10,9 @@ export function BrandRibbon({ section, brands, lang, onSearch }: {
   if (!section.isActive || section.type !== "brands" || !isBrandGroup(section.group) || !items.length) return null;
   // Each half must cover the widest ribbon, even with only one active brand.
   // Additional tiles are decorative, not additional keyboard stops.
-  const repetitions = Math.max(1, Math.ceil(1440 / (172 * items.length)));
+  // The ribbon is full-bleed like the main banner, so each half must cover a
+  // wide viewport (2560px) even with a single active brand.
+  const repetitions = Math.max(1, Math.ceil(2560 / (172 * items.length)));
   const tiles = Array.from({ length: repetitions }, () => items).flat();
   const title = section.group === "it"
     ? { en: "Computing & printer brands", ar: "ماركات الحاسوب والطابعات" }

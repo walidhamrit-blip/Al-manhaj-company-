@@ -121,3 +121,16 @@ visible au plus précis :
 Rappel : tant que la branche n'est pas fusionnée puis redéployée,
 <https://al-manhaj-company.vercel.app/> sert l'ancien code — les corrections ne
 sont visibles que dans l'aperçu Arena ou en local.
+
+## Élargissement de l'affichage (ajustement suivant)
+
+- Les rubans de marques sont désormais pleine largeur, comme la bannière
+  principale : `.brand-ribbon` n'a plus de `max-width` (`width: 100%`), et le
+  remplissage décoratif couvre un viewport de 2560 px.
+- Les autres sections de l'accueil passent de `max-w-[1440px]` à
+  `max-w-[1584px]` (+10 %) : tuiles des départements, bannière paysage, passerelle
+  gros, bandeau services, bannières, carrousels produits.
+- La bannière principale, l'en-tête, la barre d'annonces, le pied de page et les
+  autres pages restent inchangés (1760 px ou pleine largeur).
+- Tests mis à jour : `npm run test:layout` et `npm run test:brands` réussis,
+  `npm run typecheck`, `npm run lint` et `npm run build` réussis.

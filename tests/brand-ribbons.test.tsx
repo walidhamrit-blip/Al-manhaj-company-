@@ -78,7 +78,7 @@ test("active groups only, deduplication and Arabic/English accessible markup", (
     assert.doesNotMatch(html, /<h[1-6][\s>]/);
     assert.match(html, /aria-hidden="true"/);
     assert.equal((html.match(/tabindex="0"/g) || []).length, 6);
-    assert.equal((html.match(/tabindex="-1"/g) || []).length, 18);
+    assert.equal((html.match(/tabindex="-1"/g) || []).length, 30); // 3 repetitions of 6 brands per half: 12 decorative tiles in the first half, 18 in the second
     assert.match(html, lang === 'ar' ? /ماركات الحاسوب والطابعات/ : /Computing &amp; printer brands/);
   }
   assert.equal(renderToStaticMarkup(<BrandRibbon section={{ ...INITIAL_BRAND_SECTIONS[0], group: null }} brands={INITIAL_BRANDS} lang="en" onSearch={() => {}} />), '');
@@ -108,8 +108,8 @@ test("short lists fill the track without adding keyboard stops", () => {
   for (const count of [1, 2, 6]) {
     const html = renderToStaticMarkup(<BrandRibbon section={INITIAL_BRAND_SECTIONS[0]} brands={INITIAL_BRANDS.slice(0, count)} lang="ar" onSearch={() => {}} />);
     const total = (html.match(/<button/g) || []).length;
-    // The ribbon window is capped at the homepage content width (1440px).
-    assert.ok(total / 2 * 172 >= 1440, "each half covers the maximum viewport");
+    // The ribbon is full-bleed: each half covers a 2560px viewport.
+    assert.ok(total / 2 * 172 >= 2560, "each half covers the maximum viewport");
     assert.equal((html.match(/tabindex="0"/g) || []).length, count);
   }
 });

@@ -53,7 +53,7 @@ export function ProductCarousel({
   if (products.length === 0) return null;
 
   return (
-    <section className="mx-auto w-full max-w-[1440px] px-3 py-5 sm:px-4 sm:py-6 lg:px-6">
+    <section className="mx-auto w-full max-w-[1584px] px-3 py-5 sm:px-4 sm:py-6 lg:px-6">
       <div className="mb-3 flex items-center justify-between gap-3 border-b pb-2" style={{ borderColor: theme.colors.border }}>
         <h2 className="text-lg font-bold tracking-tight sm:text-xl">{title}</h2>
         {onSeeMore && (

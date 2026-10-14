@@ -99,7 +99,7 @@ body {
 }
 /* LTR tracks in both languages, with opposite seamless animations. */
 /* Rubans de marques alignés sur la largeur du contenu de la page d'accueil. */
-.brand-ribbon { margin: 0.375rem auto; padding: 0.375rem 0; max-width: 1440px; overflow: hidden; }
+.brand-ribbon { margin: 0.375rem 0; padding: 0.375rem 0; width: 100%; overflow: hidden; }
 .brand-ribbon--it { background: #123c78; color: white; }
 .brand-ribbon--stationery { background: #f4f6fa; color: #17304d; }
 .brand-ribbon-window { direction: ltr; overflow: hidden; }

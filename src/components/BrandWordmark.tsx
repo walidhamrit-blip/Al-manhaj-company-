@@ -147,7 +147,10 @@ export function BrandWordmark({ text, className = "" }: BrandWordmarkProps) {
     <span
       ref={boxRef}
       data-brand-wordmark={text}
-      className={`block min-w-0 flex-1 overflow-hidden text-start ${className}`}
+      // Always left-to-right, even on the Arabic page: the name starts on the
+      // left edge of the card and the overflow clip cannot cut its beginning.
+      style={{ direction: "ltr", textAlign: "left" }}
+      className={`block min-w-0 flex-1 overflow-hidden text-left ${className}`}
     >
       <span
         ref={labelRef}

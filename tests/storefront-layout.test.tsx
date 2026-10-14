@@ -5,7 +5,7 @@
 //      its mega menu — an `overflow-x-auto` ancestor clips every absolutely
 //      positioned descendant, which used to swallow the panel completely and
 //      make the button look dead;
-//   2. the homepage content is capped at 1440px while the top bar, the footer
+//   2. the homepage content is capped at 1584px while the top bar, the footer
 //      and the main hero banner keep their full-bleed width;
 //   3. the English brand line of a product card is never cut with an ellipsis:
 //      it shrinks until the whole name fits.
@@ -158,8 +158,8 @@ test("an open departments menu renders its panel and the whole tree", () => {
  * 2. Width of the display area
  * ------------------------------------------------------------------ */
 
-test("homepage content is capped at 1440px", () => {
-  const capped = pageSource.match(/max-w-\[1440px\]/g) ?? [];
+test("homepage content is capped at 1584px", () => {
+  const capped = pageSource.match(/max-w-\[1584px\]/g) ?? [];
   assert.ok(
     capped.length >= 4,
     `category tiles, landscape banner, wholesale gateway and service strip (found ${capped.length})`
@@ -172,13 +172,15 @@ test("homepage content is capped at 1440px", () => {
     "src/components/ProductCarousel.tsx",
   ]) {
     const source = read(file);
-    assert.match(source, /max-w-\[1440px\]/, `${file} follows the content width`);
-    assert.doesNotMatch(source, /max-w-\[1760px\]/, `${file} no longer uses 1760px`);
+    assert.match(source, /max-w-\[1584px\]/, `${file} follows the content width`);
+    assert.doesNotMatch(source, /max-w-\[1440px\]/, `${file} no longer uses 1440px`);
   }
 
-  // Brand ribbons scroll inside the same window as the rest of the content.
+  // Brand ribbons are full-bleed, like the main banner: no max-width cap.
   const ribbonRule = cssSource.slice(cssSource.indexOf(".brand-ribbon {"));
-  assert.match(ribbonRule.slice(0, ribbonRule.indexOf("}")), /max-width: 1440px/);
+  const ribbonBlock = ribbonRule.slice(0, ribbonRule.indexOf("}"));
+  assert.doesNotMatch(ribbonBlock, /max-width/);
+  assert.match(ribbonBlock, /width: 100%/);
 });
 
 test("top bar, footer and main banner keep their full width", () => {
