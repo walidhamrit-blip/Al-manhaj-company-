@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-export const metadata = { title: "الشروط والأحكام | Terms - المنهج" };
+import { pageMetadata } from "@/lib/seo";
+export const metadata: Metadata = pageMetadata({
+  title: "الشروط والأحكام وسياسة البيع | Terms — شركة المنهج للقرطاسية",
+  description:
+    "شروط البيع لدى شركة المنهج للقرطاسية: الأسعار بالدينار الليبي، تأكيد الطلب عبر واتساب، التوصيل داخل طرابلس، الاسترجاع خلال 14 يوماً، والضمان.",
+  path: "/terms",
+});
 export default function TermsPage(){
   return (
     <div dir="rtl" className="min-h-screen bg-[#FFFBF5] text-zinc-900">

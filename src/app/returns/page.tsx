@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-export const metadata = { title: "الاسترجاع والشحن | Returns - المنهج" };
+import { pageMetadata } from "@/lib/seo";
+export const metadata: Metadata = pageMetadata({
+  title: "الاسترجاع والشحن | Shipping & Returns — شركة المنهج للقرطاسية",
+  description:
+    "سياسة الشحن والاسترجاع: توصيل مجاني داخل طرابلس فوق 1,900 د.ل خلال 1–2 يوم، 20–45 د.ل لباقي ليبيا، واسترجاع خلال 14 يوماً للمنتجات غير المفتوحة.",
+  path: "/returns",
+});
 export default function ReturnsPage(){
   return (
     <div dir="rtl" className="min-h-screen bg-[#FFFBF5] text-zinc-900">

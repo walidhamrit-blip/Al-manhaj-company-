@@ -517,6 +517,20 @@ export default function StorefrontPage() {
     (settings?.paymentProvidersUrl || "").trim() ||
     "https://cbl.gov.ly/electronic-payment/";
 
+  // Recherche partageable : `/?q=دفاتر` (ou `?search=`) pré-remplit la recherche.
+  // C'est ce qui rend le `SearchAction` déclaré dans le JSON-LD `WebSite`
+  // réellement fonctionnel — un `SearchAction` qui pointe vers un paramètre que
+  // le site ignore est un signal cassé pour Google.
+  useEffect(() => {
+    // `window.location` n'existe pas au rendu serveur : cette synchronisation se
+    // fait donc au montage. Un seul rendu supplémentaire, uniquement quand un
+    // paramètre `?q=` est réellement présent.
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("q") ?? params.get("search");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (fromUrl && fromUrl.trim()) setSearchQuery(fromUrl.trim());
+  }, []);
+
   return (
     <div
       dir={isRtl ? "rtl" : "ltr"}
@@ -858,6 +872,13 @@ export default function StorefrontPage() {
                 <MapPin className="h-5 w-5 shrink-0" />
                 {t.ourStore}
               </a>
+              <Link
+                href="/catalogue"
+                className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
+              >
+                <BookOpen className="h-5 w-5 shrink-0" />
+                {lang === "ar" ? "الكتالوج الكامل" : "Full catalogue"}
+              </Link>
               <Link
                 href="/wholesale"
                 className="flex shrink-0 items-center gap-2 px-3 py-3 text-[13px] font-bold hover:bg-black/15 sm:px-4 sm:py-3.5 sm:text-sm lg:text-base"
@@ -1254,6 +1275,81 @@ export default function StorefrontPage() {
         </div>
       </section>
 
+            {/* ===== نبذة / About — bloc factuel (SEO local + GEO) =====
+          Les moteurs génératifs privilégient les passages qui énoncent les faits
+          sans détour : qui, où, quoi, comment. Ce bloc est rendu côté serveur,
+          dans le HTML initial, et reprend exactement le NAP du JSON-LD. */}
+      <section className="storefront-shell py-10">
+        <div
+          className="border p-5 sm:p-8"
+          style={{
+            backgroundColor: currentTheme.colors.bgElevated,
+            borderColor: currentTheme.colors.border,
+          }}
+        >
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight">
+            {lang === "ar"
+              ? "عن شركة المنهج للقرطاسية — البيفي، طرابلس"
+              : "About Al Manhaj Company for Stationery — Al Bivi, Tripoli"}
+          </h2>
+          <p
+            className="mt-2 max-w-4xl text-sm leading-7"
+            style={{ color: currentTheme.colors.textSecondary }}
+          >
+            {lang === "ar"
+              ? "شركة المنهج للقرطاسية متجر متخصص في الأدوات المكتبية والقرطاسية المدرسية والمعدات الهندسية وأحبار الطابعات وملحقات الحاسوب، يقع في البيفي بطرابلس، ليبيا. نخدم الأفراد والمدارس والجامعات ومراكز الطباعة والشركات، بالتقسيط وبالجملة، مع توصيل داخل طرابلس خلال 24–48 ساعة (مجاناً فوق 1,900 د.ل) واسترجاع خلال 14 يوماً. الأسعار بالدينار الليبي، والطلب يتم عبر الموقع أو واتساب +218 91-214-5050."
+              : "Al Manhaj Company for Stationery is a specialised store for office supplies, school stationery, engineering equipment, printer ink and computer accessories, located in Al Bivi, Tripoli, Libya. We serve individuals, schools, universities, copy centres and companies, both retail and wholesale, with delivery in Tripoli within 24–48 hours (free above 1,900 LYD) and 14-day returns. Prices are in Libyan Dinar and orders are placed on the website or via WhatsApp +218 91-214-5050."}
+          </p>
+          <dl
+            className="mt-4 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4"
+            style={{ color: currentTheme.colors.textSecondary }}
+          >
+            <div>
+              <dt className="font-extrabold" style={{ color: currentTheme.colors.textPrimary }}>
+                {lang === "ar" ? "العنوان" : "Address"}
+              </dt>
+              <dd className="mt-0.5 leading-6">
+                {settings
+                  ? lang === "ar"
+                    ? settings.addressAr
+                    : settings.addressEn
+                  : "البيفي، طرابلس، ليبيا"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-extrabold" style={{ color: currentTheme.colors.textPrimary }}>
+                {lang === "ar" ? "الهاتف / واتساب" : "Phone / WhatsApp"}
+              </dt>
+              <dd className="mt-0.5 leading-6" dir="ltr">
+                {settings?.contactPhone || "+218 91-214-5050"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-extrabold" style={{ color: currentTheme.colors.textPrimary }}>
+                {lang === "ar" ? "أوقات العمل" : "Opening hours"}
+              </dt>
+              <dd className="mt-0.5 leading-6">
+                {settings
+                  ? lang === "ar"
+                    ? settings.workingHoursAr
+                    : settings.workingHoursEn
+                  : "السبت – الخميس: 09:00 – 21:00"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-extrabold" style={{ color: currentTheme.colors.textPrimary }}>
+                {lang === "ar" ? "الكتالوج" : "Catalogue"}
+              </dt>
+              <dd className="mt-0.5 leading-6">
+                <a href="/catalogue" className="font-bold underline underline-offset-2">
+                  {lang === "ar" ? "كل المنتجات والأسعار" : "All products & prices"}
+                </a>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
       <footer className="mt-auto bg-[#1a1a1a] py-10 text-white">
         <div className="storefront-shell grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
@@ -1316,6 +1412,27 @@ export default function StorefrontPage() {
               >
                 {lang === "ar" ? "خدمات الطباعة" : "Printing Services"}
               </Link>
+            </div>
+
+            {/* Maillage interne : le pied de page est présent sur toutes les
+                visites, c'est le meilleur endroit pour exposer le hub catalogue
+                et les rayons aux crawlers comme aux visiteurs. */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2">
+              <a
+                href="/catalogue"
+                className="inline-flex text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
+              >
+                {lang === "ar" ? "كل المنتجات والأسعار" : "All products & prices"}
+              </a>
+              {topLevelCategories.slice(0, 8).map((category) => (
+                <a
+                  key={category.slug}
+                  href={`/categories/${category.slug}`}
+                  className="inline-flex text-xs font-semibold text-neutral-300 hover:text-white hover:underline"
+                >
+                  {lang === "ar" ? category.nameAr : category.nameEn}
+                </a>
+              ))}
             </div>
           </div>
 

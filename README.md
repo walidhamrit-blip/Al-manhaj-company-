@@ -7,6 +7,16 @@
 
 Voir `GUIDE_DEPLOIEMENT_VERCEL.md` pour le détail, les contrôles à faire après un déploiement et les pièges connus (cold start Neon, enregistrement muet, domaine).
 
+## SEO / GEO
+Le site est indexable sans JavaScript : `sitemap.xml`, `robots.txt`, `llms.txt`, pages produits
+(`/produits/<titre>--<sku>`), pages rayons (`/categories/<slug>`) et hub `/catalogue` sont générés
+côté serveur, avec JSON-LD (Organization, LocalBusiness, Product, Breadcrumb, FAQ).
+
+- Audit complet et plan d'action : **[docs/audit-seo-geo.md](docs/audit-seo-geo.md)**
+- Variables à déclarer sur Vercel : `NEXT_PUBLIC_SITE_URL` (canonical du site),
+  `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`, `NEXT_PUBLIC_BING_SITE_VERIFICATION` — voir `env.example`.
+- Tests de non-régression : `npm run test:seo`.
+
 ## Suivi des commandes
 - À la validation du panier, le site enregistre la commande dans PostgreSQL puis ouvre WhatsApp avec sa référence de suivi.
 - Le client consulte **Suivre ma commande** avec cette référence et le numéro de téléphone saisi au panier.

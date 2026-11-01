@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Al Manhaj Company for Stationery">
+  <rect width="512" height="512" rx="96" fill="#E30613"/>
+  <path d="M104 372V140h56l76 108 76-108h56v232h-58V238l-74 102-74-102v134z" fill="#FFFFFF"/>
+  <rect x="104" y="392" width="304" height="20" rx="10" fill="#FFFFFF" fill-opacity="0.55"/>
+</svg>

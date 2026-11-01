@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "سياسة الخصوصية | Privacy Policy - المنهج" };
+export const metadata: Metadata = pageMetadata({
+  title: "سياسة الخصوصية | Privacy Policy — شركة المنهج للقرطاسية",
+  description:
+    "كيف تجمع شركة المنهج للقرطاسية بياناتك وتحميها: بيانات الطلب عبر واتساب، ملفات تعريف الارتباط الضرورية، ومدة الحفظ وحقوقك — متوافقة مع تعليمات مصرف ليبيا المركزي.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

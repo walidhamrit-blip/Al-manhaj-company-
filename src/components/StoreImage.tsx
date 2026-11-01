@@ -18,6 +18,10 @@ export function StoreImage({
   alt,
   className,
   fill = true,
+  width,
+  height,
+  sizes,
+  priority = false,
   loading = "lazy",
   onError,
 }: StoreImageProps) {
@@ -27,7 +31,15 @@ export function StoreImage({
     <img
       src={source}
       alt={alt}
-      loading={loading}
+      // Une image de héros doit être chargée tout de suite et en priorité
+      // (`fetchPriority="high"`) : c'est l'élément LCP de la page d'accueil.
+      // `decoding="async"` évite de bloquer le fil principal au décodage.
+      loading={priority ? "eager" : loading}
+      fetchPriority={priority ? "high" : undefined}
+      decoding="async"
+      width={width}
+      height={height}
+      sizes={sizes}
       className={
         fill
           ? `absolute inset-0 h-full w-full ${className || "object-cover"}`
