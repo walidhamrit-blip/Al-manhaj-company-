@@ -15,6 +15,7 @@ import {
   type Language,
   type ThemeId,
 } from "@/lib/i18n-themes";
+import { useStoreTheme } from "@/lib/use-store-theme";
 import { hydrateFallbackStore, INITIAL_STORE_SETTINGS } from "@/lib/fallbackData";
 import { limitHeroSlides } from "@/lib/homepage-slides";
 import {
@@ -41,6 +42,8 @@ import {
   ShoppingBag,
   PackageSearch,
   Palette,
+  Sun,
+  Moon,
   Globe,
   ShieldCheck,
   ChevronLeft,
@@ -66,15 +69,9 @@ export default function StorefrontPage() {
   const isRtl = lang === "ar";
   const t = UI_TEXT[lang];
 
-  // Visual Theme state (7 curated e-commerce themes)
-  const [themeId, setThemeId] = useState<ThemeId>("cyber");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   // "All departments" mega menu in the navigation strip.
   const [isDeptMenuOpen, setIsDeptMenuOpen] = useState(false);
-  const currentTheme = useMemo(
-    () => THEMES.find((th) => th.id === themeId) || THEMES[0],
-    [themeId]
-  );
 
   const [brands, setBrands] = useState<Brand[]>(INITIAL_BRANDS);
   const [brandSections, setBrandSections] = useState<BrandSection[]>(INITIAL_BRAND_SECTIONS);
@@ -83,6 +80,18 @@ export default function StorefrontPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<StoreSettings | null>(null);
+  // Visual theme: the visitor's own choice (7 palettes + dark/light switch)
+  // wins, then the default theme saved by the admin, then the principal
+  // light palette rendered by the server. See src/lib/use-store-theme.ts.
+  const {
+    themeId,
+    theme: currentTheme,
+    isDark: isDarkTheme,
+    hasVisitorChoice: hasThemeChoice,
+    selectTheme,
+    toggleMode: toggleThemeMode,
+    resetToStoreDefault,
+  } = useStoreTheme(settings?.defaultTheme);
   const categoriesBySlug = useMemo(
     () => new Map(categories.map((category) => [category.slug, category])),
     [categories]
@@ -201,17 +210,6 @@ export default function StorefrontPage() {
         if (!localStorage.getItem("almanhaj_cookie")) {
           setShowCookieBanner(true);
         }
-        const savedTheme = (localStorage.getItem("atelier_theme_v2") ||
-          localStorage.getItem("atelier_theme_v1")) as ThemeId;
-        // Keep SSR and the first client paint on the principal market theme.
-        if (
-          savedTheme &&
-          savedTheme !== "cyber" &&
-          savedTheme !== "paperSource" &&
-          THEMES.some((th) => th.id === savedTheme)
-        ) {
-          setThemeId(savedTheme);
-        }
       } catch {
         // ignore storage errors
       }
@@ -311,32 +309,14 @@ export default function StorefrontPage() {
   };
 
   const handleSelectTheme = (id: ThemeId) => {
-    setThemeId(id);
+    selectTheme(id);
     setIsThemeMenuOpen(false);
-    try {
-      localStorage.setItem("atelier_theme_v2", id);
-    } catch {
-      // ignore
-    }
   };
 
-  // Apply CSS variables to document root
-  useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty("--bg-primary", currentTheme.colors.bgPrimary);
-    root.style.setProperty("--bg-secondary", currentTheme.colors.bgSecondary);
-    root.style.setProperty("--bg-elevated", currentTheme.colors.bgElevated);
-    root.style.setProperty("--text-primary", currentTheme.colors.textPrimary);
-    root.style.setProperty(
-      "--text-secondary",
-      currentTheme.colors.textSecondary
-    );
-    root.style.setProperty(
-      "--accent-primary",
-      currentTheme.colors.accentPrimary
-    );
-    root.style.setProperty("--border-color", currentTheme.colors.border);
-  }, [currentTheme]);
+  const handleUseStoreDefaultTheme = () => {
+    resetToStoreDefault();
+    setIsThemeMenuOpen(false);
+  };
 
   // Show only banner images configured in the admin. If no settings have been
   // loaded yet, use the same seeded slides that the admin editor starts with;
@@ -629,9 +609,44 @@ export default function StorefrontPage() {
             </div>
           </form>
 
-          {/* Right Utility Controls: 6 Themes, EN/AR Switcher, Admin, Cart */}
+          {/* Right Utility Controls: dark/light, palettes, tracking, admin, cart */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* 6-Theme Selector Dropdown */}
+            {/* Dark / light switch — one click, the palette menu is next to it */}
+            <button
+              type="button"
+              onClick={toggleThemeMode}
+              aria-pressed={isDarkTheme}
+              aria-label={
+                isDarkTheme ? t.themeModeSwitchToLight : t.themeModeSwitchToDark
+              }
+              title={
+                isDarkTheme ? t.themeModeSwitchToLight : t.themeModeSwitchToDark
+              }
+              data-theme-toggle
+              style={{
+                backgroundColor: currentTheme.colors.bgSecondary,
+                borderColor: currentTheme.colors.border,
+                color: currentTheme.colors.textPrimary,
+              }}
+              className="hidden sm:flex items-center gap-1.5 rounded-none border px-2.5 sm:px-3 py-2 text-xs font-bold transition hover:opacity-85"
+            >
+              {isDarkTheme ? (
+                <Sun
+                  style={{ color: currentTheme.colors.accentPrimary }}
+                  className="h-4 w-4"
+                />
+              ) : (
+                <Moon
+                  style={{ color: currentTheme.colors.accentPrimary }}
+                  className="h-4 w-4"
+                />
+              )}
+              <span className="hidden xl:inline">
+                {isDarkTheme ? t.themeModeLight : t.themeModeDark}
+              </span>
+            </button>
+
+            {/* 7-Theme Selector Dropdown */}
             <div className="relative">
               <button
                 type="button"
@@ -708,8 +723,27 @@ export default function StorefrontPage() {
                               />
                             </div>
                             <div>
-                              <div className="text-xs font-bold">
-                                {lang === "ar" ? th.nameAr : th.nameEn}
+                              <div className="flex items-center gap-1.5 text-xs font-bold">
+                                <span>
+                                  {lang === "ar" ? th.nameAr : th.nameEn}
+                                </span>
+                                {th.isDark ? (
+                                  <Moon className="h-3 w-3 shrink-0" />
+                                ) : (
+                                  <Sun className="h-3 w-3 shrink-0" />
+                                )}
+                                {settings?.defaultTheme === th.id && (
+                                  <span
+                                    style={{
+                                      backgroundColor:
+                                        currentTheme.colors.bgSecondary,
+                                      color: currentTheme.colors.textSecondary,
+                                    }}
+                                    className="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide"
+                                  >
+                                    {lang === "ar" ? "افتراضي" : "default"}
+                                  </span>
+                                )}
                               </div>
                               <div
                                 style={{
@@ -732,6 +766,47 @@ export default function StorefrontPage() {
                         </button>
                       );
                     })}
+
+                    {/* Back to the admin default — also useful to check what a
+                        first-time visitor actually sees. */}
+                    <button
+                      type="button"
+                      onClick={handleUseStoreDefaultTheme}
+                      data-theme-use-default
+                      style={{
+                        borderColor: currentTheme.colors.border,
+                      }}
+                      className="mt-2 flex w-full items-center justify-between gap-3 border-t px-3 pt-3 text-start text-[11px]"
+                    >
+                      <span>
+                        <span className="block font-bold">
+                          {t.themeModeUseStoreDefault}
+                          {settings?.defaultTheme
+                            ? ` — ${
+                                lang === "ar"
+                                  ? THEMES.find(
+                                      (th) => th.id === settings.defaultTheme
+                                    )?.nameAr
+                                  : THEMES.find(
+                                      (th) => th.id === settings.defaultTheme
+                                    )?.nameEn
+                              }`
+                            : ""}
+                        </span>
+                        <span
+                          style={{ color: currentTheme.colors.textSecondary }}
+                          className="block text-[10px]"
+                        >
+                          {t.themeModeStoreDefaultHint}
+                        </span>
+                      </span>
+                      {!hasThemeChoice && (
+                        <Check
+                          style={{ color: currentTheme.colors.accentPrimary }}
+                          className="h-4 w-4 shrink-0"
+                        />
+                      )}
+                    </button>
                   </div>
                 </>
               )}
@@ -798,9 +873,12 @@ export default function StorefrontPage() {
           </div>
         </div>
 
-        <div className="md:hidden border-t px-2 py-2" style={{ borderColor: currentTheme.colors.border }}>
+        <div
+          className="md:hidden flex items-center gap-2 border-t px-2 py-2"
+          style={{ borderColor: currentTheme.colors.border }}
+        >
           <form
-            className="flex overflow-hidden rounded-sm border-2"
+            className="flex min-w-0 flex-1 overflow-hidden rounded-sm border-2"
             style={{ borderColor: currentTheme.colors.accentPrimary }}
             onSubmit={handleSearchSubmit}
           >
@@ -826,6 +904,39 @@ export default function StorefrontPage() {
               <Search className="h-4 w-4" />
             </button>
           </form>
+
+          {/* Same dark/light switch on phones: the utility cluster is too tight
+              below 640 px for a second icon button, the search row is not. */}
+          <button
+            type="button"
+            onClick={toggleThemeMode}
+            aria-pressed={isDarkTheme}
+            aria-label={
+              isDarkTheme ? t.themeModeSwitchToLight : t.themeModeSwitchToDark
+            }
+            title={
+              isDarkTheme ? t.themeModeSwitchToLight : t.themeModeSwitchToDark
+            }
+            data-theme-toggle
+            style={{
+              backgroundColor: currentTheme.colors.bgSecondary,
+              borderColor: currentTheme.colors.border,
+              color: currentTheme.colors.textPrimary,
+            }}
+            className="flex sm:hidden shrink-0 items-center justify-center rounded-none border px-2.5 py-2 transition hover:opacity-85"
+          >
+            {isDarkTheme ? (
+              <Sun
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4"
+              />
+            ) : (
+              <Moon
+                style={{ color: currentTheme.colors.accentPrimary }}
+                className="h-4 w-4"
+              />
+            )}
+          </button>
         </div>
 
         <nav

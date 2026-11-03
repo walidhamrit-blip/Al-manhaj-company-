@@ -181,6 +181,53 @@ export const THEMES: ThemeConfig[] = [
   },
 ];
 
+/* ------------------------------------------------------------------------ *
+ * Thème de la boutique : identifiants, stockage, préférences
+ *
+ * Trois volontés se superposent, dans cet ordre de priorité :
+ *   1. le choix explicite du visiteur (bouton sombre/clair ou menu des 7
+ *      thèmes), conservé dans `atelier_theme_v2` ;
+ *   2. le thème par défaut réglé par l'admin (colonne `default_theme` de
+ *      store_settings) — appliqué tant que le visiteur n'a rien choisi ;
+ *   3. le thème principal du magasin (`cyber`), qui est aussi celui rendu par
+ *      le serveur : la première peinture est donc identique au HTML, puis le
+ *      choix du visiteur ou le défaut de la boutique s'applique après montage.
+ * ------------------------------------------------------------------------ */
+
+/** Clé du choix explicite du visiteur (celle qu'écrivait déjà la vitrine). */
+export const THEME_STORAGE_KEY = "atelier_theme_v2";
+/** Ancienne clé, encore lue pour ne pas perdre la préférence des habitués. */
+export const LEGACY_THEME_STORAGE_KEY = "atelier_theme_v1";
+/** Dernier thème clair utilisé, pour revenir au bon palette en quittant le sombre. */
+export const LAST_LIGHT_THEME_STORAGE_KEY = "atelier_theme_last_light_v1";
+
+/** Thème clair du magasin (celui du serveur, celui de `THEMES[0]`). */
+export const DEFAULT_LIGHT_THEME_ID: ThemeId = "cyber";
+/** Thème sombre proposé par le sélecteur sombre/clair. */
+export const DEFAULT_DARK_THEME_ID: ThemeId = "obsidian";
+
+export function themeById(id: ThemeId | string | null | undefined): ThemeConfig | null {
+  if (!id) return null;
+  return THEMES.find((th) => th.id === id) ?? null;
+}
+
+/** Accepte une valeur venue du stockage ou de la base, ou renvoie null. */
+export function resolveThemeId(value: unknown): ThemeId | null {
+  if (typeof value !== "string") return null;
+  const theme = THEMES.find((th) => th.id === value);
+  return theme ? theme.id : null;
+}
+
+/** Le premier thème sombre disponible (les palettes sont dans THEMES). */
+export function firstDarkThemeId(): ThemeId {
+  return THEMES.find((th) => th.isDark)?.id ?? DEFAULT_DARK_THEME_ID;
+}
+
+/** Le premier thème clair disponible. */
+export function firstLightThemeId(): ThemeId {
+  return THEMES.find((th) => !th.isDark)?.id ?? DEFAULT_LIGHT_THEME_ID;
+}
+
 /** English: 136.95 LYD — Arabic: 136.95 د.ل */
 export function formatPrice(amount: number, lang: Language): string {
   const value = Number(amount || 0).toFixed(2);
@@ -447,6 +494,12 @@ export const UI_TEXT = {
     checkoutWhatsAppBtn: "Send Order via WhatsApp",
     clearCartBtn: "Clear Cart",
     themeSelectorTitle: "Visual Theme",
+    themeModeLight: "Light",
+    themeModeDark: "Dark",
+    themeModeSwitchToDark: "Switch to dark mode",
+    themeModeSwitchToLight: "Switch to light mode",
+    themeModeUseStoreDefault: "Use the store theme",
+    themeModeStoreDefaultHint: "Follows the theme set in the admin panel",
     adminBtn: "Admin Panel",
     backToStore: "Back to Store",
     adminLoginTitle: "Secured Store Administration",
@@ -817,6 +870,12 @@ export const UI_TEXT = {
     checkoutWhatsAppBtn: "إرسال الطلب مباشرة عبر واتساب",
     clearCartBtn: "إفراغ السلة",
     themeSelectorTitle: "المظهر اللوني",
+    themeModeLight: "فاتح",
+    themeModeDark: "داكن",
+    themeModeSwitchToDark: "التبديل إلى الوضع الداكن",
+    themeModeSwitchToLight: "التبديل إلى الوضع الفاتح",
+    themeModeUseStoreDefault: "مظهر المتجر الافتراضي",
+    themeModeStoreDefaultHint: "يتبع المظهر المحدد من لوحة الإدارة",
     adminBtn: "لوحة الإدارة",
     backToStore: "العودة للمتجر",
     adminLoginTitle: "بوابة الإدارة الآمنة",
