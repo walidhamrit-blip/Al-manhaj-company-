@@ -33,6 +33,7 @@ import { MasterCatalogDrawer } from "@/components/MasterCatalogDrawer";
 import { CartDrawer, type CartItem } from "@/components/CartDrawer";
 import { ProductQuickViewModal } from "@/components/ProductQuickViewModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
+import NukhbaBadge from "@/components/NukhbaBadge";
 
 import {
   BookOpen,
@@ -1400,6 +1401,10 @@ export default function StorefrontPage() {
             </div>
           </div>
         )}
+        {/* ===== « Website by Nukhba » credit badge (nokhba.net.ly/badge) ===== */}
+        <div className="storefront-shell mt-8 border-t border-white/15 pt-5">
+          <NukhbaBadge />
+        </div>
       </footer>
 
       {/* =====================================================================

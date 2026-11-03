@@ -6,6 +6,7 @@ import type { Category, Product, StoreSettings } from "@/db/schema";
 import { WholesaleEstimator } from "@/components/WholesaleEstimator";
 import { WhatsAppOrderPanel } from "@/components/WhatsAppOrderPanel";
 import { StoreImage } from "@/components/StoreImage";
+import NukhbaBadge from "@/components/NukhbaBadge";
 import {
   THEMES,
   UI_TEXT,
@@ -397,6 +398,18 @@ export default function WholesalePage() {
           </a>
         </section>
       </main>
+
+      {/* « Website by Nukhba » credit badge (nokhba.net.ly/badge) */}
+      <footer className="mt-8 bg-[#1a1a1a] py-6 text-white">
+        <div className="mx-auto flex max-w-[1760px] flex-wrap items-center justify-between gap-4 px-3">
+          <p className="text-xs font-bold text-neutral-400">
+            {lang === "ar"
+              ? "شركة المنهج للقرطاسية — طرابلس، ليبيا"
+              : "Al Manhaj Company for Stationery — Tripoli, Libya"}
+          </p>
+          <NukhbaBadge />
+        </div>
+      </footer>
 
       <WhatsAppOrderPanel
         isOpen={waOpen}

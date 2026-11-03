@@ -13,6 +13,7 @@ import {
   Store,
 } from "lucide-react";
 import { StoreImage } from "@/components/StoreImage";
+import NukhbaBadge from "@/components/NukhbaBadge";
 import { UI_TEXT, type Language } from "@/lib/i18n-themes";
 
 const GALLERY = [
@@ -185,6 +186,18 @@ export default function MagasinPage() {
           </a>
         </section>
       </main>
+
+      {/* « Website by Nukhba » credit badge (nokhba.net.ly/badge) */}
+      <footer className="mt-8 bg-[#1a1a1a] py-6 text-white">
+        <div className="mx-auto flex max-w-[1760px] flex-wrap items-center justify-between gap-4 px-3">
+          <p className="text-xs font-bold text-neutral-400">
+            {lang === "ar"
+              ? "شركة المنهج للقرطاسية — طرابلس، ليبيا"
+              : "Al Manhaj Company for Stationery — Tripoli, Libya"}
+          </p>
+          <NukhbaBadge />
+        </div>
+      </footer>
     </div>
   );
 }
