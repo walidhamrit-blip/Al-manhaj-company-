@@ -14,7 +14,9 @@
     "test:product-ui": "tsx --test tests/product-quick-view.test.tsx",
     "test:layout": "tsx --test tests/storefront-layout.test.tsx",
     "test:banners": "tsx --test tests/banner-arabic-photo.test.tsx",
-    "test:wordmark": "tsx --test tests/brand-wordmark.test.tsx"
+    "test:wordmark": "tsx --test tests/brand-wordmark.test.tsx",
+    "test:badge": "tsx --test tests/nukhba-badge.test.tsx",
+    "test:theme": "tsx --test tests/store-theme.test.tsx"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

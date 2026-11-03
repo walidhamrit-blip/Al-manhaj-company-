@@ -8,6 +8,7 @@ import {
   type OrderTrackingRequest,
 } from "@/components/OrderTrackingSection";
 import { StoreImage } from "@/components/StoreImage";
+import NukhbaBadge from "@/components/NukhbaBadge";
 import { THEMES, UI_TEXT, type Language } from "@/lib/i18n-themes";
 import { hydrateFallbackStore } from "@/lib/fallbackData";
 import { resolveOnlineSalesCopy } from "@/lib/page-content";
@@ -452,6 +453,10 @@ export default function OnlineSalesPage() {
               {lang === "ar" ? "الشروط" : "Terms"}
             </Link>
           </nav>
+        </div>
+        {/* « Website by Nukhba » credit badge (nokhba.net.ly/badge) */}
+        <div className="mx-auto mt-6 flex max-w-[1760px] px-3">
+          <NukhbaBadge />
         </div>
       </footer>
     </div>

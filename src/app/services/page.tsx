@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { StoreSettings } from "@/db/schema";
 import { StoreImage } from "@/components/StoreImage";
+import NukhbaBadge from "@/components/NukhbaBadge";
 import { THEMES, UI_TEXT, type Language } from "@/lib/i18n-themes";
 import { hydrateFallbackStore } from "@/lib/fallbackData";
 import {
@@ -931,6 +932,10 @@ export default function ServicesPage() {
               {lang === "ar" ? "الشروط" : "Terms"}
             </Link>
           </nav>
+        </div>
+        {/* « Website by Nukhba » credit badge (nokhba.net.ly/badge) */}
+        <div className="mx-auto mt-6 flex max-w-[1760px] px-3">
+          <NukhbaBadge />
         </div>
       </footer>
     </div>

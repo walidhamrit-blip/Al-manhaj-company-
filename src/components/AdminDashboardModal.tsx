@@ -53,6 +53,9 @@ import {
   ShieldCheck,
   ShoppingBag,
   Building2,
+  Check,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------------------
@@ -3446,8 +3449,8 @@ export function AdminDashboardModal({
                     </div>
                   </div>
 
-                  {/* Address & Default Theme */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Address — the default theme has its own block below */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold mb-1">
                         Address (English)
@@ -3490,32 +3493,147 @@ export function AdminDashboardModal({
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold mb-1">
-                        Default Store Theme
-                      </label>
-                      <select
-                        value={settingsForm.defaultTheme}
-                        onChange={(e) =>
-                          setSettingsForm({
-                            ...settingsForm,
-                            defaultTheme: e.target.value,
-                          })
-                        }
+                  </div>
+
+                  {/* ----- Thème par défaut de la boutique -----
+                      Écrit dans store_settings.default_theme ; la vitrine
+                      l'applique à tout visiteur qui n'a pas encore choisi sa
+                      palette (src/lib/use-store-theme.ts). */}
+                  <div
+                    data-admin-default-theme
+                    style={{
+                      backgroundColor: theme.colors.bgSecondary,
+                      borderColor: theme.colors.border,
+                    }}
+                    className="rounded-xl border p-4 space-y-3"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-sm font-extrabold">
+                          {lang === "ar"
+                            ? "المظهر الافتراضي للمتجر"
+                            : "Default store theme"}
+                        </h4>
+                        <p
+                          style={{ color: theme.colors.textSecondary }}
+                          className="text-[11px] leading-5"
+                        >
+                          {lang === "ar"
+                            ? "يُطبَّق على كل زائر لم يختر مظهراً بعد. من استعمل زر فاتح/داكن أو قائمة المظاهر يحتفظ باختياره."
+                            : "Applied to every visitor who has not picked a theme yet. Visitors who used the light/dark switch or the palette menu keep their own choice."}
+                        </p>
+                      </div>
+                      <span
                         style={{
-                          backgroundColor: theme.colors.bgSecondary,
+                          backgroundColor: theme.colors.bgElevated,
                           borderColor: theme.colors.border,
-                          color: theme.colors.textPrimary,
                         }}
-                        className="w-full rounded-xl border px-3 py-2 text-sm font-bold"
+                        className="rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide"
                       >
-                        {THEMES.map((th) => (
-                          <option key={th.id} value={th.id}>
-                            {th.nameEn} ({th.nameAr})
-                          </option>
-                        ))}
-                      </select>
+                        {lang === "ar" ? "الافتراضي" : "default"}
+                      </span>
                     </div>
+
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {THEMES.map((th) => {
+                        const active =
+                          (settingsForm.defaultTheme || "") === th.id;
+                        return (
+                          <button
+                            key={th.id}
+                            type="button"
+                            aria-pressed={active}
+                            data-theme-option={th.id}
+                            onClick={() =>
+                              setSettingsForm({
+                                ...settingsForm,
+                                defaultTheme: th.id,
+                              })
+                            }
+                            style={{
+                              backgroundColor: active
+                                ? theme.colors.bgElevated
+                                : "transparent",
+                              borderColor: active
+                                ? theme.colors.accentPrimary
+                                : theme.colors.border,
+                              color: theme.colors.textPrimary,
+                            }}
+                            className="flex items-start justify-between gap-2 rounded-lg border px-3 py-2 text-start transition hover:opacity-90"
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="flex -space-x-1 rtl:space-x-reverse">
+                                <span
+                                  style={{ backgroundColor: th.colors.bgPrimary }}
+                                  className="h-4 w-4 rounded-full border border-black/20"
+                                />
+                                <span
+                                  style={{
+                                    backgroundColor: th.colors.accentPrimary,
+                                  }}
+                                  className="h-4 w-4 rounded-full border border-white/40"
+                                />
+                                <span
+                                  style={{ backgroundColor: th.colors.textPrimary }}
+                                  className="h-4 w-4 rounded-full border border-white/40"
+                                />
+                              </span>
+                              <span>
+                                <span className="block text-xs font-bold">
+                                  {th.nameEn}
+                                </span>
+                                <span
+                                  dir="rtl"
+                                  style={{ color: theme.colors.textSecondary }}
+                                  className="block text-[10px]"
+                                >
+                                  {th.nameAr}
+                                </span>
+                              </span>
+                            </span>
+                            <span className="flex shrink-0 flex-col items-end gap-1">
+                              <span
+                                style={{ color: theme.colors.textSecondary }}
+                                className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide"
+                              >
+                                {th.isDark ? (
+                                  <Moon className="h-3 w-3" />
+                                ) : (
+                                  <Sun className="h-3 w-3" />
+                                )}
+                                {th.isDark
+                                  ? lang === "ar"
+                                    ? "داكن"
+                                    : "dark"
+                                  : lang === "ar"
+                                    ? "فاتح"
+                                    : "light"}
+                              </span>
+                              {active && (
+                                <Check
+                                  style={{ color: theme.colors.accentPrimary }}
+                                  className="h-4 w-4"
+                                />
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <p
+                      style={{ color: theme.colors.textSecondary }}
+                      className="text-[11px]"
+                    >
+                      {lang === "ar"
+                        ? "المعاينة في اللوحة تستعمل المظهر الحالي: "
+                        : "The panel previews the theme currently in use: "}
+                      <b style={{ color: theme.colors.textPrimary }}>
+                        {theme.nameEn}
+                      </b>
+                      {" · "}
+                      {theme.nameAr}
+                    </p>
                   </div>
 
                   {/* Wholesale Discount Tiers */}

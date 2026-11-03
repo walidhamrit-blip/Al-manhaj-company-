@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NukhbaBadge from "@/components/NukhbaBadge";
 export const metadata = { title: "الشروط والأحكام | Terms - المنهج" };
 export default function TermsPage(){
   return (
@@ -16,6 +17,11 @@ export default function TermsPage(){
           <section><h2 className="font-extrabold text-base">6. منصة موثوق</h2><p>متجرنا قيد التسجيل في منصة موثوق التابعة لشبكة التجارة الليبية بوزارة الاقتصاد والتجارة. بعد الحصول على الترخيص سيظهر رقم الترخيص والشارة في الفوتر ويحق للزبون التحقق عبر mawthooq.ly</p></section>
           <section><h2 className="font-extrabold text-base">7. القانون النافذ</h2><p>يخضع هذا الاتفاق للقانون الليبي، وتعليمات مصرف ليبيا المركزي للدفع الإلكتروني. النزاعات تحل ودياً ثم أمام محاكم طرابلس المختصة.</p></section>
         </div>
+
+        <footer className="mt-8 flex justify-center">
+          {/* « Website by Nukhba » credit badge (nokhba.net.ly/badge) */}
+          <NukhbaBadge variant="onLight" />
+        </footer>
       </div>
     </div>
   );

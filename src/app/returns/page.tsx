@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NukhbaBadge from "@/components/NukhbaBadge";
 export const metadata = { title: "الاسترجاع والشحن | Returns - المنهج" };
 export default function ReturnsPage(){
   return (
@@ -12,6 +13,11 @@ export default function ReturnsPage(){
           <section><h2 className="font-extrabold">الاسترجاع خلال 14 يوم</h2><p>شرط عدم الفتح/الاستخدام. تواصل واتساب 0912145050 مع صور. نرسل مندوب للاستلام بطرابلس أو ترجع عبر الشحن (تكلفة الإرجاع على المشتري إلا في حالة العيب).</p></section>
           <section><h2 className="font-extrabold">الاستثناءات</h2><p>الأحبار المفتوحة، الورق المقطوع حسب الطلب، المنتجات المخفضة نهائياً لا تسترجع إلا لعيب مصنعي.</p></section>
         </div>
+
+        <footer className="mt-8 flex justify-center">
+          {/* « Website by Nukhba » credit badge (nokhba.net.ly/badge) */}
+          <NukhbaBadge variant="onLight" />
+        </footer>
       </div>
     </div>
   );

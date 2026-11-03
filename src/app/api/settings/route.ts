@@ -4,6 +4,7 @@ import { storeSettings } from "@/db/schema";
 import { ensureDatabaseSeeded } from "@/db/seed";
 import { eq } from "drizzle-orm";
 import { limitHeroSlides } from "@/lib/homepage-slides";
+import { resolveThemeId } from "@/lib/i18n-themes";
 import {
   normalizeOnlineSalesPage,
   normalizeWholesalePage,
@@ -146,7 +147,10 @@ export async function PUT(request: NextRequest) {
                   : {}),
               })
             : existing.wholesalePage,
-        defaultTheme: String(body.defaultTheme ?? existing.defaultTheme),
+        // Only a palette the storefront really knows can become the default;
+        // an unknown id keeps the stored value instead of breaking the theme.
+        defaultTheme:
+          resolveThemeId(body.defaultTheme) ?? existing.defaultTheme,
         // ----- Editable legal footer bar -----
         complianceEnabled:
           typeof body.complianceEnabled === "boolean"

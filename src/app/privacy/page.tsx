@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NukhbaBadge from "@/components/NukhbaBadge";
 
 export const metadata = { title: "سياسة الخصوصية | Privacy Policy - المنهج" };
 
@@ -48,6 +49,11 @@ export default function PrivacyPage() {
         <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs leading-5">
           <b>ملاحظة للمالك:</b> بعد استلام ترخيص موثوق، عدّل هذا النص من الملف <code>src/app/privacy/page.tsx</code> واستبدل [XXXXXX] برقمك الحقيقي، ثم ادفع على Vercel.
         </div>
+
+        <footer className="mt-8 flex justify-center">
+          {/* « Website by Nukhba » credit badge (nokhba.net.ly/badge) */}
+          <NukhbaBadge variant="onLight" />
+        </footer>
       </div>
     </div>
   );
